@@ -15,7 +15,7 @@ import BrandSectionHeader from './BrandSectionHeader';
 import BrandChip from './BrandChip';
 import BrandProgressBar from './BrandProgressBar';
 import BrandLineChart from './BrandLineChart';
-import AssistantOrb from './AssistantOrb';
+import AssistantOrb, {type AssistantOrbState} from './AssistantOrb';
 
 export {
   Block,
@@ -37,3 +37,5 @@ export {
   BrandLineChart,
   AssistantOrb,
 };
+
+export type {AssistantOrbState};

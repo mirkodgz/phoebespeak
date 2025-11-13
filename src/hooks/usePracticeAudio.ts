@@ -22,14 +22,16 @@ export const usePracticeAudio = () => {
 
   const startRecording = useCallback(async () => {
     try {
-      setState(prev => ({...prev, isRecording: true, error: null}));
+      setState(prev => ({...prev, error: null}));
       await recordingHandleRef.current.start();
+      setState(prev => ({...prev, isRecording: true}));
     } catch (error) {
       setState(prev => ({
         ...prev,
         isRecording: false,
         error: error instanceof Error ? error.message : 'Recording failed',
       }));
+      throw error;
     }
   }, []);
 

@@ -1,3 +1,10 @@
 liveavatar-web-sdk/
-
+liveavatar-web-sdk-clean/
 node_modules
+backend/node_modules
+backend/dist
+.env
+.env.*
+backend/.env
+backend/.env.*
+*.DS_Store

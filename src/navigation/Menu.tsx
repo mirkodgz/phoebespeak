@@ -66,10 +66,38 @@ const DrawerContent = (
 ) => {
   const {navigation} = props;
   const {t} = useTranslation();
-  const {isDark, handleIsDark} = useData();
+  const {isDark, handleIsDark, signOut} = useData();
   const [active, setActive] = useState('Dashboard');
   const {assets, colors, gradients, sizes} = useTheme();
   const labelColor = colors.text;
+  const navigateHome = useCallback(() => {
+    navigation.navigate('Screens', {screen: 'Dashboard'});
+    setActive('Dashboard');
+  }, [navigation]);
+
+  const handleSignOut = useCallback(() => {
+    Alert.alert(
+      t('common.signoutTitle') || 'Cerrar sesión',
+      '¿Seguro que deseas salir de la aplicación?',
+      [
+        {text: t('common.cancel') || 'Cancelar', style: 'cancel'},
+        {
+          text: t('common.signout') || 'Salir',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await signOut();
+              navigateHome();
+            } catch (error) {
+              if (__DEV__) {
+                console.warn('Sign out failed', error);
+              }
+            }
+          },
+        },
+      ],
+    );
+  }, [navigateHome, signOut, t]);
 
   const handleNavigation = useCallback(
     (to: string) => {
@@ -83,7 +111,7 @@ const DrawerContent = (
   // screen list for Drawer menu
   const screens = [
     {name: 'Dashboard', to: 'Dashboard', icon: assets.home},
-    {name: 'Sessione di pratica', to: 'PracticeSession', icon: assets.chat},
+    {name: 'Role Play', to: 'RolePlay', icon: assets.chat},
     {name: 'Progressi', to: 'ProgressOverview', icon: assets.star},
     {name: 'Profilo', to: 'Profile', icon: assets.profile},
     {name: 'Impostazioni', to: 'SettingsScreen', icon: assets.settings},
@@ -156,16 +184,38 @@ const DrawerContent = (
           marginVertical={sizes.sm}
           gradient={gradients.menu}
         />
-        <Block row justify="space-between" marginTop={sizes.sm}>
-          <Text color={labelColor}>{t('darkMode')}</Text>
-          <Switch
-            checked={isDark}
-            onPress={(checked) => {
-              handleIsDark(checked);
-              Alert.alert(t('pro.title'), t('pro.alert'));
-            }}
-          />
-        </Block>
+          <Block row justify="space-between" marginTop={sizes.sm}>
+            <Text color={labelColor}>{t('darkMode')}</Text>
+            <Switch
+              checked={isDark}
+              onPress={(checked) => {
+                handleIsDark(checked);
+                Alert.alert(t('pro.title'), t('pro.alert'));
+              }}
+            />
+          </Block>
+          <Button
+            row
+            justify="flex-start"
+            marginTop={sizes.l}
+            onPress={handleSignOut}>
+            <Block
+              flex={0}
+              radius={6}
+              align="center"
+              justify="center"
+              width={sizes.md}
+              height={sizes.md}
+              marginRight={sizes.s}
+              color="rgba(11,61,77,0.18)">
+              <Text color={colors.primary} semibold>
+                ⎋
+              </Text>
+            </Block>
+            <Text p semibold color={labelColor}>
+              {t('common.signoutLabel') || 'Cerrar sesión'}
+            </Text>
+          </Button>
       </Block>
     </DrawerContentScrollView>
   );

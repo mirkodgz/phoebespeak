@@ -4,7 +4,13 @@ import {LinearGradient} from 'expo-linear-gradient';
 import {useNavigation} from '@react-navigation/native';
 
 import {useTheme, useTranslation} from '../hooks/';
-import {Block, Button, Image, Text, BrandBackground} from '../components/';
+import {
+  Block,
+  BrandActionButton,
+  BrandBackground,
+  Image,
+  Text,
+} from '../components/';
 
 const TOTAL_STEPS = 4;
 const CURRENT_STEP = 2;
@@ -15,55 +21,55 @@ const INTERESTS = [
   {
     id: 'shopping',
     label: 'Shopping',
-    icon: (icons: any) => icons.basket,
+    emoji: '🛍️',
     activeGradient: ['#F78CA0', '#F9748F'] as const,
   },
   {
     id: 'travel',
     label: 'Viaggiare',
-    icon: (icons: any) => icons.flight,
+    emoji: '✈️',
     activeGradient: ['#43E97B', '#38F9D7'] as const,
   },
   {
     id: 'videogames',
     label: 'Videogiochi',
-    icon: (icons: any) => icons.extras,
+    emoji: '🎮',
     activeGradient: ['#30CFFB', '#6591F2'] as const,
   },
   {
     id: 'art',
     label: 'Arte',
-    icon: (icons: any) => icons.image,
+    emoji: '🎨',
     activeGradient: ['#FEC163', '#DE4313'] as const,
   },
   {
     id: 'movies',
     label: 'Cinema e intrattenimento',
-    icon: (icons: any) => icons.star,
+    emoji: '🎬',
     activeGradient: ['#7F7CFF', '#00F5FF'] as const,
   },
   {
     id: 'cooking',
     label: 'Cucinare',
-    icon: (icons: any) => icons.menu,
+    emoji: '🍳',
     activeGradient: ['#F6D365', '#FDA085'] as const,
   },
   {
     id: 'photography',
     label: 'Fotografia',
-    icon: (icons: any) => icons.image,
+    emoji: '📸',
     activeGradient: ['#A18CD1', '#FBC2EB'] as const,
   },
   {
     id: 'sports',
     label: 'Sport',
-    icon: (icons: any) => icons.train,
+    emoji: '⚽️',
     activeGradient: ['#8EC5FC', '#E0C3FC'] as const,
   },
   {
     id: 'technology',
     label: 'Tecnologia',
-    icon: (icons: any) => icons.settings,
+    emoji: '💻',
     activeGradient: ['#4FACFE', '#00F2FE'] as const,
   },
 ];
@@ -180,22 +186,10 @@ const OnboardingStepTwo = () => {
                           : CARD_BORDER_INACTIVE,
                       },
                     ]}>
-                    <View
-                      style={[
-                        styles.iconBadge,
-                        {
-                          backgroundColor: isActive
-                            ? 'rgba(255,255,255,0.18)'
-                            : 'rgba(0,0,0,0.35)',
-                        },
-                      ]}>
-                      <Image
-                        source={option.icon(icons)}
-                        height={22}
-                        width={22}
-                        radius={0}
-                        color={colors.white}
-                      />
+                    <View style={styles.iconBadge}>
+                      <Text style={styles.iconEmoji} white>
+                        {option.emoji}
+                      </Text>
                     </View>
                     <Text
                       center
@@ -212,19 +206,13 @@ const OnboardingStepTwo = () => {
           </View>
 
           <Block marginTop={sizes.l} marginBottom={sizes.m}>
-            <Button
-              gradient={
-                continueDisabled
-                  ? ['rgba(255,255,255,0.18)', 'rgba(255,255,255,0.10)']
-                  : [...PROGRESS_GRADIENT]
-              }
-              disabled={continueDisabled}
+            <BrandActionButton
+              label={t('common.continue') || 'Continua'}
               onPress={handleContinue}
-              style={[styles.continueButton, continueDisabled && styles.continueDisabled]}>
-              <Text bold white transform="uppercase">
-                {t('common.continue') || 'Continua'}
-              </Text>
-            </Button>
+              disabled={continueDisabled}
+              style={styles.continueButton}
+              disabledStyle={styles.continueDisabled}
+            />
           </Block>
         </Block>
     </BrandBackground>
@@ -304,6 +292,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 4,
+  },
+  iconEmoji: {
+    fontSize: 24,
+    lineHeight: 26,
   },
   continueButton: {
     borderRadius: 20,

@@ -13,31 +13,31 @@ const PURPOSES = [
   {
     id: 'career',
     label: 'Potenziare la mia carriera professionale',
-    icon: (icons: any) => icons.office,
+    emoji: '💼',
     activeGradient: ['#43E97B', '#38F9D7'] as const,
   },
   {
     id: 'education',
     label: 'Sostenere i miei studi',
-    icon: (icons: any) => icons.documentation,
+    emoji: '📚',
     activeGradient: ['#A18CD1', '#FBC2EB'] as const,
   },
   {
     id: 'relocation',
     label: 'Trasferirmi in un altro paese',
-    icon: (icons: any) => icons.flight,
+    emoji: '🌍',
     activeGradient: ['#43E97B', '#38F9D7'] as const,
   },
   {
     id: 'connect',
     label: 'Connettermi con più persone',
-    icon: (icons: any) => icons.users,
+    emoji: '🤝',
     activeGradient: ['#FDD819', '#E80505'] as const,
   },
   {
     id: 'travel',
     label: 'Prepararmi a viaggiare',
-    icon: (icons: any) => icons.train,
+    emoji: '🧳',
     activeGradient: ['#8EC5FC', '#E0C3FC'] as const,
     fullWidth: true,
   },
@@ -167,22 +167,10 @@ const Onboarding = () => {
                           : CARD_BORDER_INACTIVE,
                       },
                     ]}>
-                    <View
-                      style={[
-                        styles.iconBadge,
-                        {
-                          backgroundColor: isActive
-                            ? 'rgba(255,255,255,0.18)'
-                            : 'rgba(0,0,0,0.35)',
-                        },
-                      ]}>
-                      <Image
-                        source={option.icon(icons)}
-                        height={22}
-                        width={22}
-                        radius={0}
-                        color={colors.white}
-                      />
+                    <View style={styles.iconBadge}>
+                      <Text style={styles.iconEmoji} white>
+                        {option.emoji}
+                      </Text>
                     </View>
                     <Text
                       center
@@ -291,6 +279,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 4,
+  },
+  iconEmoji: {
+    fontSize: 24,
+    lineHeight: 26,
   },
 });
 

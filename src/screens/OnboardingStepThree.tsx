@@ -4,7 +4,13 @@ import {LinearGradient} from 'expo-linear-gradient';
 import {useNavigation} from '@react-navigation/native';
 
 import {useTheme, useTranslation} from '../hooks/';
-import {Block, Button, Image, Text, BrandBackground} from '../components/';
+import {
+  Block,
+  BrandActionButton,
+  BrandBackground,
+  Image,
+  Text,
+} from '../components/';
 
 const TOTAL_STEPS = 4;
 const CURRENT_STEP = 3;
@@ -13,7 +19,7 @@ type FocusOption = {
   id: string;
   label: string;
   description: string;
-  icon: (icons: any) => any;
+  emoji: string;
   activeGradient: readonly [string, string];
   fullWidth?: boolean;
 };
@@ -23,35 +29,35 @@ const OPTIONS: FocusOption[] = [
     id: 'grammar',
     label: 'Grammatica',
     description: 'Costruisci frasi corrette e naturali.',
-    icon: (icons: any) => icons.documentation,
+    emoji: '📘',
     activeGradient: ['#43E97B', '#38F9D7'] as const,
   },
   {
     id: 'vocabulary',
     label: 'Vocabolario',
     description: 'Impara parole e espressioni nuove.',
-    icon: (icons: any) => icons.chat,
+    emoji: '🗣️',
     activeGradient: ['#FBC2EB', '#A6C1EE'] as const,
   },
   {
     id: 'pronunciation',
     label: 'Pronuncia',
     description: 'Migliora la tua dizione e l’accento.',
-    icon: (icons: any) => icons.bell,
+    emoji: '🎤',
     activeGradient: ['#F6D365', '#FDA085'] as const,
   },
   {
     id: 'listening',
     label: 'Comprensione orale',
     description: 'Capisci meglio ciò che ascolti.',
-    icon: (icons: any) => icons.notification,
+    emoji: '🎧',
     activeGradient: ['#4FACFE', '#00F2FE'] as const,
   },
   {
     id: 'conversation',
     label: 'Conversazione',
     description: 'Sii più fluente nelle interazioni.',
-    icon: (icons: any) => icons.users,
+    emoji: '💬',
     activeGradient: ['#8EC5FC', '#E0C3FC'] as const,
   },
 ];
@@ -177,22 +183,10 @@ const OnboardingStepThree = () => {
                           : CARD_BORDER_INACTIVE,
                       },
                     ]}>
-                    <View
-                      style={[
-                        styles.iconBadge,
-                        {
-                          backgroundColor: isActive
-                            ? 'rgba(255,255,255,0.18)'
-                            : 'rgba(0,0,0,0.35)',
-                        },
-                      ]}>
-                      <Image
-                        source={option.icon(icons)}
-                        height={22}
-                        width={22}
-                        radius={0}
-                        color={colors.white}
-                      />
+                    <View style={styles.iconBadge}>
+                      <Text style={styles.iconEmoji} white>
+                        {option.emoji}
+                      </Text>
                     </View>
                     <Text center white semibold size={sizes.p - 1}>
                       {option.label}
@@ -207,19 +201,13 @@ const OnboardingStepThree = () => {
           </View>
 
           <Block marginTop={sizes.l} marginBottom={sizes.m}>
-            <Button
-              gradient={
-                continueDisabled
-                  ? ['rgba(255,255,255,0.18)', 'rgba(255,255,255,0.10)']
-                  : [...PROGRESS_GRADIENT]
-              }
-              disabled={continueDisabled}
+            <BrandActionButton
+              label={t('common.continue') || 'Continua'}
               onPress={handleContinue}
-              style={[styles.continueButton, continueDisabled && styles.continueDisabled]}>
-              <Text bold white transform="uppercase">
-                {t('common.continue') || 'Continua'}
-              </Text>
-            </Button>
+              disabled={continueDisabled}
+              style={styles.continueButton}
+              disabledStyle={styles.continueDisabled}
+            />
           </Block>
       </Block>
     </BrandBackground>
@@ -299,6 +287,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 6,
+  },
+  iconEmoji: {
+    fontSize: 24,
+    lineHeight: 26,
   },
   continueButton: {
     borderRadius: 20,

@@ -102,9 +102,9 @@ export interface IBlockProps
   color?: ViewStyle['backgroundColor'];
   /**
    * Renders LinearGradient component, colors
-   * @see https://docs.expo.io/versions/latest/sdk/linear-gradient/#props
+   * @see https://docs.expo.dev/versions/latest/sdk/linear-gradient/#props
    */
-  gradient?: string[];
+  gradient?: readonly [ColorValue, ColorValue, ...ColorValue[]];
   /**
    * Renders a backgroundColor directly from the colors.primary value
    * @see https://reactnative.dev/docs/view-style-props#backgroundcolor
@@ -282,7 +282,7 @@ export interface IButtonProps extends TouchableOpacityProps, ISpacing {
    * Renders LinearGradient component, colors
    * @see https://docs.expo.io/versions/latest/sdk/linear-gradient/#props
    */
-  gradient?: string[];
+  gradient?: readonly [ColorValue, ColorValue, ...ColorValue[]];
   /**
    * Renders a backgroundColor directly from the colors.primary value
    * @see https://reactnative.dev/docs/view-style-props#backgroundcolor

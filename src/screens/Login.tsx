@@ -41,8 +41,7 @@ const Login = () => {
   });
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const {assets, colors, gradients, sizes} = useTheme();
-  const primaryGradient = gradients?.primary ?? ['#0B3D4D', '#60CB58'];
+  const {assets, colors, sizes} = useTheme();
 
   const handleChange = useCallback(
     (value: Partial<ICredentials>) => {
@@ -183,7 +182,7 @@ const Login = () => {
             {errorMessage ? (
               <Text
                 center
-                color={colors.error ?? '#FF6B6B'}
+                color={colors.danger ?? '#FF6B6B'}
                 size={sizes.p - 2}
                 marginBottom={sizes.xs}>
                 {errorMessage}
@@ -193,7 +192,6 @@ const Login = () => {
             <BrandActionButton
               label={loading ? 'Iniciando...' : t('common.signin')}
               onPress={handleSignIn}
-              gradient={primaryGradient}
               disabled={loading || Object.values(isValid).includes(false)}
               style={{marginVertical: sizes.s, marginHorizontal: sizes.sm}}
             />

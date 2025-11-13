@@ -1,5 +1,5 @@
 import React from 'react';
-import {StyleProp, ViewStyle} from 'react-native';
+import {ColorValue, StyleProp, ViewStyle} from 'react-native';
 
 import {useTheme} from '../hooks/';
 import Button from './Button';
@@ -8,47 +8,58 @@ import Text from './Text';
 interface BrandActionButtonProps {
   label: string;
   onPress: () => void;
-  gradient?: readonly [string, string] | string[];
-  disabledGradient?: readonly [string, string] | string[];
+  backgroundColor?: ColorValue;
+  disabledBackgroundColor?: ColorValue;
+  textColor?: ColorValue;
+  disabledTextColor?: ColorValue;
   disabled?: boolean;
   uppercase?: boolean;
   style?: StyleProp<ViewStyle>;
   disabledStyle?: StyleProp<ViewStyle>;
+  shadow?: boolean;
 }
 
 // Botón de acción principal reutilizable para CTA de onboarding y autenticación
 const BrandActionButton = ({
   label,
   onPress,
-  gradient,
-  disabledGradient,
+  backgroundColor,
+  disabledBackgroundColor,
+  textColor,
+  disabledTextColor,
   disabled = false,
   uppercase = true,
   style,
   disabledStyle,
+  shadow = true,
 }: BrandActionButtonProps) => {
-  const {sizes, gradients} = useTheme();
+  const {sizes, colors} = useTheme();
 
-  const baseGradient = gradient ?? gradients?.primary ?? ['#0B3D4D', '#60CB58'];
-  const baseDisabledGradient =
-    disabledGradient ?? ['rgba(11,61,77,0.45)', 'rgba(11,61,77,0.25)'];
-  const appliedGradient = disabled ? baseDisabledGradient : baseGradient;
-  const buttonGradient = [...appliedGradient];
+  const baseColor = backgroundColor ?? colors.white;
+  const disabledColor =
+    disabledBackgroundColor ?? 'rgba(255,255,255,0.55)';
+  const baseTextColor = textColor ?? colors.primary;
+  const disabledLabelColor =
+    disabledTextColor ?? 'rgba(11,61,77,0.55)';
 
   return (
     <Button
-      gradient={buttonGradient}
+      color={disabled ? disabledColor : baseColor}
       disabled={disabled}
       onPress={onPress}
+      shadow={shadow}
       style={[
         {
           borderRadius: sizes.sm * 1.4,
           paddingVertical: sizes.s,
         },
         style,
-        disabled ? disabledStyle || {opacity: 0.6} : null,
+        disabled ? disabledStyle ?? {opacity: 0.85} : null,
       ]}>
-      <Text bold white transform={uppercase ? 'uppercase' : undefined}>
+      <Text
+        bold
+        color={disabled ? disabledLabelColor : baseTextColor}
+        transform={uppercase ? 'uppercase' : undefined}>
         {label}
       </Text>
     </Button>

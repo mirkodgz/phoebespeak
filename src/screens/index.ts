@@ -7,6 +7,7 @@ export {default as OnboardingStepThree} from './OnboardingStepThree';
 export {default as OnboardingStepFour} from './OnboardingStepFour';
 
 export {default as Dashboard} from './Dashboard';
+export {default as RolePlay} from './RolePlay';
 export {default as PracticeSession} from './PracticeSession';
 export {default as ProgressOverview} from './ProgressOverview';
 export {default as SettingsScreen} from './SettingsScreen';

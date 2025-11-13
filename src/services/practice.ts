@@ -1,4 +1,5 @@
 import {EventEmitter} from 'events';
+import {Platform} from 'react-native';
 
 import {
   PRACTICE_SESSION_DATA,
@@ -10,7 +11,39 @@ import {
   IPhonemeHint,
 } from '../constants/types';
 
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL?.replace(/\/$/, '');
+
+type TranscriptionSegment = {
+  text: string;
+  confidence?: number;
+  start?: number;
+  end?: number;
+};
+
+type TranscriptionResponse = {
+  text?: string;
+  segments?: TranscriptionSegment[];
+  language?: string;
+};
+
+type PracticeFeedbackResponse = {
+  summary?: string;
+  score?: number;
+  verdict?: 'correct' | 'needs_improvement';
+};
+
 const practiceEmitter = new EventEmitter();
+
+const getApiUrl = (path: string) => {
+  if (!API_BASE_URL) {
+    throw new Error(
+      'EXPO_PUBLIC_API_BASE_URL is not defined. Configure it in your Expo .env file.',
+    );
+  }
+  return `${API_BASE_URL}${path}`;
+};
+
+const convertFeedbackToHints = (): IPhonemeHint[] => [];
 
 export const fetchPracticeSession = async (): Promise<IPracticeSessionData> => {
   return Promise.resolve(PRACTICE_SESSION_DATA);
@@ -22,12 +55,154 @@ export const fetchPracticeHistory = async (): Promise<
 
 export const subscribePracticeFeedback = (
   listener: (hint: IPhonemeHint) => void,
-) => {
+): (() => void) => {
   practiceEmitter.on('feedback', listener);
-  return () => practiceEmitter.removeListener('feedback', listener);
+  return () => {
+    practiceEmitter.removeListener('feedback', listener);
+  };
+};
+
+export const emitFeedback = (hint: IPhonemeHint) => {
+  practiceEmitter.emit('feedback', hint);
+};
+
+export const emitFeedbackBatch = (hints: IPhonemeHint[]) => {
+  hints.forEach(emitFeedback);
 };
 
 export const emitMockFeedback = (hint: IPhonemeHint) => {
-  practiceEmitter.emit('feedback', hint);
+  emitFeedback(hint);
+};
+
+type UploadAudioOptions = {
+  uri: string;
+  mimeType?: string;
+  fileName?: string;
+};
+
+const buildAudioFormData = ({uri, mimeType, fileName}: UploadAudioOptions) => {
+  const extension = uri.split('.').pop();
+  const finalName = fileName ?? `practice-${Date.now()}.${extension ?? 'm4a'}`;
+  const finalMimeType =
+    mimeType ??
+    (extension === 'wav'
+      ? 'audio/wav'
+      : extension === 'mp3'
+      ? 'audio/mpeg'
+      : 'audio/m4a');
+
+  if (Platform.OS === 'web') {
+    throw new Error('La práctica de audio no está disponible en la web todavía.');
+  }
+
+  const audioFile: any = {
+    uri,
+    type: finalMimeType,
+    name: finalName,
+  };
+
+  const formData = new FormData();
+  formData.append('audio', audioFile);
+  return formData;
+};
+
+const safeFetch = async (
+  path: string,
+  options?: RequestInit,
+): Promise<Response> => {
+  const url = getApiUrl(path);
+  const response = await fetch(url, options);
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(
+      `Request failed (${response.status}): ${message || response.statusText}`,
+    );
+  }
+  return response;
+};
+
+export const transcribePracticeAudio = async (
+  options: UploadAudioOptions,
+): Promise<TranscriptionResponse> => {
+  const formData = buildAudioFormData(options);
+  const response = await safeFetch('/practice/transcribe', {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+
+  return response.json();
+};
+
+export const requestPracticeFeedback = async ({
+  transcript,
+  targetSentence,
+  learnerProfile,
+  segments,
+}: {
+  transcript: string;
+  targetSentence: string;
+  learnerProfile?: {
+    nativeLanguage?: string;
+    proficiencyLevel?: string;
+    learnerName?: string;
+  };
+  segments?: TranscriptionSegment[];
+}): Promise<PracticeFeedbackResponse> => {
+  const response = await safeFetch('/practice/feedback', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      transcript,
+      targetSentence,
+      learnerProfile,
+      transcriptionSegments: segments,
+    }),
+  });
+
+  const feedback = (await response.json()) as PracticeFeedbackResponse;
+  const hints = convertFeedbackToHints();
+  if (hints.length) {
+    emitFeedbackBatch(hints);
+  }
+  return feedback;
+};
+
+export const requestPracticeVoice = async (text: string): Promise<string> => {
+  const response = await safeFetch('/practice/voice', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({text}),
+  });
+
+  const buffer = await response.arrayBuffer();
+  const base64 = arrayBufferToBase64(buffer);
+  return `data:audio/mpeg;base64,${base64}`;
+};
+
+const arrayBufferToBase64 = (buffer: ArrayBuffer) => {
+  const chars =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.length;
+  let base64 = '';
+
+  for (let i = 0; i < len; i += 3) {
+    const a = bytes[i];
+    const b = i + 1 < len ? bytes[i + 1] : 0;
+    const c = i + 2 < len ? bytes[i + 2] : 0;
+
+    const triplet = (a << 16) | (b << 8) | c;
+
+    base64 +=
+      chars[(triplet >> 18) & 0x3f] +
+      chars[(triplet >> 12) & 0x3f] +
+      (i + 1 < len ? chars[(triplet >> 6) & 0x3f] : '=') +
+      (i + 2 < len ? chars[triplet & 0x3f] : '=');
+  }
+
+  return base64;
 };
 

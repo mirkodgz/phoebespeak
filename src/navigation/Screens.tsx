@@ -6,6 +6,7 @@ import {
   PracticeSession,
   Profile,
   ProgressOverview,
+  RolePlay,
   SettingsScreen,
 } from '../screens';
 import {useScreenOptions, useTranslation} from '../hooks';
@@ -21,6 +22,12 @@ export default () => {
       <Stack.Screen
         name="Dashboard"
         component={Dashboard}
+        options={{headerShown: false}}
+      />
+
+      <Stack.Screen
+        name="RolePlay"
+        component={RolePlay}
         options={{headerShown: false}}
       />
 

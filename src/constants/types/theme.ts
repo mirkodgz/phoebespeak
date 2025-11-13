@@ -108,20 +108,20 @@ export interface ThemeColors {
 }
 
 export interface ThemeGradients {
-  primary?: string[];
-  secondary?: string[];
-  tertiary?: string[];
-  black?: string[];
-  white?: string[];
-  light?: string[];
-  dark?: string[];
-  gray?: string[];
-  danger?: string[];
-  warning?: string[];
-  success?: string[];
-  info?: string[];
-  divider?: string[];
-  menu?: string[];
+  primary?: readonly [ColorValue, ColorValue, ...ColorValue[]];
+  secondary?: readonly [ColorValue, ColorValue, ...ColorValue[]];
+  tertiary?: readonly [ColorValue, ColorValue, ...ColorValue[]];
+  black?: readonly [ColorValue, ColorValue, ...ColorValue[]];
+  white?: readonly [ColorValue, ColorValue, ...ColorValue[]];
+  light?: readonly [ColorValue, ColorValue, ...ColorValue[]];
+  dark?: readonly [ColorValue, ColorValue, ...ColorValue[]];
+  gray?: readonly [ColorValue, ColorValue, ...ColorValue[]];
+  danger?: readonly [ColorValue, ColorValue, ...ColorValue[]];
+  warning?: readonly [ColorValue, ColorValue, ...ColorValue[]];
+  success?: readonly [ColorValue, ColorValue, ...ColorValue[]];
+  info?: readonly [ColorValue, ColorValue, ...ColorValue[]];
+  divider?: readonly [ColorValue, ColorValue, ...ColorValue[]];
+  menu?: readonly [ColorValue, ColorValue, ...ColorValue[]];
 }
 
 export interface ThemeSizes {

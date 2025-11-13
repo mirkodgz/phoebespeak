@@ -1,6 +1,7 @@
 import React, {useEffect, useMemo} from 'react';
-import {StyleSheet} from 'react-native';
+import {Image as RNImage, StyleSheet} from 'react-native';
 import Animated, {
+  Easing,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
@@ -19,12 +20,18 @@ type AssistantOrbProps = {
   size?: number;
 };
 
+const AnimatedImage = Animated.createAnimatedComponent(RNImage);
+const BRAND_LOGO = require('../../assets/logo.png');
+
 const AssistantOrb = ({state = 'idle', size = 140}: AssistantOrbProps) => {
   const {gradients, colors} = useTheme();
 
   const haloScale = useSharedValue(1);
   const haloOpacity = useSharedValue(0.35);
   const coreScale = useSharedValue(1);
+  const logoScale = useSharedValue(1);
+  const glowOpacity = useSharedValue(0.6);
+  const ringRotation = useSharedValue(0);
 
   useEffect(() => {
     if (state === 'listening') {
@@ -49,6 +56,35 @@ const AssistantOrb = ({state = 'idle', size = 140}: AssistantOrbProps) => {
     }
   }, [state, haloOpacity, haloScale, coreScale]);
 
+  useEffect(() => {
+    logoScale.value = withRepeat(
+      withSequence(
+        withTiming(1.06, {duration: 1400, easing: Easing.inOut(Easing.quad)}),
+        withTiming(0.96, {duration: 1400, easing: Easing.inOut(Easing.quad)}),
+      ),
+      -1,
+      true,
+    );
+
+    glowOpacity.value = withRepeat(
+      withSequence(
+        withTiming(0.85, {duration: 1600, easing: Easing.inOut(Easing.quad)}),
+        withTiming(0.35, {duration: 1600, easing: Easing.inOut(Easing.quad)}),
+      ),
+      -1,
+      true,
+    );
+
+    ringRotation.value = withRepeat(
+      withTiming(1, {
+        duration: 7000,
+        easing: Easing.linear,
+      }),
+      -1,
+      false,
+    );
+  }, [glowOpacity, logoScale, ringRotation]);
+
   const haloAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{scale: haloScale.value}],
     opacity: haloOpacity.value,
@@ -62,6 +98,18 @@ const AssistantOrb = ({state = 'idle', size = 140}: AssistantOrbProps) => {
 
   const gradient =
     gradients?.primary ?? (['#0B3D4D', '#60CB58'] as const);
+
+  const logoAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{scale: logoScale.value}],
+  }));
+
+  const glowAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: glowOpacity.value,
+  }));
+
+  const ringAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{rotate: `${ringRotation.value * 360}deg`}],
+  }));
 
   return (
     <Animated.View
@@ -90,7 +138,25 @@ const AssistantOrb = ({state = 'idle', size = 140}: AssistantOrbProps) => {
           end={{x: 0.9, y: 0.9}}
           style={styles.gradient}
         />
-        <Animated.View style={styles.innerGlow} />
+        <Animated.View style={[styles.innerGlow, glowAnimatedStyle]} />
+
+        <Animated.View style={[styles.logoAura, glowAnimatedStyle]} />
+
+        <Animated.View style={[styles.ringWrapper, ringAnimatedStyle]}>
+          <LinearGradient
+            colors={['rgba(96,203,88,0.1)', 'rgba(255,255,255,0.55)', 'rgba(11,61,77,0.35)']}
+            start={{x: 0, y: 0}}
+            end={{x: 1, y: 1}}
+            style={styles.ringGradient}
+          />
+          <Animated.View style={styles.ringMask} />
+        </Animated.View>
+
+        <AnimatedImage
+          source={BRAND_LOGO}
+          resizeMode="contain"
+          style={[styles.logo, logoAnimatedStyle]}
+        />
 
         {state === 'speaking' && (
           <Animated.View style={styles.barsContainer}>
@@ -161,13 +227,53 @@ const styles = StyleSheet.create({
     width: '78%',
     height: '78%',
     borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.18)',
+    backgroundColor: 'rgba(255,255,255,0.16)',
+  },
+  logoAura: {
+    position: 'absolute',
+    width: '82%',
+    height: '82%',
+    borderRadius: 999,
+    backgroundColor: 'rgba(96,203,88,0.28)',
+    shadowColor: 'rgba(96,203,88,0.8)',
+    shadowOpacity: 0.5,
+    shadowOffset: {width: 0, height: 0},
+    shadowRadius: 16,
+  },
+  ringWrapper: {
+    position: 'absolute',
+    width: '94%',
+    height: '94%',
+    borderRadius: 999,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: 'rgba(96,203,88,0.6)',
+    shadowOpacity: 0.35,
+    shadowOffset: {width: 0, height: 0},
+    shadowRadius: 10,
+    opacity: 0.95,
+  },
+  ringGradient: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 999,
+  },
+  ringMask: {
+    width: '82%',
+    height: '82%',
+    borderRadius: 999,
+    backgroundColor: 'rgba(11,61,77,0.18)',
+  },
+  logo: {
+    width: '56%',
+    height: '56%',
   },
   barsContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'center',
     gap: 8,
+    position: 'absolute',
+    bottom: '18%',
   },
   bar: {
     width: 6,

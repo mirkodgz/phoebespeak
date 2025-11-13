@@ -1,0 +1,130 @@
+{
+  "common": {
+    "appDetails": "Detalles de la app",
+    "appName": "Nombre de la app",
+    "appVersion": "Versión de la app",
+    "buildVersion": "Versión de build",
+    "expoVersion": "Versión de Expo",
+    "about": "Acerca de",
+    "visit": "Visitar",
+    "posted": "Publicado el {{date}}",
+    "recommended": "Recomendado para ti",
+    "viewall": "Ver todo",
+    "more": "Más",
+    "follow": "Seguir",
+    "followed": "Siguiendo",
+    "search": "Buscar",
+    "night": "noche",
+    "day": "día",
+    "booknow": "Reserva ahora",
+    "selectDate": "Selecciona fecha",
+    "checkInOut": "Check-In y Check-Out",
+    "adults": "Adultos",
+    "roomType": "Tipo de habitación",
+    "luxury": "Lujo",
+    "message": "Ingresa tu mensaje",
+    "album": "Álbum",
+    "or": "o",
+    "name": "Nombre",
+    "namePlaceholder": "Ingresa tu nombre completo",
+    "email": "Email",
+    "emailPlaceholder": "Ingresa tu correo electrónico",
+    "password": "Contraseña",
+    "passwordPlaceholder": "Ingresa una contraseña",
+    "agree": "Acepto los ",
+    "terms": "Términos y Condiciones",
+    "signup": "Registrarse",
+    "signin": "Iniciar sesión",
+    "continue": "Continuar",
+    "signout": "Cerrar sesión",
+    "signoutTitle": "Cerrar sesión",
+    "signoutLabel": "Cerrar sesión",
+    "cancel": "Cancelar",
+    "goBack": "Volver",
+    "inStock": "Disponible",
+    "outStock": "Agotado",
+    "addToCart": "Añadir al carrito",
+    "checkout": "Proceder al pago",
+    "readArticle": "Leer artículo",
+    "send": "Enviar",
+    "guests": {
+      "one": "1 invitado",
+      "other": "{{count}} invitados",
+      "zero": "0 invitados"
+    }
+  },
+  "app": {
+    "name": "Soft UI",
+    "fullname": "Soft UI Kit",
+    "native": "React Native",
+    "link": "creative-tim.com"
+  },
+  "darkMode": "Modo oscuro",
+  "screens": {
+    "home": "Inicio",
+    "components": "Componentes",
+    "articles": "Artículos",
+    "rental": "Alquiler",
+    "profile": "Perfil",
+    "settings": "Ajustes",
+    "register": "Crear cuenta",
+    "extra": "Extra - Automotriz"
+  },
+  "navigation": {
+    "home": "Soft UI",
+    "components": "Componentes",
+    "articles": "Soft UI",
+    "rentals": "Soft UI",
+    "rental": "Mejor oferta",
+    "booking": "Reserva",
+    "chat": "Chat",
+    "profile": "Perfil",
+    "settings": "Ajustes",
+    "notifications": "Notificaciones",
+    "agreement": "Acuerdo de usuario",
+    "about": "Acerca de",
+    "privacy": "Privacidad",
+    "register": "Registro",
+    "login": "Iniciar sesión",
+    "extra": "Automotriz",
+    "shopping": "Carrito de compras"
+  },
+  "menu": {
+    "started": "Primeros pasos",
+    "documentation": "Documentación"
+  },
+  "home": {
+    "title": "Soft UI",
+    "following": "Siguiendo",
+    "trending": "Tendencias"
+  },
+  "register": {
+    "title": "Bienvenido",
+    "subtitle": "Regístrate con",
+    "google": "Regístrate con Google"
+  },
+  "login": {
+    "title": "Bienvenido de nuevo",
+    "subtitle": "Accede con",
+    "google": "Accede con Google"
+  },
+  "profile": {
+    "title": "Perfil",
+    "posts": "Publicaciones",
+    "followers": "Seguidores",
+    "following": "Siguiendo",
+    "aboutMe": "Sobre mí"
+  },
+  "pro": {
+    "title": "Soft UI PRO",
+    "alert": "Esta función está disponible en la versión PRO",
+    "components": "• {{count}} Componentes (Botones, Inputs, Tarjetas, etc)",
+    "screens": "• {{count}} Pantallas (Compras, Notificaciones, Chat, etc)",
+    "support": "• Soporte Premium incluido",
+    "takeAdvantage": "Aprovecha todas las funciones y pantallas codificadas en React Native para ambas plataformas",
+    "appTemplate": "Soft UI PRO React Native es una plantilla innovadora que te ayudará a crear aplicaciones móviles rápidamente. Cuenta con un gran número de componentes y pantallas construidas para integrarse y verse increíbles:",
+    "saveTime": "Esta moderna plantilla te ahorrará tiempo al pasar de prototipos a código funcional, porque todos los elementos están implementados. Queríamos que el proceso de diseño fuera fluido, por lo que cambiar de la imagen a la página real es muy sencillo de hacer.",
+    "buyNow": "Comprar ahora"
+  }
+}
+

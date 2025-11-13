@@ -77,25 +77,25 @@ export const COLORS: ThemeColors = {
 };
 
 export const GRADIENTS: ThemeGradients = {
-  primary: ['#0B3D4D', '#60CB58'],
-  secondary: ['#60CB58', '#0B3D4D'],
-  info: ['#21D4FD', '#2152FF'],
-  success: ['#98EC2D', '#17AD37'],
-  warning: ['#FBCF33', '#F53939'],
-  danger: ['#FF667C', '#EA0606'],
+  primary: ['#0B3D4D', '#60CB58'] as const,
+  secondary: ['#60CB58', '#0B3D4D'] as const,
+  info: ['#21D4FD', '#2152FF'] as const,
+  success: ['#98EC2D', '#17AD37'] as const,
+  warning: ['#FBCF33', '#F53939'] as const,
+  danger: ['#FF667C', '#EA0606'] as const,
 
-  light: ['#F0F4F6', '#D6E2E7'],
-  dark: ['#062633', '#041921'],
+  light: ['#F0F4F6', '#D6E2E7'] as const,
+  dark: ['#062633', '#041921'] as const,
 
-  white: [String(COLORS.white), '#EEF3F5'],
-  black: [String(COLORS.black), '#041921'],
+  white: [String(COLORS.white), '#EEF3F5'] as const,
+  black: [String(COLORS.black), '#041921'] as const,
 
-  divider: ['rgba(255,255,255,0.25)', 'rgba(20, 80, 106, 0.45)'],
+  divider: ['rgba(255,255,255,0.25)', 'rgba(20, 80, 106, 0.45)'] as const,
   menu: [
     'rgba(255, 255, 255, 0.2)',
     'rgba(16, 112, 144, 0.45)',
     'rgba(255, 255, 255, 0.2)',
-  ],
+  ] as const,
 };
 
 export const SIZES: ThemeSizes = {
