@@ -16,6 +16,7 @@ import BrandChip from './BrandChip';
 import BrandProgressBar from './BrandProgressBar';
 import BrandLineChart from './BrandLineChart';
 import AssistantOrb, {type AssistantOrbState} from './AssistantOrb';
+import RolePlayAvatar from './RolePlayAvatar';
 
 export {
   Block,
@@ -36,6 +37,7 @@ export {
   BrandProgressBar,
   BrandLineChart,
   AssistantOrb,
+  RolePlayAvatar,
 };
 
 export type {AssistantOrbState};

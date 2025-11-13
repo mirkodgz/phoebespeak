@@ -5,11 +5,15 @@ import {
   getRecordingPermissionsAsync,
   requestRecordingPermissionsAsync,
 } from 'expo-audio';
-import {Audio, InterruptionModeAndroid, InterruptionModeIOS} from 'expo-av';
+import {
+  Audio,
+  InterruptionModeAndroid,
+  InterruptionModeIOS,
+  type AVPlaybackStatus,
+} from 'expo-av';
 
 import {
   Block,
-  AssistantOrb,
   type AssistantOrbState,
   BrandActionButton,
   BrandBackground,
@@ -19,6 +23,7 @@ import {
   BrandSurface,
   Button,
   Image,
+  RolePlayAvatar,
   Text,
 } from '../components';
 import {useData, usePracticeAudio, useTheme} from '../hooks';
@@ -303,28 +308,32 @@ const PracticeSession = () => {
 
       try {
         setVoiceError(null);
-        setIsPlayingVoice(true);
         await stopVoicePlayback();
         const uri = await requestPracticeVoice(text);
-        const {sound} = await Audio.Sound.createAsync(
-          {uri},
-          {shouldPlay: true},
-        );
-        voiceSoundRef.current = sound;
-        sound.setOnPlaybackStatusUpdate((status) => {
+        const statusHandler = (status: AVPlaybackStatus) => {
           if (!status.isLoaded) {
-            if (status.error && __DEV__) {
+            if ('error' in status && status.error && __DEV__) {
               console.warn('Voice playback status error', status.error);
             }
             return;
           }
+          setIsPlayingVoice(Boolean(status.isPlaying));
           if (status.didJustFinish) {
             setIsPlayingVoice(false);
-            sound.setOnPlaybackStatusUpdate(null);
+            voiceSoundRef.current?.setOnPlaybackStatusUpdate(null);
             voiceSoundRef.current?.unloadAsync().catch(() => {});
             voiceSoundRef.current = null;
           }
-        });
+        };
+        const {sound, status} = await Audio.Sound.createAsync(
+          {uri},
+          {shouldPlay: true},
+          statusHandler,
+        );
+        voiceSoundRef.current = sound;
+        if (status.isLoaded && status.isPlaying) {
+          setIsPlayingVoice(true);
+        }
       } catch (voiceErrorInstance) {
         const message =
           voiceErrorInstance instanceof Error
@@ -471,6 +480,16 @@ const PracticeSession = () => {
       : 'Pronto per praticare';
   const coachMessage = `${scenarioConfig.title}: ${studentFirstName}, rispondi in inglese con sicurezza (${currentLevelLabel}).`;
 
+  const avatarMode = (() => {
+    if (isPlayingVoice || assistantState === 'speaking') {
+      return 'speaking' as const;
+    }
+    if (isRecording || assistantState === 'listening') {
+      return 'listening' as const;
+    }
+    return 'idle' as const;
+  })();
+
   const goToNextInterviewSentence = useCallback(async () => {
     await stopVoicePlayback();
     setIsPlayingVoice(false);
@@ -592,9 +611,9 @@ const PracticeSession = () => {
         </Block>
 
         {/* ÁREA PRINCIPAL */}
-        <BrandSurface tone="glass" style={{marginBottom: sizes.l}}>
+          <BrandSurface tone="glass" style={{marginBottom: sizes.l}}>
           <Block align="center" marginBottom={sizes.m}>
-            <AssistantOrb state={assistantState} size={180} />
+            <RolePlayAvatar mode={avatarMode} size={220} />
             <Text white semibold size={sizes.h5} marginTop={sizes.sm}>
               {practice.tutorName}
             </Text>

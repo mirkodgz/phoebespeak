@@ -161,9 +161,7 @@ const DrawerContent = (
                 width={sizes.md}
                 height={sizes.md}
                 marginRight={sizes.s}>
-                <Text
-                  style={{fontSize: 20}}
-                  color={colors[isActive ? 'white' : 'white']}>
+                <Text style={{fontSize: 20}} white={isActive}>
                   {screen.emoji}
                 </Text>
               </Block>
