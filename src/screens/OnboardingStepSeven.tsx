@@ -20,7 +20,6 @@ type LevelOption = {
   label: string;
   description: string;
   emoji: string;
-  activeGradient: readonly [string, string];
 };
 
 const OPTIONS: LevelOption[] = [
@@ -29,28 +28,18 @@ const OPTIONS: LevelOption[] = [
     label: 'Principiante',
     description: 'Posso dire solo poche parole.',
     emoji: '🌱',
-    activeGradient: ['#43E97B', '#38F9D7'],
   },
   {
     id: 'intermediate',
     label: 'Intermedio',
     description: 'Capisco ma mi blocco nel parlare.',
     emoji: '🧗',
-    activeGradient: ['#F6D365', '#FDA085'],
   },
   {
     id: 'advanced',
     label: 'Avanzato',
     description: 'Me la cavo, ma voglio più naturalezza.',
     emoji: '🏅',
-    activeGradient: ['#A18CD1', '#FBC2EB'],
-  },
-  {
-    id: 'fluent',
-    label: 'Fluente',
-    description: 'Voglio perfezionare pronuncia o accento.',
-    emoji: '🌟',
-    activeGradient: ['#7F7CFF', '#00F5FF'],
   },
 ];
 
@@ -58,6 +47,8 @@ const CARD_INACTIVE_BG = 'rgba(255,255,255,0.07)';
 const CARD_BORDER_INACTIVE = 'rgba(255,255,255,0.18)';
 const CARD_BORDER_ACTIVE = 'rgba(255,255,255,0.38)';
 const PROGRESS_GRADIENT = ['#0B3D4D', '#60CB58'] as const;
+// Color verde sólido para opciones seleccionadas
+const ACTIVE_BG = '#60CB58';
 
 const OnboardingStepSeven = () => {
   const navigation = useNavigation<any>();
@@ -130,38 +121,37 @@ const OnboardingStepSeven = () => {
                 style={styles.cardWrapper}
                 android_ripple={{color: 'rgba(255,255,255,0.08)'}}
                 accessibilityRole="button">
-                <LinearGradient
-                  colors={
-                    isActive
-                      ? option.activeGradient
-                      : [CARD_INACTIVE_BG, CARD_INACTIVE_BG]
-                  }
-                  start={{x: 0, y: 0}}
-                  end={{x: 1, y: 1}}
+                <View
                   style={[
                     styles.card,
                     {
+                      backgroundColor: isActive ? ACTIVE_BG : CARD_INACTIVE_BG,
                       borderColor: isActive
                         ? CARD_BORDER_ACTIVE
                         : CARD_BORDER_INACTIVE,
                     },
                   ]}>
                   <View style={styles.iconBadge}>
-                    <Text style={styles.iconEmoji} white>
+                    <Text
+                      style={styles.iconEmoji}
+                      white
+                      size={28}
+                      lineHeight={34}>
                       {option.emoji}
                     </Text>
                   </View>
-                  <Text center white semibold size={sizes.p - 1}>
+                  <Text center white semibold size={14}>
                     {option.label}
                   </Text>
                   <Text
                     center
-                    size={sizes.s - 1}
+                    size={11}
+                    lineHeight={16}
                     color="rgba(255,255,255,0.72)"
                     marginTop={4}>
                     {option.description}
                   </Text>
-                </LinearGradient>
+                </View>
               </Pressable>
             );
           })}
@@ -214,7 +204,7 @@ const styles = StyleSheet.create({
   card: {
     minHeight: 120,
     borderRadius: 18,
-    paddingVertical: 14,
+    paddingVertical: 8,
     paddingHorizontal: 14,
     alignItems: 'center',
     justifyContent: 'center',
@@ -234,8 +224,8 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   iconEmoji: {
-    fontSize: 24,
-    lineHeight: 26,
+    fontSize: 28,
+    lineHeight: 30,
   },
 });
 

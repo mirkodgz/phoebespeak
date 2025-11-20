@@ -34,7 +34,7 @@ type ProfileUpsertPayload = {
 const getClient = () => {
   if (!supabase) {
     throw new Error(
-      'Supabase no está configurado. Asegúrate de definir EXPO_PUBLIC_SUPABASE_URL y EXPO_PUBLIC_SUPABASE_ANON_KEY.',
+      'Supabase no está configurado. Por favor, crea un archivo .env en la raíz del proyecto con EXPO_PUBLIC_SUPABASE_URL y EXPO_PUBLIC_SUPABASE_ANON_KEY. Revisa docs/supabase-setup.md para más información.',
     );
   }
   return supabase;
@@ -72,35 +72,51 @@ export const signUpWithEmail = async ({
   password,
   fullName,
 }: SignUpPayload): Promise<SignUpResult> => {
-  const client = getClient();
-  const {data, error} = await client.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {full_name: fullName},
-    },
-  });
+  try {
+    const client = getClient();
+    const {data, error} = await client.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {full_name: fullName},
+      },
+    });
 
-  if (error) {
-    throw error;
-  }
+    if (error) {
+      throw error;
+    }
 
-  const user = data.user;
-  const session = data.session ?? null;
+    const user = data.user;
+    const session = data.session ?? null;
 
-  if (!user) {
+    if (!user) {
+      throw new Error(
+        'No se pudo completar el registro. Revisa la configuración de confirmación de correo en Supabase.',
+      );
+    }
+
+    const requiresEmailConfirmation = !session;
+
+    return {
+      user,
+      session,
+      requiresEmailConfirmation,
+    };
+  } catch (error: any) {
+    // Mejorar mensajes de error de red
+    if (error?.message?.includes('Network request failed') || error?.message?.includes('fetch')) {
+      throw new Error(
+        'Error de conexión. Verifica tu conexión a internet y que Supabase esté configurado correctamente en el archivo .env',
+      );
+    }
+    if (error?.message?.includes('Supabase no está configurado')) {
+      throw error;
+    }
+    // Re-lanzar otros errores con mensaje más claro
     throw new Error(
-      'No se pudo completar el registro. Revisa la configuración de confirmación de correo en Supabase.',
+      error?.message || 'No se pudo completar el registro. Por favor, intenta nuevamente.',
     );
   }
-
-  const requiresEmailConfirmation = !session;
-
-  return {
-    user,
-    session,
-    requiresEmailConfirmation,
-  };
 };
 
 export const signOutFromSupabase = async () => {

@@ -16,73 +16,64 @@ const TOTAL_STEPS = 8;
 const CURRENT_STEP = 2;
 
 const BRAND_GRADIENT = ['#0B3D4D', '#60CB58'] as const;
+// Color verde sólido para opciones seleccionadas
+const ACTIVE_BG = '#60CB58';
 
 const INTERESTS = [
   {
     id: 'shopping',
     label: 'Shopping',
     emoji: '🛍️',
-    activeGradient: ['#F78CA0', '#F9748F'] as const,
   },
   {
     id: 'travel',
     label: 'Viaggiare',
     emoji: '✈️',
-    activeGradient: ['#43E97B', '#38F9D7'] as const,
   },
   {
     id: 'videogames',
     label: 'Videogiochi',
     emoji: '🎮',
-    activeGradient: ['#30CFFB', '#6591F2'] as const,
   },
   {
     id: 'art',
     label: 'Arte',
     emoji: '🎨',
-    activeGradient: ['#FEC163', '#DE4313'] as const,
   },
   {
     id: 'movies',
     label: 'Cinema e intrattenimento',
     emoji: '🎬',
-    activeGradient: ['#7F7CFF', '#00F5FF'] as const,
   },
   {
     id: 'cooking',
     label: 'Cucinare',
     emoji: '🍳',
-    activeGradient: ['#F6D365', '#FDA085'] as const,
   },
   {
     id: 'photography',
     label: 'Fotografia',
     emoji: '📸',
-    activeGradient: ['#A18CD1', '#FBC2EB'] as const,
   },
   {
     id: 'sports',
     label: 'Sport',
     emoji: '⚽️',
-    activeGradient: ['#8EC5FC', '#E0C3FC'] as const,
   },
   {
     id: 'technology',
     label: 'Tecnologia',
     emoji: '💻',
-    activeGradient: ['#4FACFE', '#00F2FE'] as const,
   },
   {
     id: 'current-events',
     label: 'Attualità e cultura pop',
     emoji: '🗞️',
-    activeGradient: ['#FBD786', '#f7797d'] as const,
   },
   {
     id: 'personal-growth',
     label: 'Crescita personale e benessere',
     emoji: '🧘',
-    activeGradient: ['#7F7CFF', '#00F5FF'] as const,
     fullWidth: true,
   },
 ];
@@ -165,24 +156,22 @@ const OnboardingStepTwo = () => {
                   style={[styles.cardWrapper, option.id === 'technology' && styles.cardWrapperFull]}
                   android_ripple={{color: 'rgba(255,255,255,0.08)'}}
                   accessibilityRole="button">
-                  <LinearGradient
-                    colors={
-                      isActive
-                        ? option.activeGradient
-                        : [CARD_INACTIVE_BG, CARD_INACTIVE_BG]
-                    }
-                    start={{x: 0, y: 0}}
-                    end={{x: 1, y: 1}}
+                  <View
                     style={[
                       styles.card,
                       {
+                        backgroundColor: isActive ? ACTIVE_BG : CARD_INACTIVE_BG,
                         borderColor: isActive
                           ? CARD_BORDER_ACTIVE
                           : CARD_BORDER_INACTIVE,
                       },
                     ]}>
                     <View style={styles.iconBadge}>
-                      <Text style={styles.iconEmoji} white>
+                      <Text
+                        style={styles.iconEmoji}
+                        white
+                        size={28}
+                        lineHeight={34}>
                         {option.emoji}
                       </Text>
                     </View>
@@ -190,11 +179,11 @@ const OnboardingStepTwo = () => {
                       center
                       white
                       semibold
-                      size={sizes.p - 1}
+                      size={14}
                       numberOfLines={2}>
                       {option.label}
                     </Text>
-                  </LinearGradient>
+                  </View>
                 </Pressable>
               );
             })}
@@ -252,7 +241,7 @@ const styles = StyleSheet.create({
   card: {
     minHeight: 90,
     borderRadius: 18,
-    paddingVertical: 12,
+    paddingVertical: 8,
     paddingHorizontal: 10,
     alignItems: 'center',
     justifyContent: 'center',
@@ -272,8 +261,8 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   iconEmoji: {
-    fontSize: 24,
-    lineHeight: 26,
+    fontSize: 28,
+    lineHeight: 30,
   },
   continueButton: {
     borderRadius: 20,

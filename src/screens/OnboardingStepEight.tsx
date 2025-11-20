@@ -19,6 +19,8 @@ const PROGRESS_GRADIENT = ['#0B3D4D', '#60CB58'] as const;
 const CARD_INACTIVE_BG = 'rgba(11,61,77,0.12)';
 const CARD_BORDER_INACTIVE = 'rgba(255,255,255,0.18)';
 const CARD_BORDER_ACTIVE = 'rgba(255,255,255,0.38)';
+// Color verde sólido para opciones seleccionadas
+const ACTIVE_BG = '#60CB58';
 
 type TutorOption = {
   id: string;
@@ -113,17 +115,11 @@ const OnboardingStepEight = () => {
                 style={styles.tutorRow}
                 android_ripple={{color: 'rgba(255,255,255,0.08)'}}
                 accessibilityRole="button">
-                <LinearGradient
-                  colors={
-                    isActive
-                      ? PROGRESS_GRADIENT
-                      : [CARD_INACTIVE_BG, CARD_INACTIVE_BG]
-                  }
-                  start={{x: 0, y: 0}}
-                  end={{x: 1, y: 1}}
+                <View
                   style={[
                     styles.tutorCard,
                     {
+                      backgroundColor: isActive ? ACTIVE_BG : CARD_INACTIVE_BG,
                       borderColor: isActive
                         ? CARD_BORDER_ACTIVE
                         : CARD_BORDER_INACTIVE,
@@ -140,15 +136,23 @@ const OnboardingStepEight = () => {
                       <Text white semibold size={sizes.p - 1}>
                         {tutor.name}
                       </Text>
-                      <Text size={sizes.s} color="rgba(255,255,255,0.78)" marginTop={4}>
+                      <Text
+                        size={11}
+                        lineHeight={16}
+                        color="rgba(255,255,255,0.78)"
+                        marginTop={4}>
                         {tutor.subtitle}
                       </Text>
-                      <Text size={sizes.s - 1} color="rgba(255,255,255,0.7)" marginTop={4}>
+                      <Text
+                        size={11}
+                        lineHeight={16}
+                        color="rgba(255,255,255,0.7)"
+                        marginTop={4}>
                         {tutor.description}
                       </Text>
                     </View>
                   </View>
-                </LinearGradient>
+                </View>
               </Pressable>
             );
           })}

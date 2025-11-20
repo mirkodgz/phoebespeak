@@ -20,43 +20,36 @@ const PURPOSES = [
     id: 'career',
     label: 'Potenziare la mia carriera professionale',
     emoji: '💼',
-    activeGradient: ['#43E97B', '#38F9D7'] as const,
   },
   {
     id: 'education',
     label: 'Sostenere i miei studi',
     emoji: '🎓',
-    activeGradient: ['#A18CD1', '#FBC2EB'] as const,
   },
   {
     id: 'relocation',
     label: 'Trasferirmi in un altro paese',
     emoji: '✈️',
-    activeGradient: ['#43E97B', '#38F9D7'] as const,
   },
   {
     id: 'connect',
     label: 'Connettermi con più persone',
     emoji: '🤝',
-    activeGradient: ['#FDD819', '#E80505'] as const,
   },
   {
     id: 'travel',
     label: 'Prepararmi a viaggiare',
     emoji: '🧳',
-    activeGradient: ['#8EC5FC', '#E0C3FC'] as const,
   },
   {
     id: 'confidence',
     label: 'Migliorare la mia sicurezza nel parlare',
     emoji: '🗣️',
-    activeGradient: ['#F6D365', '#FDA085'] as const,
   },
   {
     id: 'personal-growth',
     label: 'Aggiornare le mie competenze linguistiche per piacere personale',
     emoji: '📖',
-    activeGradient: ['#7F7CFF', '#00F5FF'] as const,
     fullWidth: true,
   },
 ];
@@ -64,6 +57,8 @@ const PROGRESS_GRADIENT = ['#7F7CFF', '#00F5FF'] as const;
 const CARD_INACTIVE_BG = 'rgba(255,255,255,0.06)';
 const CARD_BORDER_INACTIVE = 'rgba(255,255,255,0.16)';
 const CARD_BORDER_ACTIVE = 'rgba(255,255,255,0.36)';
+// Color verde sólido para opciones seleccionadas
+const ACTIVE_BG = '#60CB58';
 
 const Onboarding = () => {
   const {sizes} = useTheme();
@@ -152,24 +147,22 @@ const Onboarding = () => {
                   ]}
                   android_ripple={{color: 'rgba(255,255,255,0.08)'}}
                   accessibilityRole="button">
-                  <LinearGradient
-                    colors={
-                      isActive
-                        ? option.activeGradient
-                        : [CARD_INACTIVE_BG, CARD_INACTIVE_BG]
-                    }
-                    start={{x: 0, y: 0}}
-                    end={{x: 1, y: 1}}
+                  <View
                     style={[
                       styles.card,
                       {
+                        backgroundColor: isActive ? ACTIVE_BG : CARD_INACTIVE_BG,
                         borderColor: isActive
                           ? CARD_BORDER_ACTIVE
                           : CARD_BORDER_INACTIVE,
                       },
                     ]}>
                     <View style={styles.iconBadge}>
-                      <Text style={styles.iconEmoji} white>
+                      <Text
+                        style={styles.iconEmoji}
+                        white
+                        size={28}
+                        lineHeight={34}>
                         {option.emoji}
                       </Text>
                     </View>
@@ -177,11 +170,11 @@ const Onboarding = () => {
                       center
                       white
                       semibold
-                      size={sizes.p - 1}
+                      size={14}
                       numberOfLines={2}>
                       {option.label}
                     </Text>
-                  </LinearGradient>
+                  </View>
                 </Pressable>
               );
             })}
@@ -260,9 +253,9 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   card: {
-    minHeight: 90,
+    height: 110,
     borderRadius: 18,
-    paddingVertical: 12,
+    paddingVertical: 8,
     paddingHorizontal: 10,
     alignItems: 'center',
     justifyContent: 'center',
@@ -282,8 +275,8 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   iconEmoji: {
-    fontSize: 24,
-    lineHeight: 26,
+    fontSize: 28,
+    lineHeight: 30,
   },
 });
 

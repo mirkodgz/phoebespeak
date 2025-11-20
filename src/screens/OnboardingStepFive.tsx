@@ -20,7 +20,6 @@ type ChallengeOption = {
   label: string;
   description?: string;
   emoji: string;
-  activeGradient: readonly [string, string];
   fullWidth?: boolean;
   hasInput?: boolean;
 };
@@ -30,43 +29,36 @@ const OPTIONS: ChallengeOption[] = [
     id: 'time',
     label: 'Mancanza di tempo',
     emoji: '⏰',
-    activeGradient: ['#43E97B', '#38F9D7'],
   },
   {
     id: 'consistency',
     label: 'Mancanza di costanza o motivazione',
     emoji: '📉',
-    activeGradient: ['#F78CA0', '#F9748F'],
   },
   {
     id: 'anxiety',
     label: 'Difficoltà nel parlare senza ansia',
     emoji: '😬',
-    activeGradient: ['#A18CD1', '#FBC2EB'],
   },
   {
     id: 'understanding',
     label: 'Difficoltà nel capire gli altri quando parlano',
     emoji: '👂',
-    activeGradient: ['#4FACFE', '#00F2FE'],
   },
   {
     id: 'study-method',
     label: 'Non so come studiare in modo efficace',
     emoji: '🤷‍♀️',
-    activeGradient: ['#F6D365', '#FDA085'],
   },
   {
     id: 'fear',
     label: 'Ho paura di sbagliare',
     emoji: '⚠️',
-    activeGradient: ['#7F7CFF', '#00F5FF'],
   },
   {
     id: 'other',
     label: 'Altro (campo libero)',
     emoji: '✍️',
-    activeGradient: ['#8EC5FC', '#E0C3FC'],
     fullWidth: true,
     hasInput: true,
   },
@@ -76,6 +68,8 @@ const CARD_INACTIVE_BG = 'rgba(255,255,255,0.07)';
 const CARD_BORDER_INACTIVE = 'rgba(255,255,255,0.18)';
 const CARD_BORDER_ACTIVE = 'rgba(255,255,255,0.38)';
 const PROGRESS_GRADIENT = ['#0B3D4D', '#60CB58'] as const;
+// Color verde sólido para opciones seleccionadas
+const ACTIVE_BG = '#60CB58';
 
 const OnboardingStepFive = () => {
   const navigation = useNavigation<any>();
@@ -172,28 +166,26 @@ const OnboardingStepFive = () => {
                 style={[styles.cardWrapper, option.fullWidth && styles.cardWrapperFull]}
                 android_ripple={{color: 'rgba(255,255,255,0.08)'}}
                 accessibilityRole="button">
-                <LinearGradient
-                  colors={
-                    isActive
-                      ? option.activeGradient
-                      : [CARD_INACTIVE_BG, CARD_INACTIVE_BG]
-                  }
-                  start={{x: 0, y: 0}}
-                  end={{x: 1, y: 1}}
+                <View
                   style={[
                     styles.card,
                     {
+                      backgroundColor: isActive ? ACTIVE_BG : CARD_INACTIVE_BG,
                       borderColor: isActive
                         ? CARD_BORDER_ACTIVE
                         : CARD_BORDER_INACTIVE,
                     },
                   ]}>
                   <View style={styles.iconBadge}>
-                    <Text style={styles.iconEmoji} white>
+                    <Text
+                      style={styles.iconEmoji}
+                      white
+                      size={28}
+                      lineHeight={34}>
                       {option.emoji}
                     </Text>
                   </View>
-                  <Text center white semibold size={sizes.p - 1}>
+                  <Text center white semibold size={14}>
                     {option.label}
                   </Text>
                   {option.hasInput && isActive ? (
@@ -206,7 +198,7 @@ const OnboardingStepFive = () => {
                       multiline
                     />
                   ) : null}
-                </LinearGradient>
+                </View>
               </Pressable>
             );
           })}
@@ -262,7 +254,7 @@ const styles = StyleSheet.create({
   card: {
     minHeight: 110,
     borderRadius: 18,
-    paddingVertical: 14,
+    paddingVertical: 8,
     paddingHorizontal: 14,
     alignItems: 'center',
     justifyContent: 'center',
@@ -282,8 +274,8 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   iconEmoji: {
-    fontSize: 24,
-    lineHeight: 26,
+    fontSize: 28,
+    lineHeight: 30,
   },
   input: {
     marginTop: 8,

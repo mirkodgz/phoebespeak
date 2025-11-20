@@ -109,7 +109,7 @@ const Input = ({
       zIndex: 2,
       height: '100%',
       fontSize: sizes.p,
-      color: colors.input,
+      color: colors.white,
       paddingHorizontal: sizes.inputPadding,
     },
   ]) as TextStyle;

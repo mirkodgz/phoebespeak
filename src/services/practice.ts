@@ -13,6 +13,11 @@ import {
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL?.replace(/\/$/, '');
 
+// Debug: Log para verificar que la variable se carga
+if (__DEV__) {
+  console.log('[Practice Service] API_BASE_URL:', API_BASE_URL || 'NOT SET');
+}
+
 type TranscriptionSegment = {
   text: string;
   confidence?: number;
@@ -40,7 +45,11 @@ const getApiUrl = (path: string) => {
       'EXPO_PUBLIC_API_BASE_URL is not defined. Configure it in your Expo .env file.',
     );
   }
-  return `${API_BASE_URL}${path}`;
+  const fullUrl = `${API_BASE_URL}${path}`;
+  if (__DEV__) {
+    console.log('[Practice Service] Requesting URL:', fullUrl);
+  }
+  return fullUrl;
 };
 
 const convertFeedbackToHints = (): IPhonemeHint[] => [];
@@ -110,15 +119,30 @@ const safeFetch = async (
   path: string,
   options?: RequestInit,
 ): Promise<Response> => {
-  const url = getApiUrl(path);
-  const response = await fetch(url, options);
-  if (!response.ok) {
-    const message = await response.text();
-    throw new Error(
-      `Request failed (${response.status}): ${message || response.statusText}`,
-    );
+  try {
+    const url = getApiUrl(path);
+    const response = await fetch(url, options);
+    if (!response.ok) {
+      const message = await response.text();
+      throw new Error(
+        `Request failed (${response.status}): ${message || response.statusText}`,
+      );
+    }
+    return response;
+  } catch (error: any) {
+    // Mejorar mensajes de error de red
+    if (error?.message?.includes('Network request failed') || 
+        error?.message?.includes('fetch') ||
+        error?.name === 'TypeError') {
+      throw new Error(
+        'Error de conexión con el servidor. Verifica que el backend esté ejecutándose y que EXPO_PUBLIC_API_BASE_URL esté configurado correctamente en el archivo .env',
+      );
+    }
+    if (error?.message?.includes('EXPO_PUBLIC_API_BASE_URL is not defined')) {
+      throw error;
+    }
+    throw error;
   }
-  return response;
 };
 
 export const transcribePracticeAudio = async (

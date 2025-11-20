@@ -20,7 +20,6 @@ type FocusOption = {
   label: string;
   description: string;
   emoji: string;
-  activeGradient: readonly [string, string];
   fullWidth?: boolean;
 };
 
@@ -30,49 +29,42 @@ const OPTIONS: FocusOption[] = [
     label: 'Grammatica',
     description: 'Costruisci frasi corrette e naturali.',
     emoji: '📘',
-    activeGradient: ['#43E97B', '#38F9D7'] as const,
   },
   {
     id: 'vocabulary',
     label: 'Vocabolario',
     description: 'Impara parole e espressioni nuove.',
     emoji: '📝',
-    activeGradient: ['#FBC2EB', '#A6C1EE'] as const,
   },
   {
     id: 'pronunciation',
     label: 'Pronuncia',
-    description: 'Migliora la tua dizione e l’accento.',
+    description: "Migliora la tua dizione e l'accento.",
     emoji: '🎤',
-    activeGradient: ['#F6D365', '#FDA085'] as const,
   },
   {
     id: 'listening',
     label: 'Comprensione orale',
     description: 'Capisci meglio ciò che ascolti.',
     emoji: '🎧',
-    activeGradient: ['#4FACFE', '#00F2FE'] as const,
   },
   {
     id: 'conversation',
     label: 'Conversazione',
     description: 'Sii più fluente nelle interazioni.',
     emoji: '💬',
-    activeGradient: ['#8EC5FC', '#E0C3FC'] as const,
   },
   {
     id: 'active-listening',
     label: 'Ascolto attivo',
     description: 'Rispondi con sicurezza durante i dialoghi.',
     emoji: '👂',
-    activeGradient: ['#F6D365', '#FDA085'] as const,
   },
   {
     id: 'work-english',
     label: 'Inglese per il lavoro',
     description: 'Gestisci riunioni, email e presentazioni.',
     emoji: '🏢',
-    activeGradient: ['#7F7CFF', '#00F5FF'] as const,
     fullWidth: true,
   },
 ];
@@ -80,6 +72,8 @@ const PROGRESS_GRADIENT = ['#7F7CFF', '#00F5FF'] as const;
 const CARD_INACTIVE_BG = 'rgba(255,255,255,0.06)';
 const CARD_BORDER_INACTIVE = 'rgba(255,255,255,0.16)';
 const CARD_BORDER_ACTIVE = 'rgba(255,255,255,0.36)';
+// Color verde sólido para opciones seleccionadas
+const ACTIVE_BG = '#60CB58';
 
 const OnboardingStepThree = () => {
   const {sizes} = useTheme();
@@ -164,31 +158,29 @@ const OnboardingStepThree = () => {
                   style={[styles.cardWrapper, option.fullWidth && styles.cardWrapperFull]}
                   android_ripple={{color: 'rgba(255,255,255,0.08)'}}
                   accessibilityRole="button">
-                  <LinearGradient
-                    colors={
-                      isActive
-                        ? option.activeGradient
-                        : [CARD_INACTIVE_BG, CARD_INACTIVE_BG]
-                    }
-                    start={{x: 0, y: 0}}
-                    end={{x: 1, y: 1}}
+                  <View
                     style={[
                       styles.card,
                       {
+                        backgroundColor: isActive ? ACTIVE_BG : CARD_INACTIVE_BG,
                         borderColor: isActive
                           ? CARD_BORDER_ACTIVE
                           : CARD_BORDER_INACTIVE,
                       },
                     ]}>
                     <View style={styles.iconBadge}>
-                      <Text style={styles.iconEmoji} white>
+                      <Text
+                        style={styles.iconEmoji}
+                        white
+                        size={28}
+                        lineHeight={34}>
                         {option.emoji}
                       </Text>
                     </View>
-                    <Text center white semibold size={sizes.p - 1}>
+                    <Text center white semibold size={14}>
                       {option.label}
                     </Text>
-                  </LinearGradient>
+                  </View>
                 </Pressable>
               );
             })}
@@ -246,7 +238,7 @@ const styles = StyleSheet.create({
   card: {
     minHeight: 110,
     borderRadius: 18,
-    paddingVertical: 14,
+    paddingVertical: 8,
     paddingHorizontal: 14,
     alignItems: 'center',
     justifyContent: 'center',
@@ -266,8 +258,8 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   iconEmoji: {
-    fontSize: 24,
-    lineHeight: 26,
+    fontSize: 28,
+    lineHeight: 30,
   },
   continueButton: {
     borderRadius: 20,

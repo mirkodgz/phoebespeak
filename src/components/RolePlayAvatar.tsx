@@ -10,10 +10,13 @@ type RolePlayAvatarProps = {
 };
 
 const AVATAR_SPEAKING = require('../../assets/habla.mp4');
+const AVATAR_SILENCE = require('../../assets/silencio.mp4');
 const IDLE_FRAME_MS = 220;
 
 const RolePlayAvatar = ({mode, size = 260}: RolePlayAvatarProps) => {
   const bounce = useRef(new Animated.Value(0)).current;
+  const listeningRing = useRef(new Animated.Value(0)).current;
+  const listeningOpacity = useRef(new Animated.Value(0)).current;
   const speakingRef = useRef<Video | null>(null);
   const hasLoadedVideoRef = useRef(false);
 
@@ -33,7 +36,16 @@ const RolePlayAvatar = ({mode, size = 260}: RolePlayAvatarProps) => {
         if (targetMode === 'speaking') {
           await video.setPositionAsync(0);
           await video.playAsync();
+        } else if (targetMode === 'listening') {
+          // Para listening, mantener el video en el frame idle pero visible
+          if (status.isPlaying) {
+            await video.pauseAsync();
+          }
+          if (IDLE_FRAME_MS >= 0) {
+            await video.setPositionAsync(IDLE_FRAME_MS);
+          }
         } else {
+          // Idle mode
           if (status.isPlaying) {
             await video.pauseAsync();
           }
@@ -73,6 +85,51 @@ const RolePlayAvatar = ({mode, size = 260}: RolePlayAvatarProps) => {
     ).start();
   }, [bounce]);
 
+  // Animación para el modo listening (anillo pulsante)
+  useEffect(() => {
+    if (mode === 'listening') {
+      // Anillo pulsante
+      Animated.loop(
+        Animated.sequence([
+          Animated.parallel([
+            Animated.timing(listeningRing, {
+              toValue: 1,
+              duration: 1000,
+              useNativeDriver: true,
+            }),
+            Animated.sequence([
+              Animated.timing(listeningOpacity, {
+                toValue: 0.8,
+                duration: 500,
+                useNativeDriver: true,
+              }),
+              Animated.timing(listeningOpacity, {
+                toValue: 0.3,
+                duration: 500,
+                useNativeDriver: true,
+              }),
+            ]),
+          ]),
+          Animated.parallel([
+            Animated.timing(listeningRing, {
+              toValue: 0,
+              duration: 0,
+              useNativeDriver: true,
+            }),
+            Animated.timing(listeningOpacity, {
+              toValue: 0.3,
+              duration: 0,
+              useNativeDriver: true,
+            }),
+          ]),
+        ]),
+      ).start();
+    } else {
+      listeningRing.setValue(0);
+      listeningOpacity.setValue(0);
+    }
+  }, [mode, listeningRing, listeningOpacity]);
+
   const animatedContainerStyle = {
     transform: [
       {
@@ -92,6 +149,19 @@ const RolePlayAvatar = ({mode, size = 260}: RolePlayAvatarProps) => {
 
   const borderRadius = size * 0.16;
   const videoStyle = styles.video;
+
+  // Estilos animados para el anillo de listening
+  const listeningRingStyle = {
+    transform: [
+      {
+        scale: listeningRing.interpolate({
+          inputRange: [0, 1],
+          outputRange: [1, 1.15],
+        }),
+      },
+    ],
+    opacity: listeningOpacity,
+  };
 
   const handlePlaybackStatusUpdate = useCallback(
     (status: AVPlaybackStatus) => {
@@ -133,6 +203,21 @@ const RolePlayAvatar = ({mode, size = 260}: RolePlayAvatarProps) => {
         isMuted
         onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
       />
+      {/* Anillo de listening */}
+      {mode === 'listening' && (
+        <Animated.View
+          style={[
+            styles.listeningRing,
+            {
+              borderRadius,
+              borderWidth: 3,
+              borderColor: '#60CB58',
+            },
+            listeningRingStyle,
+          ]}
+          pointerEvents="none"
+        />
+      )}
       <View
         style={[
           styles.ring,
@@ -167,6 +252,11 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     borderWidth: 0,
     borderColor: 'transparent',
+  },
+  listeningRing: {
+    ...StyleSheet.absoluteFillObject,
+    borderWidth: 3,
+    borderColor: '#60CB58',
   },
 });
 
