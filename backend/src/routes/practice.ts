@@ -1,7 +1,12 @@
 import {Router} from 'express';
 import multer from 'multer';
 
-import {generatePracticeFeedback, transcribeAudio} from '../services/openai';
+import {
+  generatePracticeFeedback,
+  generateNextConversationTurn,
+  transcribeAudio,
+  translateText,
+} from '../services/openai';
 import {synthesizeSpeech} from '../services/elevenlabs';
 
 const upload = multer({storage: multer.memoryStorage()});
@@ -32,12 +37,11 @@ router.post('/feedback', async (req, res, next) => {
       targetSentence,
       learnerProfile,
       transcriptionSegments,
+      conversationContext,
     } = req.body ?? {};
 
-    if (!transcript || !targetSentence) {
-      return res
-        .status(400)
-        .json({error: 'transcript and targetSentence are required'});
+    if (!transcript) {
+      return res.status(400).json({error: 'transcript is required'});
     }
 
     const feedback = await generatePracticeFeedback({
@@ -45,12 +49,49 @@ router.post('/feedback', async (req, res, next) => {
       targetSentence,
       learnerProfile,
       transcriptionSegments,
+      conversationContext,
     });
 
     console.info('[practice] /feedback success');
     res.json(feedback);
   } catch (error) {
     console.error('[practice] /feedback error', error);
+    next(error);
+  }
+});
+
+router.post('/generate-next-turn', async (req, res, next) => {
+  try {
+    console.info('[practice] /generate-next-turn called');
+    const {
+      scenarioId,
+      levelId,
+      conversationHistory,
+      studentName,
+      turnNumber,
+      predefinedQuestions,
+    } = req.body ?? {};
+
+    if (!scenarioId || !levelId || !conversationHistory || !studentName) {
+      return res.status(400).json({
+        error:
+          'scenarioId, levelId, conversationHistory, and studentName are required',
+      });
+    }
+
+    const nextTurn = await generateNextConversationTurn({
+      scenarioId,
+      levelId,
+      conversationHistory,
+      studentName,
+      turnNumber: turnNumber ?? 1,
+      predefinedQuestions,
+    });
+
+    console.info('[practice] /generate-next-turn success');
+    res.json(nextTurn);
+  } catch (error) {
+    console.error('[practice] /generate-next-turn error', error);
     next(error);
   }
 });
@@ -71,6 +112,25 @@ router.post('/voice', async (req, res, next) => {
     res.send(audioBuffer);
   } catch (error) {
     console.error('[practice] /voice error', error);
+    next(error);
+  }
+});
+
+router.post('/translate', async (req, res, next) => {
+  try {
+    console.info('[practice] /translate called');
+    const {text, targetLanguage} = req.body ?? {};
+
+    if (!text) {
+      return res.status(400).json({error: 'text is required'});
+    }
+
+    const translation = await translateText(text, targetLanguage ?? 'italian');
+
+    console.info('[practice] /translate success');
+    res.json({translation});
+  } catch (error) {
+    console.error('[practice] /translate error', error);
     next(error);
   }
 });

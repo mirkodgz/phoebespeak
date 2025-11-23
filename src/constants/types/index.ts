@@ -140,6 +140,7 @@ export interface IUserPreferences {
   accent: string;
   targetLevel: string;
   remindersEnabled: boolean;
+  selectedTutor?: 'davide' | 'phoebe';
 }
 
 export interface IUseData {

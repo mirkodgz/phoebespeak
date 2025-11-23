@@ -158,4 +158,5 @@ export const USER_PREFERENCES: IUserPreferences = {
   accent: 'US · Neutral',
   targetLevel: 'Business C1',
   remindersEnabled: true,
+  selectedTutor: 'davide',
 };

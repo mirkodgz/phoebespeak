@@ -7,13 +7,16 @@ type RolePlayAvatarMode = 'speaking' | 'listening' | 'idle';
 type RolePlayAvatarProps = {
   mode: RolePlayAvatarMode;
   size?: number;
+  tutor?: 'davide' | 'phoebe';
 };
 
-const AVATAR_SPEAKING = require('../../assets/habla.mp4');
+const AVATAR_UOMO = require('../../assets/avataruomo.mp4');
+const AVATAR_DONNA = require('../../assets/avatardonna.mp4');
 const AVATAR_SILENCE = require('../../assets/silencio.mp4');
 const IDLE_FRAME_MS = 220;
 
-const RolePlayAvatar = ({mode, size = 260}: RolePlayAvatarProps) => {
+const RolePlayAvatar = ({mode, size = 260, tutor = 'davide'}: RolePlayAvatarProps) => {
+  const avatarSource = tutor === 'phoebe' ? AVATAR_DONNA : AVATAR_UOMO;
   const bounce = useRef(new Animated.Value(0)).current;
   const listeningRing = useRef(new Animated.Value(0)).current;
   const listeningOpacity = useRef(new Animated.Value(0)).current;
@@ -37,21 +40,19 @@ const RolePlayAvatar = ({mode, size = 260}: RolePlayAvatarProps) => {
           await video.setPositionAsync(0);
           await video.playAsync();
         } else if (targetMode === 'listening') {
-          // Para listening, mantener el video en el frame idle pero visible
+          // Para listening, mantener el video en el frame con boca cerrada
           if (status.isPlaying) {
             await video.pauseAsync();
           }
-          if (IDLE_FRAME_MS >= 0) {
-            await video.setPositionAsync(IDLE_FRAME_MS);
-          }
+          // Ir al frame con boca cerrada (inicio del video)
+          await video.setPositionAsync(IDLE_FRAME_MS);
         } else {
-          // Idle mode
+          // Idle mode - frame con boca cerrada
           if (status.isPlaying) {
             await video.pauseAsync();
           }
-          if (IDLE_FRAME_MS >= 0) {
-            await video.setPositionAsync(IDLE_FRAME_MS);
-          }
+          // Ir al frame con boca cerrada (inicio del video)
+          await video.setPositionAsync(IDLE_FRAME_MS);
         }
       } catch (error) {
         if (__DEV__) {
@@ -186,7 +187,7 @@ const RolePlayAvatar = ({mode, size = 260}: RolePlayAvatarProps) => {
         styles.container,
         {
           width: size,
-          height: size,
+          height: size * 1.3, // Aumentar altura del contenedor
           borderRadius,
         },
         animatedContainerStyle,
@@ -195,13 +196,14 @@ const RolePlayAvatar = ({mode, size = 260}: RolePlayAvatarProps) => {
         ref={(ref) => {
           speakingRef.current = ref;
         }}
-        source={AVATAR_SPEAKING}
-        style={styles.video}
-        resizeMode={ResizeMode.CONTAIN}
+        source={avatarSource}
+        style={[styles.video, {height: size * 1.3}]}
+        resizeMode={ResizeMode.COVER}
         shouldPlay={false}
         isLooping
         isMuted
         onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
+        key={tutor} // Forzar re-render cuando cambia el tutor
       />
       {/* Anillo de listening */}
       {mode === 'listening' && (
@@ -246,7 +248,8 @@ const styles = StyleSheet.create({
   },
   video: {
     width: '100%',
-    height: '100%',
+    height: '130%',
+    alignSelf: 'center',
   },
   ring: {
     ...StyleSheet.absoluteFillObject,

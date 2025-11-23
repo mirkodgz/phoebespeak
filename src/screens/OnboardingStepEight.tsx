@@ -16,11 +16,11 @@ const TOTAL_STEPS = 8;
 const CURRENT_STEP = 8;
 
 const PROGRESS_GRADIENT = ['#0B3D4D', '#60CB58'] as const;
-const CARD_INACTIVE_BG = 'rgba(11,61,77,0.12)';
-const CARD_BORDER_INACTIVE = 'rgba(255,255,255,0.18)';
-const CARD_BORDER_ACTIVE = 'rgba(255,255,255,0.38)';
-// Color verde sólido para opciones seleccionadas
-const ACTIVE_BG = '#60CB58';
+const CARD_INACTIVE_BG = 'rgba(255,255,255,0.8)';
+const CARD_BORDER_INACTIVE = 'rgba(0,0,0,0.1)';
+const CARD_BORDER_ACTIVE = 'rgba(11,61,77,0.5)';
+// Color para opciones seleccionadas
+const ACTIVE_BG = '#0b3d4d';
 
 type TutorOption = {
   id: string;
@@ -96,10 +96,10 @@ const OnboardingStepEight = () => {
         </Block>
 
         <Block align="center" marginHorizontal={sizes.sm} marginBottom={0}>
-          <Text h5 center white marginBottom={0}>
+          <Text h5 center color="#334155" marginBottom={0}>
             Scegli il tuo Tutor IA
           </Text>
-          <Text center size={sizes.text} color="rgba(255,255,255,0.76)" marginTop={0}>
+          <Text center size={sizes.text} color="rgba(51,65,85,0.7)" marginTop={0}>
             Seleziona il tutor che vuoi utilizzare nell'app. Potrai cambiarlo in qualsiasi momento.
           </Text>
         </Block>
@@ -133,20 +133,20 @@ const OnboardingStepEight = () => {
                       radius={20}
                     />
                     <View style={styles.tutorText}>
-                      <Text white semibold size={sizes.p - 1}>
+                      <Text color={isActive ? "#FFFFFF" : "#334155"} semibold size={sizes.p - 1}>
                         {tutor.name}
                       </Text>
                       <Text
                         size={11}
                         lineHeight={16}
-                        color="rgba(255,255,255,0.78)"
+                        color={isActive ? "rgba(255,255,255,0.9)" : "rgba(51,65,85,0.7)"}
                         marginTop={4}>
                         {tutor.subtitle}
                       </Text>
                       <Text
                         size={11}
                         lineHeight={16}
-                        color="rgba(255,255,255,0.7)"
+                        color={isActive ? "rgba(255,255,255,0.8)" : "rgba(51,65,85,0.6)"}
                         marginTop={4}>
                         {tutor.description}
                       </Text>
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
     height: 3,
     width: '100%',
     borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.14)',
+    backgroundColor: 'rgba(0,0,0,0.1)',
     overflow: 'hidden',
   },
   progressFill: {

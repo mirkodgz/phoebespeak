@@ -1,247 +1,146 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {Alert, Animated, StyleSheet} from 'react-native';
-
+import React from 'react';
+import {Platform, Text} from 'react-native';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {createStackNavigator} from '@react-navigation/stack';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useTheme} from '../hooks';
 import {
-  createDrawerNavigator,
-  DrawerContentComponentProps,
-  DrawerContentScrollView,
-  useDrawerStatus,
-} from '@react-navigation/drawer';
+  Home,
+  RolePlay,
+  RolePlayModeSelection,
+  PracticeSession,
+  ProgressOverview,
+  Profile,
+  SettingsScreen,
+} from '../screens';
 
-import Screens from './Screens';
-import {Block, Text, Switch, Button, Image} from '../components';
-import {useData, useTheme, useTranslation} from '../hooks';
+const Tab = createBottomTabNavigator();
+const HomeStack = createStackNavigator();
+const PracticeStack = createStackNavigator();
+const ChampionshipsStack = createStackNavigator();
+const ProfileStack = createStackNavigator();
 
-const Drawer = createDrawerNavigator();
+const HomeStackNavigator = () => (
+  <HomeStack.Navigator screenOptions={{headerShown: false}}>
+    <HomeStack.Screen name="HomeMain" component={Home} />
+    <HomeStack.Screen name="SettingsScreen" component={SettingsScreen} />
+  </HomeStack.Navigator>
+);
 
-/* drawer menu screens navigation */
-const ScreensStack = () => {
-  const {colors} = useTheme();
-  const isDrawerOpen = useDrawerStatus() === 'open';
-  const animation = useRef(new Animated.Value(0)).current;
+const PracticeStackNavigator = () => (
+  <PracticeStack.Navigator screenOptions={{headerShown: false}}>
+    <PracticeStack.Screen name="RolePlayMain" component={RolePlay} />
+    <PracticeStack.Screen name="RolePlayModeSelection" component={RolePlayModeSelection} />
+    <PracticeStack.Screen name="PracticeSession" component={PracticeSession} />
+  </PracticeStack.Navigator>
+);
 
-  const scale = animation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [1, 0.88],
-  });
+const ChampionshipsStackNavigator = () => (
+  <ChampionshipsStack.Navigator screenOptions={{headerShown: false}}>
+    <ChampionshipsStack.Screen
+      name="ProgressOverviewMain"
+      component={ProgressOverview}
+    />
+  </ChampionshipsStack.Navigator>
+);
 
-  const borderRadius = animation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 16],
-  });
+const ProfileStackNavigator = () => (
+  <ProfileStack.Navigator screenOptions={{headerShown: false}}>
+    <ProfileStack.Screen name="ProfileMain" component={Profile} />
+    <ProfileStack.Screen name="SettingsScreen" component={SettingsScreen} />
+  </ProfileStack.Navigator>
+);
 
-  const animatedStyle = {
-    borderRadius: borderRadius,
-    transform: [{scale: scale}],
-  };
-
-  useEffect(() => {
-    Animated.timing(animation, {
-      duration: 200,
-      useNativeDriver: true,
-      toValue: isDrawerOpen ? 1 : 0,
-    }).start();
-  }, [isDrawerOpen, animation]);
-
-  return (
-    <Animated.View
-      style={StyleSheet.flatten([
-        animatedStyle,
-        {
-          flex: 1,
-          overflow: 'hidden',
-          borderColor: colors.card,
-          borderWidth: isDrawerOpen ? 1 : 0,
-        },
-      ])}>
-      {/*  */}
-      <Screens />
-    </Animated.View>
-  );
-};
-
-/* custom drawer menu */
-const DrawerContent = (
-  props: DrawerContentComponentProps,
-) => {
-  const {navigation} = props;
-  const {t} = useTranslation();
-  const {isDark, handleIsDark, signOut} = useData();
-  const [active, setActive] = useState('Dashboard');
-  const {assets, colors, gradients, sizes} = useTheme();
-  const labelColor = colors.text;
-  const navigateHome = useCallback(() => {
-    navigation.navigate('Screens', {screen: 'Dashboard'});
-    setActive('Dashboard');
-  }, [navigation]);
-
-  const handleSignOut = useCallback(() => {
-    Alert.alert(
-      t('common.signoutTitle') || 'Cerrar sesión',
-      '¿Seguro que deseas salir de la aplicación?',
-      [
-        {text: t('common.cancel') || 'Cancelar', style: 'cancel'},
-        {
-          text: t('common.signout') || 'Salir',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await signOut();
-              navigateHome();
-            } catch (error) {
-              if (__DEV__) {
-                console.warn('Sign out failed', error);
-              }
-            }
-          },
-        },
-      ],
-    );
-  }, [navigateHome, signOut, t]);
-
-  const handleNavigation = useCallback(
-    (to: string) => {
-      setActive(to);
-      // Properly navigate to screens in the stack
-      navigation.navigate('Screens', { screen: to });
-    },
-    [navigation, setActive],
-  );
-
-  // screen list for Drawer menu
-  const screens = [
-    {name: 'Dashboard', to: 'Dashboard', emoji: '🏠'},
-    {name: 'Role Play', to: 'RolePlay', emoji: '🎭'},
-    {name: 'Progressi', to: 'ProgressOverview', emoji: '📈'},
-    {name: 'Profilo', to: 'Profile', emoji: '👤'},
-    {name: 'Impostazioni', to: 'SettingsScreen', emoji: '⚙️'},
-  ];
-
-  return (
-    <DrawerContentScrollView
-      {...props}
-      scrollEnabled
-      removeClippedSubviews
-      renderToHardwareTextureAndroid
-      contentContainerStyle={{paddingBottom: sizes.padding}}>
-      <Block paddingHorizontal={sizes.padding}>
-        <Block flex={0} row align="center" marginBottom={sizes.l}>
-          <Image
-            radius={0}
-            width={33}
-            height={33}
-            color={colors.text}
-            source={assets.logo}
-            marginRight={sizes.sm}
-          />
-          <Block>
-            <Text size={12} semibold>
-              {t('app.name')}
-            </Text>
-            <Text size={12} semibold>
-              {t('app.native')}
-            </Text>
-          </Block>
-        </Block>
-
-        {screens?.map((screen, index) => {
-          const isActive = active === screen.to;
-          return (
-            <Button
-              row
-              justify="flex-start"
-              marginBottom={sizes.s}
-              key={`menu-screen-${screen.name}-${index}`}
-              onPress={() => handleNavigation(screen.to)}>
-              <Block
-                flex={0}
-                radius={6}
-                align="center"
-                justify="center"
-                width={sizes.md}
-                height={sizes.md}
-                marginRight={sizes.s}>
-                <Text style={{fontSize: 20}} white={isActive}>
-                  {screen.emoji}
-                </Text>
-              </Block>
-              <Text p semibold={isActive} color={labelColor}>
-                {screen.name}
-              </Text>
-            </Button>
-          );
-        })}
-
-        <Block
-          flex={0}
-          height={1}
-          marginRight={sizes.md}
-          marginVertical={sizes.sm}
-          gradient={gradients.menu}
-        />
-          <Block row justify="space-between" marginTop={sizes.sm}>
-            <Text color={labelColor}>{t('darkMode')}</Text>
-            <Switch
-              checked={isDark}
-              onPress={(checked) => {
-                handleIsDark(checked);
-                Alert.alert(t('pro.title'), t('pro.alert'));
-              }}
-            />
-          </Block>
-          <Button
-            row
-            justify="flex-start"
-            marginTop={sizes.l}
-            onPress={handleSignOut}>
-            <Block
-              flex={0}
-              radius={6}
-              align="center"
-              justify="center"
-              width={sizes.md}
-              height={sizes.md}
-              marginRight={sizes.s}
-              color="transparent">
-              <Text style={{fontSize: 20}} color={labelColor}>
-                🚪
-              </Text>
-            </Block>
-            <Text p semibold color={labelColor}>
-              {t('common.signoutLabel') || 'Cerrar sesión'}
-            </Text>
-          </Button>
-      </Block>
-    </DrawerContentScrollView>
-  );
-};
-
-/* drawer menu navigation */
 export default () => {
-  const {gradients} = useTheme();
+  const {colors} = useTheme();
+  const insets = useSafeAreaInsets();
+
+  // Calcular la altura del tab bar considerando el safe area
+  const tabBarHeight = Platform.OS === 'ios' 
+    ? 60 + insets.bottom 
+    : 60;
+  
+  const paddingBottom = Platform.OS === 'ios' 
+    ? Math.max(insets.bottom, 8) 
+    : 8;
 
   return (
-    <Block gradient={gradients.light}>
-      <Drawer.Navigator
-        screenOptions={{
-          drawerStyle: {
-            flex: 1,
-            width: '60%',
-            borderRightWidth: 0,
-            backgroundColor: 'transparent',
-          },
-          drawerType: 'slide',
-          overlayColor: 'transparent',
+    <Tab.Navigator
+      screenOptions={({route}) => ({
+        tabBarIcon: ({focused}) => {
+          let emoji: string;
+
+          if (route.name === 'Home') {
+            emoji = '🏠';
+          } else if (route.name === 'RolePlays') {
+            emoji = '🎭';
+          } else if (route.name === 'AI tutor') {
+            emoji = '🤖';
+          } else if (route.name === 'Profilo') {
+            emoji = '👤';
+          } else {
+            emoji = '❓';
+          }
+
+          return (
+            <Text style={{fontSize: 24, opacity: focused ? 1 : 0.6}}>
+              {emoji}
+            </Text>
+          );
+        },
+        tabBarActiveTintColor: String(colors.primary || '#4A90E2'),
+        tabBarInactiveTintColor: String(colors.text || '#666'),
+        tabBarStyle: {
+          backgroundColor: '#FFFFFF',
+          borderTopWidth: 1,
+          borderTopColor: '#E0E0E0',
+          height: tabBarHeight,
+          paddingBottom: paddingBottom,
+          paddingTop: 8,
+          paddingHorizontal: 4,
+        },
+        tabBarIconStyle: {
+          marginTop: 4,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '500',
+          marginTop: 2,
+          marginBottom: 0,
+        },
+        tabBarItemStyle: {
+          paddingVertical: 4,
+        },
+        headerShown: false,
+      })}>
+      <Tab.Screen
+        name="Home"
+        component={HomeStackNavigator}
+        options={{
+          tabBarLabel: 'Home',
         }}
-        drawerContent={(props) => <DrawerContent {...props} />}>
-        <Drawer.Screen 
-          name="Screens" 
-          component={ScreensStack}
-          options={{
-            headerShown: false
-          }} 
-        />
-      </Drawer.Navigator>
-    </Block>
+      />
+      <Tab.Screen
+        name="RolePlays"
+        component={PracticeStackNavigator}
+        options={{
+          tabBarLabel: 'RolePlays',
+        }}
+      />
+      <Tab.Screen
+        name="AI tutor"
+        component={ChampionshipsStackNavigator}
+        options={{
+          tabBarLabel: 'AI tutor',
+        }}
+      />
+      <Tab.Screen
+        name="Profilo"
+        component={ProfileStackNavigator}
+        options={{
+          tabBarLabel: 'Profilo',
+        }}
+      />
+    </Tab.Navigator>
   );
 };

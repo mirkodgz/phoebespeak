@@ -22,7 +22,7 @@ export const synthesizeSpeech = async (text: string) => {
 
   const payload = {
     text,
-    model_id: process.env.ELEVENLABS_MODEL_ID ?? 'eleven_monolingual_v1',
+    model_id: process.env.ELEVENLABS_MODEL_ID ?? 'eleven_flash_v2_5',
     voice_settings: {
       stability: 0.3,
       similarity_boost: 0.8,
@@ -31,16 +31,35 @@ export const synthesizeSpeech = async (text: string) => {
     },
   };
 
-  const {data} = await elevenLabsClient.post(
-    `/text-to-speech/${voiceId}`,
-    payload,
-    {
-      headers: {
-        Accept: 'audio/mpeg',
+  try {
+    const {data} = await elevenLabsClient.post(
+      `/text-to-speech/${voiceId}`,
+      payload,
+      {
+        headers: {
+          Accept: 'audio/mpeg',
+        },
       },
-    },
-  );
+    );
 
-  return data;
+    return data;
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error(
+        'Error de autenticación con ElevenLabs. Verifica que ELEVENLABS_API_KEY sea válida y que tengas créditos disponibles.',
+      );
+    }
+    if (error.response?.status === 429) {
+      throw new Error(
+        'Límite de solicitudes excedido en ElevenLabs. Es posible que te hayas quedado sin créditos.',
+      );
+    }
+    if (error.response?.status === 402) {
+      throw new Error(
+        'Sin créditos disponibles en ElevenLabs. Por favor, recarga tu cuenta.',
+      );
+    }
+    throw error;
+  }
 };
 

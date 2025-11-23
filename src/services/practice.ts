@@ -165,15 +165,21 @@ export const requestPracticeFeedback = async ({
   targetSentence,
   learnerProfile,
   segments,
+  conversationContext,
 }: {
   transcript: string;
-  targetSentence: string;
+  targetSentence?: string; // Opcional para flujos dinámicos
   learnerProfile?: {
     nativeLanguage?: string;
     proficiencyLevel?: string;
     learnerName?: string;
   };
   segments?: TranscriptionSegment[];
+  conversationContext?: {
+    scenarioId?: string;
+    levelId?: string;
+    currentTopic?: string;
+  };
 }): Promise<PracticeFeedbackResponse> => {
   const response = await safeFetch('/practice/feedback', {
     method: 'POST',
@@ -183,6 +189,7 @@ export const requestPracticeFeedback = async ({
       targetSentence,
       learnerProfile,
       transcriptionSegments: segments,
+      conversationContext,
     }),
   });
 
@@ -194,16 +201,107 @@ export const requestPracticeFeedback = async ({
   return feedback;
 };
 
-export const requestPracticeVoice = async (text: string): Promise<string> => {
-  const response = await safeFetch('/practice/voice', {
+export const requestNextConversationTurn = async ({
+  scenarioId,
+  levelId,
+  conversationHistory,
+  studentName,
+  turnNumber,
+  predefinedQuestions,
+}: {
+  scenarioId: string;
+  levelId: string;
+  conversationHistory: Array<{
+    role: 'tutor' | 'user' | 'feedback';
+    text: string;
+  }>;
+  studentName: string;
+  turnNumber: number;
+  predefinedQuestions?: string[]; // Preguntas predefinidas para usar en orden
+}): Promise<{
+  feedback?: string;
+  question?: string;
+  tutorMessage: string;
+  shouldEnd: boolean;
+  closingMessage?: string;
+}> => {
+  const response = await safeFetch('/practice/generate-next-turn', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({text}),
+    body: JSON.stringify({
+      scenarioId,
+      levelId,
+      conversationHistory,
+      studentName,
+      turnNumber,
+      predefinedQuestions,
+    }),
   });
 
-  const buffer = await response.arrayBuffer();
-  const base64 = arrayBufferToBase64(buffer);
-  return `data:audio/mpeg;base64,${base64}`;
+  return response.json();
+};
+
+export const requestPracticeVoice = async (text: string): Promise<string> => {
+  try {
+    const response = await safeFetch('/practice/voice', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({text}),
+    });
+
+    const contentType = response.headers.get('content-type');
+    
+    if (__DEV__) {
+      console.log('[Practice Service] Voice response status:', response.status);
+      console.log('[Practice Service] Voice response content-type:', contentType);
+    }
+
+    // Verificar si la respuesta es JSON (error) en lugar de audio
+    if (contentType && contentType.includes('application/json')) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.error || 'Error al generar el audio. Verifica la configuración de ElevenLabs.'
+      );
+    }
+
+    const buffer = await response.arrayBuffer();
+    
+    if (__DEV__) {
+      console.log('[Practice Service] Audio buffer size:', buffer.byteLength);
+    }
+
+    if (buffer.byteLength === 0) {
+      throw new Error('El servidor devolvió un buffer de audio vacío. Verifica la configuración de ElevenLabs.');
+    }
+
+    const base64 = arrayBufferToBase64(buffer);
+    const dataUri = `data:audio/mpeg;base64,${base64}`;
+    
+    if (__DEV__) {
+      console.log('[Practice Service] Audio data URI created, length:', dataUri.length);
+    }
+
+    return dataUri;
+  } catch (error) {
+    if (__DEV__) {
+      console.error('[Practice Service] requestPracticeVoice error:', error);
+    }
+    throw error;
+  }
+};
+
+export const requestTranslate = async (
+  text: string,
+  targetLanguage: string = 'italian',
+): Promise<string> => {
+  const response = await safeFetch('/practice/translate', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({text, targetLanguage}),
+  });
+
+  const data = (await response.json()) as {translation: string};
+  return data.translation;
 };
 
 const arrayBufferToBase64 = (buffer: ArrayBuffer) => {

@@ -57,12 +57,12 @@ const OPTIONS: LearningStyleOption[] = [
   },
 ];
 
-const CARD_INACTIVE_BG = 'rgba(255,255,255,0.07)';
-const CARD_BORDER_INACTIVE = 'rgba(255,255,255,0.18)';
-const CARD_BORDER_ACTIVE = 'rgba(255,255,255,0.38)';
+const CARD_INACTIVE_BG = 'rgba(255,255,255,0.8)';
+const CARD_BORDER_INACTIVE = 'rgba(0,0,0,0.1)';
+const CARD_BORDER_ACTIVE = 'rgba(11,61,77,0.5)';
 const PROGRESS_GRADIENT = ['#0B3D4D', '#60CB58'] as const;
-// Color verde sólido para opciones seleccionadas
-const ACTIVE_BG = '#60CB58';
+// Color para opciones seleccionadas
+const ACTIVE_BG = '#0b3d4d';
 
 const OnboardingStepFour = () => {
   const navigation = useNavigation<any>();
@@ -120,10 +120,10 @@ const OnboardingStepFour = () => {
           align="center"
           marginHorizontal={sizes.sm}
           marginBottom={0}>
-          <Text h5 center white marginBottom={0}>
+          <Text h5 center color="#334155" marginBottom={0}>
             Come preferisci imparare?
           </Text>
-          <Text center size={sizes.text} color="rgba(255,255,255,0.76)" marginTop={0}>
+          <Text center size={sizes.text} color="rgba(51,65,85,0.7)" marginTop={0}>
             Scegli il metodo che ti aiuta di più.
           </Text>
         </Block>
@@ -152,13 +152,13 @@ const OnboardingStepFour = () => {
                   <View style={styles.iconBadge}>
                     <Text
                       style={styles.iconEmoji}
-                      white
+                      color="#334155"
                       size={28}
                       lineHeight={34}>
                       {option.emoji}
                     </Text>
                   </View>
-                  <Text center white semibold size={14}>
+                  <Text center color={isActive ? "#FFFFFF" : "#334155"} semibold size={14}>
                     {option.label}
                   </Text>
                 </View>
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     height: 3,
     width: '100%',
     borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.14)',
+    backgroundColor: 'rgba(0,0,0,0.1)',
     overflow: 'hidden',
   },
   progressFill: {

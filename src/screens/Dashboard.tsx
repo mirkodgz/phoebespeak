@@ -1,6 +1,6 @@
 import React, {useMemo} from 'react';
 import {ScrollView} from 'react-native';
-import {DrawerActions, useNavigation} from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 
 import {
   Block,
@@ -12,7 +12,6 @@ import {
   BrandSurface,
   Image,
   Text,
-  Button,
 } from '../components';
 import {useData, useTheme, useTranslation} from '../hooks';
 
@@ -38,28 +37,6 @@ const Dashboard = () => {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{padding: sizes.md}}>
-        <Block row justify="space-between" align="center" marginBottom={sizes.sm}>
-          <Button
-            color="rgba(255,255,255,0.12)"
-            radius={sizes.sm}
-            width={sizes.md}
-            height={sizes.md}
-            onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}>
-            <Image
-              radius={0}
-              width={18}
-              height={18}
-              color={colors.white}
-              source={assets.menu}
-            />
-          </Button>
-          <BrandChip
-            label="Sessione"
-            tone="neutral"
-            onPress={() => navigation.navigate('PracticeSession')}
-          />
-        </Block>
-
         <Block row justify="space-between" align="center" marginBottom={sizes.l}>
           <Block>
             <Text color="rgba(255,255,255,0.76)" size={sizes.p - 2}>
