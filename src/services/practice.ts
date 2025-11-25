@@ -304,6 +304,43 @@ export const requestTranslate = async (
   return data.translation;
 };
 
+export const requestFreeInterviewTurn = async ({
+  conversationHistory,
+  studentName,
+  turnNumber,
+  companyName,
+  positionName,
+}: {
+  conversationHistory: Array<{
+    role: 'tutor' | 'user' | 'feedback';
+    text: string;
+  }>;
+  studentName: string;
+  turnNumber: number;
+  companyName?: string;
+  positionName?: string;
+}): Promise<{
+  feedback?: string;
+  question?: string;
+  tutorMessage: string;
+  shouldEnd: boolean;
+  closingMessage?: string;
+}> => {
+  const response = await safeFetch('/practice/generate-free-interview-turn', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      conversationHistory,
+      studentName,
+      turnNumber,
+      companyName,
+      positionName,
+    }),
+  });
+
+  return response.json();
+};
+
 const arrayBufferToBase64 = (buffer: ArrayBuffer) => {
   const chars =
     'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';

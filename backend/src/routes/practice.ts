@@ -7,6 +7,7 @@ import {
   transcribeAudio,
   translateText,
 } from '../services/openai';
+import {generateFreeInterviewTurn} from '../services/openailiberainterview';
 import {synthesizeSpeech} from '../services/elevenlabs';
 
 const upload = multer({storage: multer.memoryStorage()});
@@ -131,6 +132,43 @@ router.post('/translate', async (req, res, next) => {
     res.json({translation});
   } catch (error) {
     console.error('[practice] /translate error', error);
+    next(error);
+  }
+});
+
+router.post('/generate-free-interview-turn', async (req, res, next) => {
+  try {
+    console.info('[practice] /generate-free-interview-turn called');
+    const {
+      conversationHistory,
+      studentName,
+      turnNumber,
+      companyName,
+      positionName,
+      scenarioId,
+      levelId,
+    } = req.body ?? {};
+
+    if (!conversationHistory || !studentName || !turnNumber) {
+      return res.status(400).json({
+        error: 'conversationHistory, studentName, and turnNumber are required',
+      });
+    }
+
+    const nextTurn = await generateFreeInterviewTurn({
+      conversationHistory,
+      studentName,
+      turnNumber,
+      companyName,
+      positionName,
+      scenarioId: scenarioId || 'jobInterview',
+      levelId: levelId || 'beginner',
+    });
+
+    console.info('[practice] /generate-free-interview-turn success');
+    res.json(nextTurn);
+  } catch (error) {
+    console.error('[practice] /generate-free-interview-turn error', error);
     next(error);
   }
 });

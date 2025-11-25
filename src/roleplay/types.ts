@@ -13,12 +13,25 @@ export type ConversationPair = {
 
 export type ConversationFlowMode = 'static' | 'dynamic' | 'hybrid';
 
+export interface RoundQuestion {
+  letter: string; // A, B, C, D, E
+  question: (studentName: string) => string;
+  exampleAnswer: string;
+}
+
+export interface Round {
+  id: number;
+  title: string;
+  questions: RoundQuestion[];
+}
+
 export interface ConversationFlowConfig {
   mode: ConversationFlowMode;
   initialGreeting: (studentName: string) => string;
   firstQuestion: (studentName: string) => string;
   followUpQuestions?: Array<(studentName: string) => string>; // Preguntas de seguimiento predefinidas
   maxTurns?: number; // Límite de turnos para conversaciones dinámicas
+  rounds?: Round[]; // Para escenarios con rounds (ej: Job Interview)
 }
 
 export interface RolePlayLevel {

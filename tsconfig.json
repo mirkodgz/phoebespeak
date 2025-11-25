@@ -3,5 +3,9 @@
   "compilerOptions": {
     "esModuleInterop": true,
     "strict": true
-  }
+  },
+  "exclude": [
+    "backend",
+    "node_modules"
+  ]
 }

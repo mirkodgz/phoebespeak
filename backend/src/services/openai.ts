@@ -168,9 +168,9 @@ CRITICAL INSTRUCTIONS:
 - Address the learner directly using their name when available.
 - Only return "verdict": "correct" if pronunciation is virtually native-like (no notable issues, high confidence). When in doubt, choose "needs_improvement".
 
-FEEDBACK STRUCTURE (write in Italian, max 4-5 sentences):
+FEEDBACK STRUCTURE (write in ENGLISH, max 4-5 sentences):
 1. Recognition (1 sentence): Acknowledge what they said correctly or what they attempted well. Be specific.
-2. Specific Issue (1 sentence): If there are pronunciation or grammar issues, identify the most important one with a clear pronunciation tip. Use phonetic notation when helpful (e.g., "pronuncia 'th' come /θ/ in 'think' /θɪŋk/, non come 't' o 'd'").
+2. Specific Issue (1 sentence): If there are pronunciation or grammar issues, identify the most important one with a clear pronunciation tip. Use phonetic notation when helpful (e.g., "pronounce 'th' as /θ/ in 'think' /θɪŋk/, not like 't' or 'd'").
 3. Example Response (1 sentence): Provide ONE concrete example of a better way to respond, directly related to the tutor's question. Make it practical and achievable.
 4. Encouragement (1 sentence): Give a gentle, motivating suggestion for improvement that builds confidence.
 
@@ -195,9 +195,9 @@ CRITICAL INSTRUCTIONS:
 - Address the learner directly using their name when available.
 - Only return "verdict": "correct" if the response is clear, grammatically correct, pronunciation is good, and appropriate for a job interview. When in doubt, choose "needs_improvement".
 
-FEEDBACK STRUCTURE (write in Italian, max 4-5 sentences):
+FEEDBACK STRUCTURE (write in ENGLISH, max 4-5 sentences):
 1. Positive Recognition (1 sentence): Acknowledge what they did well - be specific about grammar, vocabulary, or pronunciation successes.
-2. Improvement Area (1-2 sentences): Identify the most important area to improve (pronunciation, grammar, or vocabulary) with a specific tip. Include pronunciation examples when relevant (e.g., "ricorda che 'work' si pronuncia /wɜːrk/ con la 'r', non /wɔːk/ come 'walk'").
+2. Improvement Area (1-2 sentences): Identify the most important area to improve (pronunciation, grammar, or vocabulary) with a specific tip. Include pronunciation examples when relevant (e.g., "remember that 'work' is pronounced /wɜːrk/ with the 'r' sound, not /wɔːk/ like 'walk'").
 3. Example Response (1 sentence): Provide ONE concrete example of a better way to respond, tailored to the job interview context and the question asked.
 4. Encouragement (1 sentence): Give a motivating note that encourages continued practice.
 
@@ -293,6 +293,9 @@ export const generateNextConversationTurn = async ({
   turnNumber,
   predefinedQuestions,
 }: GenerateNextTurnInput) => {
+  // Importar el sistema de prompts
+  const {getPrompt} = await import('../prompts');
+  
   // Si hay preguntas predefinidas, usarlas en orden
   // turnNumber 1 = primera pregunta (ya se hizo), turnNumber 2 = segunda pregunta, etc.
   if (predefinedQuestions && predefinedQuestions.length > 0) {
@@ -310,82 +313,33 @@ export const generateNextConversationTurn = async ({
           shouldEnd: false,
         };
       }
-      // El AI solo genera feedback, no la pregunta
-      const systemPrompt = `You are an expert English virtual teacher conducting a job interview simulation. You must respond in JSON format only.
-
-YOUR ROLE:
-You are a patient, encouraging English teacher helping Italian learners practice job interviews. You provide constructive feedback that helps students improve their speaking skills.
-
-CRITICAL INSTRUCTIONS:
-- The student is speaking in ENGLISH, not Italian. The transcript you receive is in English.
-- The next question is already defined and will be asked separately. You ONLY provide feedback, never the question.
-- Address the student directly using their name when available.
-- Your feedback must be in Italian (the student's native language) so they understand clearly.
-
-FEEDBACK STRUCTURE (3-4 sentences in Italian):
-1. Recognition (1 sentence): Acknowledge what they did well - be specific about their answer (e.g., "Hai usato bene la parola 'experience'" or "La tua risposta era chiara e diretta").
-2. Specific Suggestion (1 sentence): Provide ONE specific improvement tip. If pronunciation is an issue, include a clear pronunciation guide (e.g., "Prova a pronunciare 'work' come /wɜːrk/ con la 'r' ben marcata" or "Ricorda che 'think' si pronuncia /θɪŋk/ con il suono 'th' /θ/"). If grammar is the issue, give a clear correction example.
-3. Example Response (1 sentence): Provide ONE concrete example of a better way to respond, directly related to the question that was asked. Make it practical and achievable for their level.
-4. Encouragement (1 sentence): Give a brief, motivating note that encourages them to continue.
-
-QUALITY GUIDELINES:
-- Be specific: Name exact words or phrases they used correctly or incorrectly
-- Use phonetic notation effectively: /θ/, /ð/, /wɜːrk/, etc., but always explain in simple Italian too
-- Make examples relevant: Base them on the actual question that was asked
-- Keep it concise: 3-4 sentences maximum, each with clear purpose
-- Be encouraging: Always start with what they did well, then suggest improvements positively
-- Adapt to their level: Use simpler language for beginners, slightly more complex for intermediate
-
-Remember: You must always respond with valid JSON only.`;
-
-      const historyText = conversationHistory
-        .map(msg => `${msg.role === 'tutor' ? 'Tutor' : msg.role === 'user' ? 'Student' : 'Feedback'}: ${msg.text}`)
-        .join('\n');
-
-      const userPrompt = `The student just answered your previous question. 
-
-Conversation history so far:
-${historyText}
-
-The question that was asked: [Find the last tutor question in the conversation history]
-
-The student's answer: [Find the last student/user message in the conversation history]
-
-Now you need to:
-1. Analyze their answer carefully - what did they say correctly? What needs improvement?
-2. Provide helpful feedback in Italian (3-4 sentences) following this structure:
-   - Recognition: What they did well (be specific about words, phrases, or pronunciation)
-   - Specific Suggestion: ONE clear improvement tip with pronunciation guide if needed (use phonetic notation like /θ/, /wɜːrk/)
-   - Example Response: ONE concrete example of a better way to respond, based on the question that was asked
-   - Encouragement: A brief, motivating note
-
-3. The next question is already defined and will be asked separately: "${question}"
-
-IMPORTANT: 
-- Only provide feedback in Italian. Do NOT include the question in your response.
-- Be specific: Instead of "good job", say exactly what was good (e.g., "Hai pronunciato correttamente 'experience'")
-- Make pronunciation tips clear: Use phonetic notation AND explain in Italian (e.g., "pronuncia 'think' /θɪŋk/ con il suono 'th' /θ/ come quando soffi")
-- Make examples relevant: Base them on the actual question that was asked
-
-Return a JSON object with this structure:
-{
-  "feedback": "string - Your helpful feedback in Italian (3-4 sentences, no question)",
-  "question": "string - The predefined question exactly as provided: ${question}",
-  "shouldEnd": false
-}`;
+      
+      // Usar el nuevo sistema de prompts
+      const promptConfig = getPrompt({
+        scenarioId,
+        levelId,
+        mode: 'guided',
+        context: {
+          studentName,
+          conversationHistory,
+          turnNumber,
+          predefinedQuestion: question,
+        },
+        predefinedQuestion: question,
+      });
 
       try {
         const completion = await openaiClient.chat.completions.create({
           model: OPENAI_MODEL_FEEDBACK,
-          response_format: {type: 'json_object'},
+          response_format: {type: promptConfig.responseFormat || 'json_object'},
           messages: [
             {
               role: 'system',
-              content: systemPrompt,
+              content: promptConfig.systemPrompt,
             },
             {
               role: 'user',
-              content: userPrompt,
+              content: promptConfig.userPrompt,
             },
           ],
         });
@@ -400,13 +354,12 @@ Return a JSON object with this structure:
         };
 
         // Extraer feedback y pregunta por separado
-        // Si el AI devolvió feedback separado, usarlo; si no, intentar extraerlo del tutorMessage
         let feedback = parsed.feedback;
         if (!feedback && parsed.tutorMessage) {
           // Intentar extraer solo el feedback (antes de la pregunta)
-          const questionIndex = parsed.tutorMessage.indexOf(question);
-          if (questionIndex > 0) {
-            feedback = parsed.tutorMessage.substring(0, questionIndex).trim();
+          const questionIndexInMessage = parsed.tutorMessage.indexOf(question);
+          if (questionIndexInMessage > 0) {
+            feedback = parsed.tutorMessage.substring(0, questionIndexInMessage).trim();
           } else {
             // Si no se encuentra la pregunta, usar todo como feedback
             feedback = parsed.tutorMessage.trim();
@@ -416,18 +369,13 @@ Return a JSON object with this structure:
         
         // La pregunta siempre debe ser la predefinida, no la del AI
         const finalQuestion = question;
-
-        // Verificar si es la última pregunta
-        const isLastQuestion = questionIndex === predefinedQuestions.length - 1;
         
         return {
           feedback: feedback,
           question: finalQuestion,
           tutorMessage: `${feedback} ${finalQuestion}`, // Mantener compatibilidad
-          shouldEnd: isLastQuestion,
-          closingMessage: isLastQuestion 
-            ? `Thank you for the interview, ${studentName}. You did great! Keep practicing.`
-            : undefined,
+          shouldEnd: false, // Siempre false cuando hay preguntas predefinidas, el frontend maneja los rounds
+          closingMessage: undefined,
         };
       } catch (error) {
         console.error('[openai] generateNextTurn error', error);
@@ -440,102 +388,44 @@ Return a JSON object with this structure:
         };
       }
     } else if (questionIndex >= predefinedQuestions.length) {
-      // Ya se hicieron todas las preguntas, terminar
-      const closingMsg = `Thank you for the interview, ${studentName}. You did great! Keep practicing.`;
+      // Ya se hicieron todas las preguntas del array
+      // Pero NO terminar aquí si hay rounds (el frontend maneja los rounds)
+      // Solo devolver un mensaje genérico sin terminar
       return {
-        feedback: closingMsg,
-        question: closingMsg,
-        tutorMessage: closingMsg, // Mantener compatibilidad
-        shouldEnd: true,
-        closingMessage: closingMsg,
+        feedback: "Good!",
+        question: "That's great! Can you tell me more?",
+        tutorMessage: "Good! That's great! Can you tell me more?",
+        shouldEnd: false, // No terminar, el frontend maneja los rounds
+        closingMessage: undefined,
       };
     }
   }
 
   // Si no hay preguntas predefinidas o no aplican, usar el flujo original (generación dinámica)
-  const systemPrompt = `You are an expert English virtual teacher conducting a job interview simulation. You must respond in JSON format only.
-
-YOUR ROLE:
-You are a patient, encouraging English teacher helping Italian learners practice job interviews. You conduct natural conversations while providing constructive feedback.
-
-CRITICAL INSTRUCTIONS:
-- The student is speaking in ENGLISH, not Italian. The transcript you receive is in English.
-- Speak in simple, clear English at a moderate pace.
-- Ask one question at a time and wait completely for the student's response.
-- After each student response, provide feedback in Italian that includes:
-  * Recognition of what they did well (be specific about words, phrases, or pronunciation)
-  * ONE specific improvement suggestion with pronunciation tips when needed (use phonetic notation like /θ/, /wɜːrk/)
-  * ONE concrete example of a better response, based on the question you asked
-  * An encouraging note
-- Keep feedback concise (3-4 sentences in Italian) but helpful and specific.
-- Maintain a motivating, patient, and friendly tone.
-- Adapt your suggestions based on what the student says and their level.
-
-FEEDBACK QUALITY GUIDELINES:
-- Be specific: Instead of "good job", say exactly what was good (e.g., "Hai pronunciato correttamente 'experience'")
-- Use phonetic notation effectively: /θ/, /ð/, /wɜːrk/, etc., but always explain in simple Italian too
-- Make examples relevant: Base them on the actual question you asked
-- Keep it concise: 3-4 sentences maximum, each with clear purpose
-- Be encouraging: Always start with what they did well, then suggest improvements positively
-- Adapt to their level: Use simpler language for beginners, slightly more complex for intermediate
-
-Remember: You must always respond with valid JSON only.`;
-
-  // Construir el historial de conversación para el contexto
-  const historyText = conversationHistory
-    .map(msg => `${msg.role === 'tutor' ? 'Tutor' : msg.role === 'user' ? 'Student' : 'Feedback'}: ${msg.text}`)
-    .join('\n');
-
-  const userPrompt = `You are conducting a job interview in English with a beginner-level student named ${studentName}.
-
-Current turn number: ${turnNumber}
-
-Conversation history so far:
-${historyText}
-
-Based on the conversation history, generate the NEXT question or response from the tutor.
-
-IMPORTANT INSTRUCTIONS:
-- If this is turn 1 and there's no greeting yet, start with: "Hello, ${studentName}. Nice to see you today. Tell me about yourself. Here is a simple example answer: 'I am a positive person. I like working with people. I learn fast, and I enjoy doing a good job.' Now please tell me about yourself."
-- If the student just answered, you need to:
-  1. Provide feedback in Italian (3-4 sentences) following this structure:
-     * Recognition: What they did well (be specific about words, phrases, or pronunciation - e.g., "Hai pronunciato correttamente 'experience'" or "Hai usato bene la struttura 'I like...'")
-     * Specific Suggestion: ONE clear improvement tip with pronunciation guide if needed (use phonetic notation like /θ/, /wɜːrk/ and explain in Italian - e.g., "Prova a pronunciare 'think' /θɪŋk/ con il suono 'th' /θ/ come quando soffi")
-     * Example Response: ONE concrete example of a better way to respond, directly related to the question you asked (e.g., if you asked "Tell me about yourself", provide an example like "Potresti dire: 'I am a hard worker and I enjoy learning new things'")
-     * Encouragement: A brief, motivating note (e.g., "Continua così, stai migliorando!")
-  2. Then ask the next natural follow-up question in English
-- Keep questions simple and appropriate for beginner level.
-- After 4-5 questions, you can start wrapping up the interview.
-- If it's time to end (after 4-5 questions), provide a closing message like: "Thank you for the interview, ${studentName}. You did great! Keep practicing."
-
-FEEDBACK QUALITY REQUIREMENTS:
-- Be specific: Name exact words or phrases they used correctly or incorrectly
-- Include pronunciation tips with phonetic notation when relevant, but always explain in simple Italian too
-- Make examples relevant: Base them on the actual question you asked in the conversation
-- Keep feedback concise: 3-4 sentences maximum, each with clear purpose
-- Be encouraging: Always start with what they did well, then suggest improvements positively
-
-You must respond ONLY with valid JSON. Do not include any text before or after the JSON.
-
-Return a JSON object with this structure:
-{
-  "tutorMessage": "string - The feedback in Italian followed by the next question in English, or just the question if it's the first turn",
-  "shouldEnd": boolean - true if the conversation should end,
-  "closingMessage": "string - Optional closing message if shouldEnd is true"
-}`;
+  // Usar el nuevo sistema de prompts
+  const promptConfig = getPrompt({
+    scenarioId: scenarioId as any,
+    levelId: levelId as any,
+    mode: 'guided',
+    context: {
+      studentName,
+      conversationHistory,
+      turnNumber,
+    },
+  });
 
   try {
     const completion = await openaiClient.chat.completions.create({
       model: OPENAI_MODEL_FEEDBACK,
-      response_format: {type: 'json_object'},
+      response_format: {type: promptConfig.responseFormat || 'json_object'},
       messages: [
         {
           role: 'system',
-          content: systemPrompt,
+          content: promptConfig.systemPrompt,
         },
         {
           role: 'user',
-          content: userPrompt,
+          content: promptConfig.userPrompt,
         },
       ],
     });
