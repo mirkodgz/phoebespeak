@@ -8,6 +8,7 @@ import {
   translateText,
 } from '../services/openai';
 import {generateFreeInterviewTurn} from '../services/openailiberainterview';
+import {generateTutorChatResponse} from '../services/openaiTutorChat';
 import {synthesizeSpeech} from '../services/elevenlabs';
 
 const upload = multer({storage: multer.memoryStorage()});
@@ -169,6 +170,37 @@ router.post('/generate-free-interview-turn', async (req, res, next) => {
     res.json(nextTurn);
   } catch (error) {
     console.error('[practice] /generate-free-interview-turn error', error);
+    next(error);
+  }
+});
+
+router.post('/tutor-chat', async (req, res, next) => {
+  try {
+    console.info('[practice] /tutor-chat called');
+    const {
+      conversationHistory,
+      studentName,
+      studentLevel,
+      message,
+    } = req.body ?? {};
+
+    if (!message || !studentName) {
+      return res.status(400).json({
+        error: 'message and studentName are required',
+      });
+    }
+
+    const response = await generateTutorChatResponse({
+      conversationHistory: conversationHistory || [],
+      studentName,
+      studentLevel: studentLevel || 'beginner',
+      message,
+    });
+
+    console.info('[practice] /tutor-chat success');
+    res.json(response);
+  } catch (error) {
+    console.error('[practice] /tutor-chat error', error);
     next(error);
   }
 });

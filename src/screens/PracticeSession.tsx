@@ -614,10 +614,46 @@ const PracticeSession = () => {
         const questionFull = firstQuestion.question(studentFirstName);
         
         // Separar la pregunta del ejemplo
-        const exampleMatch = questionFull.match(/Here is (?:a simple )?example answer:\s*'([^']+)'/i);
-        const beforeExample = questionFull.split(/Here is (?:a simple )?example answer:/i)[0].trim();
-        const exampleText = exampleMatch ? exampleMatch[1] : '';
-        const questionText = beforeExample + (exampleMatch ? " Here is a simple example answer:" : "");
+        // IMPORTANTE: Cuando hay exampleAnswer del objeto, SIEMPRE usarlo
+        // y NUNCA intentar extraer el ejemplo del texto de la pregunta
+        let exampleText = '';
+        let beforeExample = '';
+        
+        if (firstQuestion.exampleAnswer) {
+          // Usar exampleAnswer del objeto - NUNCA extraer del texto
+          exampleText = firstQuestion.exampleAnswer;
+          // Extraer SOLO la parte antes de "Here is..."
+          const hereIsIndex = questionFull.search(/Here is (?:a simple )?(?:example|possible) answer:/i);
+          if (hereIsIndex > 0) {
+            beforeExample = questionFull.substring(0, hereIsIndex).trim();
+          } else {
+            // Si no se encuentra "Here is", usar split como fallback
+            const parts = questionFull.split(/Here is (?:a simple )?(?:example|possible) answer:/i);
+            beforeExample = parts[0] ? parts[0].trim() : questionFull.trim();
+            // Si el split no funcionó, tomar todo hasta "Now please tell me" como último recurso
+            if (beforeExample === questionFull.trim()) {
+              const nowIndex = questionFull.search(/Now please tell me/i);
+              if (nowIndex > 0) {
+                beforeExample = questionFull.substring(0, nowIndex).trim();
+                // Eliminar cualquier rastro del ejemplo que pueda quedar
+                beforeExample = beforeExample.replace(/Here is.*answer:.*$/i, '').trim();
+              }
+            }
+          }
+        } else {
+          // Fallback: solo si NO hay exampleAnswer del objeto, intentar extraer del texto
+          const exampleMatch = questionFull.match(/Here is (?:a simple )?(?:example|possible) answer:\s*'([^']+)'/i);
+          const parts = questionFull.split(/Here is (?:a simple )?(?:example|possible) answer:/i);
+          beforeExample = parts[0] ? parts[0].trim() : questionFull.trim();
+          exampleText = exampleMatch ? exampleMatch[1] : '';
+        }
+        
+        // Detectar qué tipo de texto de ejemplo se usó
+        const exampleTypeMatch = questionFull.match(/Here is (?:a simple )?(example|possible) answer:/i);
+        const exampleType = exampleTypeMatch ? exampleTypeMatch[1] : 'possible';
+        const exampleLabel = exampleType === 'example' ? 'Here is a simple example answer:' : 'Here is a possible answer:';
+        
+        const questionText = beforeExample + (exampleText ? ` ${exampleLabel}` : "");
         const exampleMessage = exampleText ? `'${exampleText}'` : '';
         const cleanQuestionText = questionText.replace(/\s*Now please tell me.*$/i, '').trim();
         
@@ -758,24 +794,59 @@ const PracticeSession = () => {
       // Si hay rounds, usar la primera pregunta del primer round
       let firstQuestionFull: string;
       let questionLetter = 'A';
+      let exampleAnswerFromObject: string | undefined;
       
       if (hasRounds && currentRoundData && currentRoundData.questions.length > 0) {
         const firstQuestion = currentRoundData.questions[0];
         firstQuestionFull = firstQuestion.question(studentFirstName);
         questionLetter = firstQuestion.letter;
+        exampleAnswerFromObject = firstQuestion.exampleAnswer;
       } else {
         firstQuestionFull = flowConfig.firstQuestion(studentFirstName);
       }
       
       // Separar la pregunta del ejemplo
-      // Formato esperado: "Tell me about yourself. Here is a simple example answer: 'ejemplo...' Now please tell me about yourself."
-      const exampleMatch = firstQuestionFull.match(/Here is (?:a simple )?example answer:\s*'([^']+)'/i);
-      const beforeExample = firstQuestionFull.split(/Here is (?:a simple )?example answer:/i)[0].trim();
-      const afterExample = firstQuestionFull.split(/'([^']+)'/).pop()?.trim() || '';
-      const exampleText = exampleMatch ? exampleMatch[1] : '';
+      // IMPORTANTE: Cuando hay exampleAnswer del objeto, SIEMPRE usarlo
+      // y NUNCA intentar extraer el ejemplo del texto de la pregunta
+      let exampleText = '';
+      let beforeExample = '';
       
-      // Construir la pregunta sin el texto final "Now please tell me..."
-      const questionText = beforeExample + (exampleMatch ? " Here is a simple example answer:" : "");
+      if (exampleAnswerFromObject) {
+        // Usar exampleAnswer del objeto - NUNCA extraer del texto
+        exampleText = exampleAnswerFromObject;
+        // Extraer SOLO la parte antes de "Here is..."
+        const hereIsIndex = firstQuestionFull.search(/Here is (?:a simple )?(?:example|possible) answer:/i);
+        if (hereIsIndex > 0) {
+          beforeExample = firstQuestionFull.substring(0, hereIsIndex).trim();
+        } else {
+          // Si no se encuentra "Here is", usar split como fallback
+          const parts = firstQuestionFull.split(/Here is (?:a simple )?(?:example|possible) answer:/i);
+          beforeExample = parts[0] ? parts[0].trim() : firstQuestionFull.trim();
+          // Si el split no funcionó, tomar todo hasta "Now please tell me" como último recurso
+          if (beforeExample === firstQuestionFull.trim()) {
+            const nowIndex = firstQuestionFull.search(/Now please tell me/i);
+            if (nowIndex > 0) {
+              beforeExample = firstQuestionFull.substring(0, nowIndex).trim();
+              // Eliminar cualquier rastro del ejemplo que pueda quedar
+              beforeExample = beforeExample.replace(/Here is.*answer:.*$/i, '').trim();
+            }
+          }
+        }
+      } else {
+        // Fallback: solo si NO hay exampleAnswer del objeto, intentar extraer del texto
+        const exampleMatch = firstQuestionFull.match(/Here is (?:a simple )?(?:example|possible) answer:\s*'([^']+)'/i);
+        const parts = firstQuestionFull.split(/Here is (?:a simple )?(?:example|possible) answer:/i);
+        beforeExample = parts[0] ? parts[0].trim() : firstQuestionFull.trim();
+        exampleText = exampleMatch ? exampleMatch[1] : '';
+      }
+      
+      // Detectar qué tipo de texto de ejemplo se usó
+      const exampleTypeMatch = firstQuestionFull.match(/Here is (?:a simple )?(example|possible) answer:/i);
+      const exampleType = exampleTypeMatch ? exampleTypeMatch[1] : 'example';
+      const exampleLabel = exampleType === 'example' ? 'Here is a simple example answer:' : 'Here is a possible answer:';
+      
+      // Construir la pregunta con el label del ejemplo pero sin el ejemplo y sin "Now please tell me..."
+      const questionText = beforeExample + (exampleText ? ` ${exampleLabel}` : "");
       const exampleMessage = exampleText ? `'${exampleText}'` : '';
       
       // Eliminar el texto final "Now please tell me about yourself." o similar
@@ -1120,16 +1191,82 @@ const PracticeSession = () => {
             const questionFull = nextTurn.question || nextTurn.tutorMessage;
             
             // Separar la pregunta del ejemplo (igual que con la primera pregunta)
-            const exampleMatch = questionFull.match(/Here is (?:a )?possible answer:\s*'([^']+)'/i);
-            const beforeExample = questionFull.split(/Here is (?:a )?possible answer:/i)[0].trim();
-            const exampleText = exampleMatch ? exampleMatch[1] : '';
+            let nextQuestionIndex = currentQuestionInRound + 1;
+            let currentQuestionObj = null;
             
-            // Construir la pregunta sin el texto final "Now please tell me..."
-            const questionText = beforeExample + (exampleMatch ? " Here is a possible answer:" : "");
+            // Obtener el objeto de pregunta actual si hay rounds
+            if (hasRounds && currentRoundData && nextQuestionIndex < currentRoundData.questions.length) {
+              currentQuestionObj = currentRoundData.questions[nextQuestionIndex];
+            }
+            
+            // PRIORIDAD: Usar exampleAnswer del objeto si está disponible (más confiable)
+            let exampleText = '';
+            let beforeExample = '';
+            let cleanQuestionText = '';
+            
+            if (currentQuestionObj && currentQuestionObj.exampleAnswer) {
+              // IMPORTANTE: Cuando hay exampleAnswer del objeto, SIEMPRE usarlo
+              // y NUNCA intentar extraer el ejemplo del texto de la pregunta
+              exampleText = currentQuestionObj.exampleAnswer;
+              
+              // Extraer SOLO la parte antes de "Here is..." - esto es crítico
+              // Buscar el índice de "Here is" y tomar todo antes
+              const hereIsIndex = questionFull.search(/Here is (?:a simple )?(?:example|possible) answer:/i);
+              if (hereIsIndex > 0) {
+                beforeExample = questionFull.substring(0, hereIsIndex).trim();
+              } else {
+                // Si no se encuentra "Here is", usar split como fallback
+                const parts = questionFull.split(/Here is (?:a simple )?(?:example|possible) answer:/i);
+                beforeExample = parts[0] ? parts[0].trim() : questionFull.trim();
+                // Si el split no funcionó, tomar todo hasta "Now please tell me" como último recurso
+                if (beforeExample === questionFull.trim()) {
+                  const nowIndex = questionFull.search(/Now please tell me/i);
+                  if (nowIndex > 0) {
+                    beforeExample = questionFull.substring(0, nowIndex).trim();
+                    // Eliminar cualquier rastro del ejemplo que pueda quedar
+                    beforeExample = beforeExample.replace(/Here is.*answer:.*$/i, '').trim();
+                  }
+                }
+              }
+              
+              // Detectar qué tipo de texto de ejemplo se usó
+              const exampleTypeMatch = questionFull.match(/Here is (?:a simple )?(example|possible) answer:/i);
+              const exampleType = exampleTypeMatch ? exampleTypeMatch[1] : 'possible';
+              const exampleLabel = exampleType === 'example' ? 'Here is a simple example answer:' : 'Here is a possible answer:';
+            
+              // Construir la pregunta con el label del ejemplo pero sin el ejemplo y sin "Now please tell me..."
+              const questionText = beforeExample + (exampleText ? ` ${exampleLabel}` : "");
+              cleanQuestionText = questionText.replace(/\s*Now please tell me.*$/i, '').trim();
+            } else {
+              // Fallback: intentar extraer del texto usando regex
+              // Primero intentar split para obtener la parte antes del ejemplo
+              const parts = questionFull.split(/Here is (?:a simple )?(?:example|possible) answer:/i);
+              beforeExample = parts[0] ? parts[0].trim() : '';
+              
+              // Si el split funcionó, intentar extraer el ejemplo con regex
+              if (beforeExample && beforeExample !== questionFull.trim()) {
+                const exampleMatch = questionFull.match(/Here is (?:a simple )?(?:example|possible) answer:\s*'([^']+)'/i);
+                exampleText = exampleMatch ? exampleMatch[1] : '';
+            
+                // Detectar qué tipo de texto de ejemplo se usó
+                const exampleTypeMatch = questionFull.match(/Here is (?:a simple )?(example|possible) answer:/i);
+                const exampleType = exampleTypeMatch ? exampleTypeMatch[1] : 'possible';
+                const exampleLabel = exampleType === 'example' ? 'Here is a simple example answer:' : 'Here is a possible answer:';
+                
+                // Construir la pregunta con el label del ejemplo pero sin el ejemplo y sin "Now please tell me..."
+                const questionText = beforeExample + (exampleText ? ` ${exampleLabel}` : "");
+                cleanQuestionText = questionText.replace(/\s*Now please tell me.*$/i, '').trim();
+              } else {
+                // Si el split no funcionó, usar todo el texto pero eliminar "Now please tell me..."
+                // Esto es un fallback de seguridad
+                cleanQuestionText = questionFull.replace(/\s*Now please tell me.*$/i, '').trim();
+                // Intentar extraer el ejemplo aunque sea parcialmente
+                const exampleMatch = questionFull.match(/Here is (?:a simple )?(?:example|possible) answer:\s*'([^']+)'/i);
+                exampleText = exampleMatch ? exampleMatch[1] : '';
+              }
+            }
+            
             const exampleMessage = exampleText ? `'${exampleText}'` : '';
-            
-            // Eliminar el texto final "Now please tell me..." o similar
-            const cleanQuestionText = questionText.replace(/\s*Now please tell me.*$/i, '').trim();
             
             // Primero mostrar y reproducir el feedback (en inglés, hablado por el avatar)
             addChatMessage({
@@ -1150,7 +1287,6 @@ const PracticeSession = () => {
             // Luego mostrar la pregunta (sin el ejemplo)
             // Determinar la letra de la pregunta
             let questionLetter = 'A';
-            let nextQuestionIndex = currentQuestionInRound + 1;
             if (hasRounds && currentRoundData) {
               if (nextQuestionIndex < currentRoundData.questions.length) {
                 questionLetter = currentRoundData.questions[nextQuestionIndex].letter;
@@ -1452,7 +1588,7 @@ const PracticeSession = () => {
         style={{
           flexDirection: 'row',
           justifyContent: alignLeft ? 'flex-start' : 'flex-end',
-          marginBottom: sizes.md,
+          marginBottom: sizes.sm,
           paddingHorizontal: sizes.xs,
         }}>
         <View
@@ -1501,8 +1637,8 @@ const PracticeSession = () => {
                     : '#FFFFFF'
                 }>
                 {isTutor || isFeedback
-                  ? `${tutorNameOnly} dice:`
-                  : `${studentFirstName} dice:`}
+                  ? tutorNameOnly
+                  : studentFirstName}
               </Text>
             </View>
           )}
@@ -1768,7 +1904,7 @@ const PracticeSession = () => {
                   marginBottom={4}
                   size={sizes.p - 3}
                   color="#17C1E8">
-                  {tutorNameOnly} dice:
+                  {tutorNameOnly}
                 </Text>
                 <Text
                   white

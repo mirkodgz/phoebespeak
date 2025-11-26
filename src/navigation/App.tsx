@@ -17,7 +17,6 @@ import {
   OnboardingStepFive,
   OnboardingStepSix,
   OnboardingStepSeven,
-  OnboardingStepEight,
 } from '../screens';
 
 const RootStack = createStackNavigator();
@@ -61,10 +60,6 @@ const OnboardingNavigator = () => (
     <OnboardingStack.Screen
       name="OnboardingStepSeven"
       component={OnboardingStepSeven}
-    />
-    <OnboardingStack.Screen
-      name="OnboardingStepEight"
-      component={OnboardingStepEight}
     />
   </OnboardingStack.Navigator>
 );

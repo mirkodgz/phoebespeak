@@ -58,6 +58,7 @@ The student's answer: [Find the last student/user message in the conversation hi
 
 IMPORTANT: 
 - Only provide feedback in ENGLISH so the avatar can pronounce it. Do NOT include the question in your response.
+- The predefined question may contain an example answer (e.g., "Here is a possible answer: '...'"), but you should return it exactly as provided - the backend will handle extracting just the question part.
 - Be specific: Instead of "good job", say exactly what was good (e.g., "You said 'please' correctly")
 - Make pronunciation tips clear: Use phonetic notation AND explain in simple English (e.g., "pronounce 'coffee' /kɔːfi/ with the 'o' sound /ɔː/")
 - Make examples relevant: Base them on the actual café question that was asked

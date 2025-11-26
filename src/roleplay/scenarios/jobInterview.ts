@@ -290,7 +290,7 @@ export const jobInterviewScenario: RolePlayScenarioConfig = {
         firstQuestion: (studentName: string) =>
           `Tell me about yourself.`,
         rounds: [
-          {
+        {
             id: 1,
             title: 'General Questions',
             questions: [
@@ -314,8 +314,8 @@ export const jobInterviewScenario: RolePlayScenarioConfig = {
                   `What are your strengths? Here is a possible answer: 'My strongest assets are structured thinking and diplomatic communication. I'm able to bring clarity to complex situations and keep stakeholders aligned, even when priorities shift.' Now please tell me about your strengths.`,
                 exampleAnswer:
                   "My strongest assets are structured thinking and diplomatic communication. I'm able to bring clarity to complex situations and keep stakeholders aligned, even when priorities shift.",
-              },
-              {
+        },
+        {
                 letter: 'D',
                 question: (studentName: string) =>
                   `What is one weakness? Here is a possible answer: 'I used to take on too many commitments at once. I've learned to prioritize more rigorously and to set clearer boundaries. As a result, the quality of my output is consistently high without last-minute pressure.' Now please tell me about one weakness.`,
@@ -337,8 +337,8 @@ export const jobInterviewScenario: RolePlayScenarioConfig = {
                   'We had a last-minute client request that required rapid coordination. I created a quick escalation plan, delegated tasks based on strengths, and kept communication tight. We delivered on time, and I learned the value of staying calm and structured.',
               },
             ],
-          },
-          {
+        },
+        {
             id: 2,
             title: 'Behavioral & Problem-Solving',
             questions: [
@@ -378,8 +378,8 @@ export const jobInterviewScenario: RolePlayScenarioConfig = {
                   'I try to understand the underlying fear—loss of control, increased workload, lack of clarity. Once you address the real concern, resistance decreases. If needed, I set clear expectations and timelines.',
               },
             ],
-          },
-          {
+        },
+        {
             id: 3,
             title: 'Salary, Bonuses, Vacation',
             questions: [
@@ -417,8 +417,8 @@ export const jobInterviewScenario: RolePlayScenarioConfig = {
                   `What are your expectations in terms of vacation? Here is a possible answer: 'I believe time off is essential for long-term productivity and well-being. I'm flexible, but I do value a policy that allows for proper work-life balance.' Now please tell me about your vacation expectations.`,
                 exampleAnswer:
                   "I believe time off is essential for long-term productivity and well-being. I'm flexible, but I do value a policy that allows for proper work-life balance.",
-              },
-            ],
+        },
+      ],
           },
         ],
       },

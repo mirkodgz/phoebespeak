@@ -367,8 +367,20 @@ export const generateNextConversationTurn = async ({
         }
         feedback = feedback || "Good!";
         
-        // La pregunta siempre debe ser la predefinida, no la del AI
-        const finalQuestion = question;
+        // La pregunta siempre debe ser la predefinida, pero extraer solo la parte antes del ejemplo
+        // Esto evita que el ejemplo aparezca en la pregunta devuelta
+        // Formato esperado: "Question text Here is a possible answer: 'example' Now please tell me..."
+        let finalQuestion = question;
+        const hereIsIndex = question.search(/Here is (?:a simple )?(?:example|possible) answer:/i);
+        if (hereIsIndex > 0) {
+          // Extraer solo la parte antes de "Here is..."
+          finalQuestion = question.substring(0, hereIsIndex).trim();
+        } else {
+          // Si no se encuentra "Here is", intentar eliminar "Now please tell me..." y cualquier ejemplo que pueda quedar
+          finalQuestion = question.replace(/\s*Now please tell me.*$/i, '').trim();
+          // Eliminar cualquier rastro del ejemplo que pueda quedar
+          finalQuestion = finalQuestion.replace(/Here is.*answer:.*$/i, '').trim();
+        }
         
         return {
           feedback: feedback,
@@ -379,11 +391,23 @@ export const generateNextConversationTurn = async ({
         };
       } catch (error) {
         console.error('[openai] generateNextTurn error', error);
-        // Fallback: usar la pregunta directamente sin feedback
+        // Fallback: usar la pregunta directamente sin feedback, pero extraer solo la parte antes del ejemplo
+        let finalQuestion = question;
+        const hereIsIndex = question.search(/Here is (?:a simple )?(?:example|possible) answer:/i);
+        if (hereIsIndex > 0) {
+          // Extraer solo la parte antes de "Here is..."
+          finalQuestion = question.substring(0, hereIsIndex).trim();
+        } else {
+          // Si no se encuentra "Here is", intentar eliminar "Now please tell me..." y cualquier ejemplo que pueda quedar
+          finalQuestion = question.replace(/\s*Now please tell me.*$/i, '').trim();
+          // Eliminar cualquier rastro del ejemplo que pueda quedar
+          finalQuestion = finalQuestion.replace(/Here is.*answer:.*$/i, '').trim();
+        }
+        
         return {
           feedback: "Good!",
-          question: question,
-          tutorMessage: `Good! ${question}`, // Mantener compatibilidad
+          question: finalQuestion,
+          tutorMessage: `Good! ${finalQuestion}`, // Mantener compatibilidad
           shouldEnd: questionIndex === predefinedQuestions.length - 1,
         };
       }

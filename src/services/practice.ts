@@ -304,6 +304,31 @@ export const requestTranslate = async (
   return data.translation;
 };
 
+export const requestTutorChat = async ({
+  conversationHistory,
+  studentName,
+  studentLevel,
+  message,
+}: {
+  conversationHistory: Array<{role: 'tutor' | 'user'; text: string}>;
+  studentName: string;
+  studentLevel?: 'beginner' | 'intermediate' | 'advanced';
+  message: string;
+}): Promise<{tutorMessage: string}> => {
+  const response = await safeFetch('/practice/tutor-chat', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      conversationHistory,
+      studentName,
+      studentLevel: studentLevel || 'beginner',
+      message,
+    }),
+  });
+
+  return response.json();
+};
+
 export const requestFreeInterviewTurn = async ({
   conversationHistory,
   studentName,

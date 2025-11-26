@@ -27,16 +27,25 @@ import {
   getAtTheCafeBeginnerGuidedRoundPrompt,
   getAtTheCafeIntermediateGuidedRoundPrompt,
   getAtTheCafeAdvancedGuidedRoundPrompt,
+  getAtTheCafeBeginnerFreePrompt,
+  getAtTheCafeIntermediateFreePrompt,
+  getAtTheCafeAdvancedFreePrompt,
 } from './scenarios/atTheCafe';
 import {
   getDailySmallTalkBeginnerGuidedRoundPrompt,
   getDailySmallTalkIntermediateGuidedRoundPrompt,
   getDailySmallTalkAdvancedGuidedRoundPrompt,
+  getDailySmallTalkBeginnerFreePrompt,
+  getDailySmallTalkIntermediateFreePrompt,
+  getDailySmallTalkAdvancedFreePrompt,
 } from './scenarios/dailySmallTalk';
 import {
   getMeetingSomeoneNewBeginnerGuidedRoundPrompt,
   getMeetingSomeoneNewIntermediateGuidedRoundPrompt,
   getMeetingSomeoneNewAdvancedGuidedRoundPrompt,
+  getMeetingSomeoneNewBeginnerFreePrompt,
+  getMeetingSomeoneNewIntermediateFreePrompt,
+  getMeetingSomeoneNewAdvancedFreePrompt,
 } from './scenarios/meetingSomeoneNew';
 
 export interface GetPromptParams {
@@ -170,10 +179,68 @@ const getStandardPrompt = (
     }
   }
 
-  // TODO: Agregar otros escenarios cuando estén listos
-  // if (scenarioId === 'atTheCafe') { ... }
-  // if (scenarioId === 'dailySmallTalk') { ... }
-  // if (scenarioId === 'meetingSomeoneNew') { ... }
+  // At The Cafe
+  if (scenarioId === 'atTheCafe') {
+    if (mode === 'guided') {
+      // At The Cafe solo tiene guided mode con rounds, no tiene guided mode sin rounds
+      throw new Error(
+        `Guided mode without rounds not implemented for scenario: ${scenarioId}`,
+      );
+    } else {
+      // mode === 'free'
+      const turnNumber = context.turnNumber || 1;
+      switch (levelId) {
+        case 'beginner':
+          return getAtTheCafeBeginnerFreePrompt(context, turnNumber);
+        case 'intermediate':
+          return getAtTheCafeIntermediateFreePrompt(context, turnNumber);
+        case 'advanced':
+          return getAtTheCafeAdvancedFreePrompt(context, turnNumber);
+      }
+    }
+  }
+
+  // Daily Small Talk
+  if (scenarioId === 'dailySmallTalk') {
+    if (mode === 'guided') {
+      // Daily Small Talk solo tiene guided mode con rounds, no tiene guided mode sin rounds
+      throw new Error(
+        `Guided mode without rounds not implemented for scenario: ${scenarioId}`,
+      );
+    } else {
+      // mode === 'free'
+      const turnNumber = context.turnNumber || 1;
+      switch (levelId) {
+        case 'beginner':
+          return getDailySmallTalkBeginnerFreePrompt(context, turnNumber);
+        case 'intermediate':
+          return getDailySmallTalkIntermediateFreePrompt(context, turnNumber);
+        case 'advanced':
+          return getDailySmallTalkAdvancedFreePrompt(context, turnNumber);
+      }
+    }
+  }
+
+  // Meeting Someone New
+  if (scenarioId === 'meetingSomeoneNew') {
+    if (mode === 'guided') {
+      // Meeting Someone New solo tiene guided mode con rounds, no tiene guided mode sin rounds
+      throw new Error(
+        `Guided mode without rounds not implemented for scenario: ${scenarioId}`,
+      );
+    } else {
+      // mode === 'free'
+      const turnNumber = context.turnNumber || 1;
+      switch (levelId) {
+        case 'beginner':
+          return getMeetingSomeoneNewBeginnerFreePrompt(context, turnNumber);
+        case 'intermediate':
+          return getMeetingSomeoneNewIntermediateFreePrompt(context, turnNumber);
+        case 'advanced':
+          return getMeetingSomeoneNewAdvancedFreePrompt(context, turnNumber);
+      }
+    }
+  }
 
   throw new Error(
     `Prompt not implemented for scenario: ${scenarioId}, level: ${levelId}, mode: ${mode}`,

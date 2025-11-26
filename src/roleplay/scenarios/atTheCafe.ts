@@ -112,14 +112,14 @@ export const atTheCafeScenario: RolePlayScenarioConfig = {
                 question: (studentName: string) =>
                   `What would you like? What can I get you? Here is a possible answer: 'I'd like a cappuccino, please. And could I have a croissant as well?' Now please tell me what you would like.`,
                 exampleAnswer: "I'd like a cappuccino, please. And could I have a croissant as well?",
-              },
-              {
+        },
+        {
                 letter: 'B',
                 question: (studentName: string) =>
                   `For here or to go? Here is a possible answer: 'For here, please. I want to sit for a bit and relax.' Now please tell me if it's for here or to go.`,
                 exampleAnswer: 'For here, please. I want to sit for a bit and relax.',
-              },
-              {
+        },
+        {
                 letter: 'C',
                 question: (studentName: string) =>
                   `Do you need anything else? Here is a possible answer: 'No, thank you. That's all for now.' Now please tell me if you need anything else.`,
@@ -136,8 +136,8 @@ export const atTheCafeScenario: RolePlayScenarioConfig = {
                 question: (studentName: string) =>
                   `Are you from around here? Here is a possible answer: 'No, I'm not from here, but I moved nearby recently. I like this neighbourhood.' Now please tell me if you are from around here.`,
                 exampleAnswer: "No, I'm not from here, but I moved nearby recently. I like this neighbourhood.",
-              },
-              {
+        },
+        {
                 letter: 'B',
                 question: (studentName: string) =>
                   `Do you come here often? Here is a possible answer: 'Yes, I come here a few times a week. The café is really nice and comfortable.' Now please tell me if you come here often.`,
@@ -148,14 +148,14 @@ export const atTheCafeScenario: RolePlayScenarioConfig = {
                 question: (studentName: string) =>
                   `Are you working or just relaxing today? Here is a possible answer: 'I'm working a little, but I'm also taking a break.' Now please tell me if you are working or just relaxing today.`,
                 exampleAnswer: "I'm working a little, but I'm also taking a break.",
-              },
-            ],
-          },
-          {
+        },
+      ],
+    },
+    {
             id: 3,
             title: 'Solving Problems & Special Requests',
             questions: [
-              {
+        {
                 letter: 'A',
                 question: (studentName: string) =>
                   `Sorry, the Wi-Fi isn't working right now. Is that okay? Here is a possible answer: 'That's okay. I can use my mobile data for now.' Now please tell me if that's okay.`,
@@ -166,8 +166,8 @@ export const atTheCafeScenario: RolePlayScenarioConfig = {
                 question: (studentName: string) =>
                   `We're out of oat milk. Would you like something else? Here is a possible answer: 'No problem. Regular milk is fine.' Now please tell me what you would like instead.`,
                 exampleAnswer: 'No problem. Regular milk is fine.',
-              },
-              {
+        },
+        {
                 letter: 'C',
                 question: (studentName: string) =>
                   `It's getting crowded. Would you like to move to another table? Here is a possible answer: 'Sure, that's okay. Thank you.' Now please tell me if you would like to move to another table.`,
@@ -197,8 +197,8 @@ export const atTheCafeScenario: RolePlayScenarioConfig = {
                 question: (studentName: string) =>
                   `What would you like? What can I get you? Here is a possible answer: 'Thanks, I'll have a cappuccino with oat milk, please. If it's possible, I'd also like a slice of your almond cake - I've heard it's excellent.' Now please tell me what you would like.`,
                 exampleAnswer: "Thanks, I'll have a cappuccino with oat milk, please. If it's possible, I'd also like a slice of your almond cake - I've heard it's excellent.",
-              },
-              {
+        },
+        {
                 letter: 'B',
                 question: (studentName: string) =>
                   `For here or to go? Here is a possible answer: 'For here. I have some work to finish, and this seems like the perfect place to focus.' Now please tell me if it's for here or to go.`,
@@ -209,14 +209,14 @@ export const atTheCafeScenario: RolePlayScenarioConfig = {
                 question: (studentName: string) =>
                   `Do you need anything else? Here is a possible answer: 'Not for now, thank you. But if you don't mind, could you let me know when the Wi-Fi is working again?' Now please tell me if you need anything else.`,
                 exampleAnswer: "Not for now, thank you. But if you don't mind, could you let me know when the Wi-Fi is working again?",
-              },
-            ],
-          },
-          {
+        },
+      ],
+    },
+    {
             id: 2,
             title: 'Social & Small Talk',
             questions: [
-              {
+        {
                 letter: 'A',
                 question: (studentName: string) =>
                   `Are you from around here? Here is a possible answer: 'Not originally, but I've been living in this area for a couple of years. I love the energy here. It's lively without being overwhelming.' Now please tell me if you are from around here.`,
@@ -227,8 +227,8 @@ export const atTheCafeScenario: RolePlayScenarioConfig = {
                 question: (studentName: string) =>
                   `Do you come here often? Here is a possible answer: 'Quite often, actually. I enjoy the atmosphere - it's friendly, calm, and great for getting work done.' Now please tell me if you come here often.`,
                 exampleAnswer: "Quite often, actually. I enjoy the atmosphere - it's friendly, calm, and great for getting work done.",
-              },
-              {
+        },
+        {
                 letter: 'C',
                 question: (studentName: string) =>
                   `Are you working or just relaxing today? Here is a possible answer: 'A bit of both. I'm finishing a few tasks, but I'm also trying to enjoy a slower morning.' Now please tell me if you are working or just relaxing today.`,
@@ -245,20 +245,20 @@ export const atTheCafeScenario: RolePlayScenarioConfig = {
                 question: (studentName: string) =>
                   `Sorry, the Wi-Fi isn't working at the moment. Is that okay? Here is a possible answer: 'No problem at all. I can work offline or use my hotspot for a while - just let me know when it's back.' Now please tell me if that's okay.`,
                 exampleAnswer: "No problem at all. I can work offline or use my hotspot for a while - just let me know when it's back.",
-              },
-              {
+        },
+        {
                 letter: 'B',
                 question: (studentName: string) =>
                   `We're out of oat milk. Would you like something else? We have whole or skim milk. Here is a possible answer: 'That's totally fine. I'll take whole milk instead - thanks for letting me know.' Now please tell me what you would like instead.`,
                 exampleAnswer: "That's totally fine. I'll take whole milk instead - thanks for letting me know.",
-              },
-              {
+        },
+        {
                 letter: 'C',
                 question: (studentName: string) =>
                   `It is getting crowded here. Would you like to move to another table? Here is a possible answer: 'If there's another spot available, that would be great. Thank you for offering.' Now please tell me if you would like to move to another table.`,
                 exampleAnswer: "If there's another spot available, that would be great. Thank you for offering.",
-              },
-            ],
+        },
+      ],
           },
         ],
       },

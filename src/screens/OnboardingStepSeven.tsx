@@ -1,9 +1,8 @@
 import React, {useCallback, useMemo, useState} from 'react';
 import {Pressable, StyleSheet, View} from 'react-native';
 import {LinearGradient} from 'expo-linear-gradient';
-import {useNavigation} from '@react-navigation/native';
 
-import {useTheme, useTranslation} from '../hooks/';
+import {useData, useTheme, useTranslation} from '../hooks/';
 import {
   AssistantOrb,
   Block,
@@ -12,7 +11,7 @@ import {
   Text,
 } from '../components/';
 
-const TOTAL_STEPS = 8;
+const TOTAL_STEPS = 7;
 const CURRENT_STEP = 7;
 
 type LevelOption = {
@@ -51,7 +50,7 @@ const PROGRESS_GRADIENT = ['#0B3D4D', '#60CB58'] as const;
 const ACTIVE_BG = '#0b3d4d';
 
 const OnboardingStepSeven = () => {
-  const navigation = useNavigation<any>();
+  const {completeOnboarding} = useData();
   const {sizes} = useTheme();
   const {t} = useTranslation();
 
@@ -70,8 +69,8 @@ const OnboardingStepSeven = () => {
     if (!selected) {
       return;
     }
-    navigation.navigate('OnboardingStepEight');
-  }, [navigation, selected]);
+    completeOnboarding();
+  }, [completeOnboarding, selected]);
 
   const continueDisabled = useMemo(() => selected === null, [selected]);
 

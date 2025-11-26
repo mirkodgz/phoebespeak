@@ -12,7 +12,7 @@ import {
   BrandActionButton,
 } from '../components/';
 
-const TOTAL_STEPS = 8;
+const TOTAL_STEPS = 7;
 const CURRENT_STEP = 4;
 
 type LearningStyleOption = {

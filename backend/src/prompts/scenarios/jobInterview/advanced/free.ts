@@ -29,7 +29,13 @@ You are a patient, encouraging English teacher helping Italian learners practice
 - Keep questions clear and appropriate for ADVANCED level
 - You can use professional vocabulary and complex sentence structures
 - Ask more sophisticated questions that demonstrate higher-level thinking
-- After 8-10 questions, provide a closing message`,
+- After exactly 5 interview questions (after the initial company/position questions), provide a closing message
+
+FEEDBACK GUIDELINES:
+- Always be friendly, encouraging, and supportive
+- Give brief, specific suggestions (1 sentence maximum)
+- Keep feedback positive and constructive
+- Be warm and approachable in your tone`,
   );
 
   const historyText = context.conversationHistory
@@ -42,19 +48,49 @@ You are a patient, encouraging English teacher helping Italian learners practice
   let userPrompt = '';
 
   if (turnNumber === 1) {
-    userPrompt = `This is the first turn. Greet the student ${context.studentName} warmly and welcome them to the interview practice session.`;
+    userPrompt = `This is the first turn. Greet the student ${context.studentName} warmly and welcome them to the interview practice session.
+    
+    RESPONSE FORMAT (JSON):
+    {
+      "tutorMessage": "Your greeting message here",
+      "question": "Your greeting message here",
+      "feedback": null,
+      "shouldEnd": false
+    }`;
   } else if (turnNumber === 2) {
-    userPrompt = `Ask the student: "What company are you going to apply to?"`;
+    // Pregunta 1 (fija): Solo la pregunta, sin feedback
+    userPrompt = `Ask the student ONLY this question: "What company are you going to apply to?"
+    
+    IMPORTANT: 
+    - Return ONLY the question, no feedback, no additional comments
+    - Do NOT include any example or explanation
+    - Wait for the student's response before continuing
+    
+    RESPONSE FORMAT (JSON):
+    {
+      "tutorMessage": "What company are you going to apply to?",
+      "question": "What company are you going to apply to?",
+      "feedback": null,
+      "shouldEnd": false
+    }`;
   } else if (turnNumber === 3) {
-    const lastUserMessage = context.conversationHistory
-      .slice()
-      .reverse()
-      .find(msg => msg.role === 'user');
-    const company = lastUserMessage?.text || context.companyName || 'the company';
-
-    userPrompt = `The student just answered about the company: "${company}". 
-    React positively with something brief like "Great!" or "Perfect!", then ask: "What position are you going to apply for?"`;
+    // Pregunta 2 (fija): Solo la pregunta, sin feedback
+    userPrompt = `The student just answered about the company. Now ask ONLY this question: "What position are you going to apply for?"
+    
+    IMPORTANT: 
+    - Return ONLY the question, no feedback, no reactions, no additional comments
+    - Do NOT include any example or explanation
+    - Wait for the student's response before continuing
+    
+    RESPONSE FORMAT (JSON):
+    {
+      "tutorMessage": "What position are you going to apply for?",
+      "question": "What position are you going to apply for?",
+      "feedback": null,
+      "shouldEnd": false
+    }`;
   } else if (turnNumber === 4) {
+    // Transición + Primera pregunta dinámica (pregunta 3)
     const lastUserMessage = context.conversationHistory
       .slice()
       .reverse()
@@ -68,20 +104,68 @@ You are a patient, encouraging English teacher helping Italian learners practice
       .find(msg => msg.role === 'user');
     const company = companyMessage?.text || context.companyName || 'the company';
 
-    userPrompt = `The student just answered about the position: "${position}".
+    userPrompt = `The student just answered about the position: "${position}" for company: "${company}".
     
     Now you need to:
-    1. React positively with something brief like "Great!" or "Perfect!"
-    2. Say something like: "Great, I will help you practice an interview for ${company}. Let's begin!"
-    3. Ask the FIRST interview question relevant to the position "${position}" at ${company}.
+    1. Say a brief transition like: "Perfect! I'll help you practice an interview for ${company} as a ${position}. Let's begin!"
+    2. Immediately after the transition, ask the FIRST interview question (question 3 of 7 total) relevant to the position "${position}" at ${company}.
     
-    Make this first question relevant to the specific position and company. Use ADVANCED level vocabulary and professional, sophisticated language.`;
-  } else {
+    IMPORTANT:
+    - Combine the transition and the first question in ONE message
+    - This is the FIRST dynamic interview question
+    - Make it relevant to the specific position and company
+    - Use ADVANCED level vocabulary and professional, sophisticated language
+    - Do NOT give feedback yet, just the transition + question
+    - Base your question on the company and position the student mentioned
+    - Examples: "Perfect! I'll help you practice an interview for ${company} as a ${position}. Let's begin! Why do you think you would be a good fit for ${company}?"`;
+  } else if (turnNumber >= 5 && turnNumber <= 9) {
+    // Primera pregunta dinámica (pregunta 3) - SIN feedback
+    const positionMessage = context.conversationHistory
+      .slice()
+      .reverse()
+      .find(msg => msg.role === 'user');
+    const position = positionMessage?.text || context.positionName || 'the position';
+
+    const companyMessage = context.conversationHistory
+      .slice()
+      .reverse()
+      .slice(1)
+      .find(msg => msg.role === 'user');
+    const company = companyMessage?.text || context.companyName || 'the company';
+
+    userPrompt = `Now ask the FIRST interview question (question 3 of 7 total) relevant to the position "${position}" at ${company}.
+    
+    IMPORTANT:
+    - This is the FIRST dynamic interview question
+    - Make it relevant to the specific position and company
+    - Use ADVANCED level vocabulary and professional, sophisticated language
+    - Do NOT give feedback yet, just ask the question
+    - Base your question on the company and position the student mentioned
+    - Examples: "Why do you think you would be a good fit for ${company}?" or "Can you describe a challenge you overcame that relates to ${position}?"`;
+  } else if (turnNumber >= 6 && turnNumber <= 9) {
+    // Preguntas 4-7 (dinámicas): Feedback breve + siguiente pregunta
     const lastUserMessage = context.conversationHistory
       .slice()
       .reverse()
       .find(msg => msg.role === 'user');
-    const interviewQuestionsCount = turnNumber - 4;
+    const companyMessage = context.conversationHistory
+      .slice()
+      .reverse()
+      .find((msg, idx, arr) => {
+        // Buscar el mensaje del usuario que contiene la company (debe estar antes de la position)
+        const positionMsg = arr.find((m, i) => i > idx && m.role === 'user');
+        return msg.role === 'user' && positionMsg;
+      });
+    const company = companyMessage?.text || context.companyName || 'the company';
+    
+    const positionMessage = context.conversationHistory
+      .slice()
+      .reverse()
+      .find(msg => msg.role === 'user');
+    const position = positionMessage?.text || context.positionName || 'the position';
+
+    const dynamicQuestionNumber = turnNumber - 1; // Turn 5 = pregunta 4, Turn 6 = pregunta 5, etc.
+    const questionsRemaining = 10 - turnNumber; // Cuántas preguntas quedan después de esta
 
     userPrompt = `The student just answered your previous interview question: "${lastUserMessage?.text || 'their answer'}"
     
@@ -89,14 +173,30 @@ You are a patient, encouraging English teacher helping Italian learners practice
     ${historyText}
     
     Now you need to:
-    1. Give brief, positive feedback (1-2 sentences max) like "Great!", "Perfect!", "That's excellent!", "Well said!"
-    2. Ask the NEXT interview question relevant to the position and company mentioned earlier.
+    1. Give brief, friendly, and encouraging feedback (1 sentence maximum). Be specific and positive. Examples: "Good! Try to give a more specific example next time.", "Great answer!", "That's perfect!", "Well said!"
+    2. Ask the NEXT interview question (question ${dynamicQuestionNumber} of 7 total) relevant to the position "${position}" at ${company}.
     
-    You have asked ${interviewQuestionsCount} interview question(s) so far. Continue with personalized questions until you reach at least 8 total interview questions.
+    IMPORTANT: 
+    - This is dynamic interview question ${dynamicQuestionNumber} (${questionsRemaining} more to go)
+    - Base your question on the student's previous answers, especially their company and position responses
+    - Use ADVANCED level vocabulary and professional language. Questions should be sophisticated and demonstrate higher-level thinking.
+    - Always be friendly, warm, and encouraging
+    - Keep feedback brief and specific (1 sentence max)
+    - Make questions relevant to the specific position "${position}" and company "${company}"
+    - Examples: "What skills do you bring that could help the team here?" or "How do you handle pressure in a work environment?" or "What makes you interested in growing within ${company}?"
     
-    IMPORTANT: Use ADVANCED level vocabulary and professional language. Questions should be sophisticated and demonstrate higher-level thinking.
+    After exactly 5 dynamic interview questions (turns 4-9), you will provide a closing message.`;
+  } else if (turnNumber === 10) {
+    // Cierre después del feedback de la pregunta 7
+    userPrompt = `The student just answered your last interview question (question 7). You already gave feedback for that answer.
     
-    After 8-10 questions, you can start wrapping up with a closing message like: "Thank you for the interview practice, ${context.studentName}. You did great! Keep practicing."`;
+    Now provide a closing message like: "Great job! This completes our practice interview. If you want, we can repeat it or try a different role play."
+    
+    IMPORTANT:
+    - This is the closing message
+    - Be warm and encouraging
+    - Do NOT ask any more questions
+    - Do NOT give feedback again`;
   }
 
   return {

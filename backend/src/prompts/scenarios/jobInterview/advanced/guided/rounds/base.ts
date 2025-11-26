@@ -6,13 +6,13 @@
 import {
   composeSystemPrompt,
   composeUserPrompt,
-} from '../../../../base/composer';
-import {ROUNDS_INSTRUCTIONS} from '../../../../base/instructions';
+} from '../../../../../base/composer';
+import {ROUNDS_INSTRUCTIONS} from '../../../../../base/instructions';
 import {
   GUIDED_FEEDBACK_STRUCTURE,
   ADVANCED_FEEDBACK_GUIDELINES,
-} from '../../../../base/feedback-structures';
-import type {PromptConfig, PromptContext} from '../../../../types';
+} from '../../../../../base/feedback-structures';
+import type {PromptConfig, PromptContext} from '../../../../../types';
 
 export const getJobInterviewAdvancedGuidedRoundPrompt = (
   context: PromptContext,

@@ -1,18 +1,20 @@
 import React from 'react';
-import {Platform, Text} from 'react-native';
+import {Platform} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {createStackNavigator} from '@react-navigation/stack';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {Ionicons} from '@expo/vector-icons';
 import {useTheme} from '../hooks';
 import {
   Home,
   RolePlay,
   RolePlayModeSelection,
   PracticeSession,
-  ProgressOverview,
   Profile,
   SettingsScreen,
 } from '../screens';
+import AITutor from '../screens/AITutor';
+import ProPlans from '../screens/ProPlans';
 
 const Tab = createBottomTabNavigator();
 const HomeStack = createStackNavigator();
@@ -38,8 +40,8 @@ const PracticeStackNavigator = () => (
 const ChampionshipsStackNavigator = () => (
   <ChampionshipsStack.Navigator screenOptions={{headerShown: false}}>
     <ChampionshipsStack.Screen
-      name="ProgressOverviewMain"
-      component={ProgressOverview}
+      name="AITutorMain"
+      component={AITutor}
     />
   </ChampionshipsStack.Navigator>
 );
@@ -48,6 +50,7 @@ const ProfileStackNavigator = () => (
   <ProfileStack.Navigator screenOptions={{headerShown: false}}>
     <ProfileStack.Screen name="ProfileMain" component={Profile} />
     <ProfileStack.Screen name="SettingsScreen" component={SettingsScreen} />
+    <ProfileStack.Screen name="ProPlans" component={ProPlans} />
   </ProfileStack.Navigator>
 );
 
@@ -67,25 +70,27 @@ export default () => {
   return (
     <Tab.Navigator
       screenOptions={({route}) => ({
-        tabBarIcon: ({focused}) => {
-          let emoji: string;
+        tabBarIcon: ({focused, color, size}) => {
+          let iconName: keyof typeof Ionicons.glyphMap;
 
           if (route.name === 'Home') {
-            emoji = '🏠';
+            iconName = focused ? 'home' : 'home-outline';
           } else if (route.name === 'RolePlays') {
-            emoji = '🎭';
+            iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';
           } else if (route.name === 'AI tutor') {
-            emoji = '🤖';
+            iconName = focused ? 'sparkles' : 'sparkles-outline';
           } else if (route.name === 'Profilo') {
-            emoji = '👤';
+            iconName = focused ? 'person-circle' : 'person-circle-outline';
           } else {
-            emoji = '❓';
+            iconName = 'help-circle-outline';
           }
 
           return (
-            <Text style={{fontSize: 24, opacity: focused ? 1 : 0.6}}>
-              {emoji}
-            </Text>
+            <Ionicons
+              name={iconName}
+              size={size || 24}
+              color={focused ? color : String(colors.text || '#666')}
+            />
           );
         },
         tabBarActiveTintColor: String(colors.primary || '#4A90E2'),

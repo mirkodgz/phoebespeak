@@ -8,7 +8,6 @@ export {default as OnboardingStepFour} from './OnboardingStepFour';
 export {default as OnboardingStepFive} from './OnboardingStepFive';
 export {default as OnboardingStepSix} from './OnboardingStepSix';
 export {default as OnboardingStepSeven} from './OnboardingStepSeven';
-export {default as OnboardingStepEight} from './OnboardingStepEight';
 
 export {default as Dashboard} from './Dashboard';
 export {default as Home} from './Home';
@@ -19,3 +18,5 @@ export {default as ProgressOverview} from './ProgressOverview';
 export {default as SettingsScreen} from './SettingsScreen';
 
 export {default as Profile} from './Profile';
+export {default as AITutor} from './AITutor';
+export {default as ProPlans} from './ProPlans';
