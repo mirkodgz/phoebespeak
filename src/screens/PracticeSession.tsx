@@ -72,9 +72,27 @@ const PracticeSession = () => {
     (route?.params as PracticeSessionRouteParams) ?? {};
   const scenarioId =
     (routeScenarioId as RolePlayScenarioId | undefined) ?? 'jobInterview';
+  
+  // Obtener el nivel del usuario como fallback
+  const userLevel = useMemo<RolePlayLevelId>(() => {
+    const level = (user?.department || 'beginner') as RolePlayLevelId;
+    // Validar que el nivel sea uno de los permitidos
+    if (['beginner', 'intermediate', 'advanced'].includes(level)) {
+      return level;
+    }
+    return 'beginner';
+  }, [user?.department]);
+  
   const [activeLevelId, setActiveLevelId] = useState<RolePlayLevelId>(
-    (routeLevelId as RolePlayLevelId | undefined) ?? 'beginner',
+    (routeLevelId as RolePlayLevelId | undefined) ?? userLevel,
   );
+  
+  // Actualizar activeLevelId si el nivel del usuario cambia y no hay un nivel específico en la ruta
+  useEffect(() => {
+    if (!routeLevelId && activeLevelId !== userLevel) {
+      setActiveLevelId(userLevel);
+    }
+  }, [userLevel, routeLevelId, activeLevelId]);
   const sessionMode = routeMode || 'guided'; // 'guided' o 'free'
   const isFreeMode = sessionMode === 'free';
   const scenarioConfig = useMemo<RolePlayScenarioConfig>(() => {

@@ -1,5 +1,8 @@
 export {default as Login} from './Login';
 export {default as Register} from './Register';
+export {default as VerifyCode} from './VerifyCode';
+export {default as LoadingScreen} from './LoadingScreen';
+export {default as ResetPassword} from './ResetPassword';
 export {default as PremiumUpsell} from './PremiumUpsell';
 export {default as Onboarding} from './Onboarding';
 export {default as OnboardingStepTwo} from './OnboardingStepTwo';
@@ -16,6 +19,7 @@ export {default as RolePlayModeSelection} from './RolePlayModeSelection';
 export {default as PracticeSession} from './PracticeSession';
 export {default as ProgressOverview} from './ProgressOverview';
 export {default as SettingsScreen} from './SettingsScreen';
+export {default as EditProfile} from './EditProfile';
 
 export {default as Profile} from './Profile';
 export {default as AITutor} from './AITutor';

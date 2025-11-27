@@ -3,8 +3,7 @@
  * Permite conversaciones libres sobre cualquier tema relacionado con la enseñanza del inglés
  */
 
-import {openaiClient} from './openaiClient';
-import {OPENAI_MODEL_FEEDBACK} from './openaiConfig';
+import {openaiClient, OPENAI_MODEL_FEEDBACK} from './openai';
 
 type TutorChatInput = {
   conversationHistory: Array<{
@@ -97,4 +96,6 @@ Please respond naturally and helpfully as the tutor.`;
     throw error;
   }
 };
+
+
 

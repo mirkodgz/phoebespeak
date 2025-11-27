@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {Platform, StyleSheet, View} from 'react-native';
+import {Platform, StyleSheet, View, TouchableOpacity} from 'react-native';
 import {useNavigation} from '@react-navigation/core';
-import {LinearGradient} from 'expo-linear-gradient';
+import {Ionicons} from '@expo/vector-icons';
 
 import {useData, useTheme, useTranslation} from '../hooks/';
 import {
@@ -12,10 +12,10 @@ import {
   Text,
   BrandBackground,
   BrandActionButton,
+  AssistantOrb,
 } from '../components/';
 
 const isAndroid = Platform.OS === 'android';
-const CARD_GRADIENT = ['rgba(11,61,77,0.52)', 'rgba(4,25,35,0.85)'] as const;
 
 interface IRegistration {
   name: string;
@@ -31,7 +31,7 @@ interface IRegistrationValidation {
 
 const Register = () => {
   const {t} = useTranslation();
-  const {signUp} = useData();
+  const {signInWithGoogle, signUp} = useData();
   const navigation = useNavigation<any>();
   const [isValid, setIsValid] = useState<IRegistrationValidation>({
     name: false,
@@ -46,7 +46,8 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
-  const {assets, colors, sizes} = useTheme();
+  const [showPassword, setShowPassword] = useState(false);
+  const {colors, sizes, icons} = useTheme();
 
   const handleChange = useCallback(
     (value: Partial<IRegistration>) => {
@@ -54,6 +55,24 @@ const Register = () => {
     },
     [setRegistration],
   );
+
+  const handleGoogleSignIn = useCallback(async () => {
+    setLoading(true);
+    setErrorMessage(null);
+    setInfoMessage(null);
+    try {
+      await signInWithGoogle();
+      navigation.replace('Main');
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'No se pudo registrar con Google. Inténtalo nuevamente.';
+      setErrorMessage(message);
+    } finally {
+      setLoading(false);
+    }
+  }, [signInWithGoogle, navigation]);
 
   const handleSignUp = useCallback(async () => {
     if (Object.values(isValid).includes(false)) {
@@ -109,76 +128,85 @@ const Register = () => {
           flexGrow: 1,
           justifyContent: 'center',
           paddingHorizontal: sizes.s,
-          paddingVertical: sizes.xl,
+          paddingVertical: sizes.l,
         }}>
-        <Block flex={0} marginHorizontal="8%" style={{borderRadius: sizes.sm}}>
-          <LinearGradient
-            colors={CARD_GRADIENT}
-            start={{x: 0, y: 0}}
-            end={{x: 1, y: 1}}
-            style={[styles.card, {borderRadius: sizes.sm, paddingVertical: sizes.md}]}>
-            <Block marginHorizontal={sizes.sm} marginBottom={sizes.sm}>
-              <View style={styles.mediaWrapper}>
-                <Image
-                  source={assets.gifPresentationAvatar}
-                  style={styles.media}
-                  resizeMode="cover"
-                />
-              </View>
+        <Block flex={0} marginHorizontal="8%" style={[styles.card, {borderRadius: sizes.sm}]}>
+          <Block
+            color={colors.white}
+            style={[styles.cardContent, {borderRadius: sizes.sm, paddingVertical: sizes.md}]}>
+            <Block marginHorizontal={sizes.sm} marginBottom={sizes.sm} align="center">
+              <AssistantOrb size={160} state="idle" />
             </Block>
 
-              <Text p semibold center>
-              <Text color="rgba(255,255,255,0.78)" size={sizes.p - 2}>
-                {t('register.subtitle')}
-              </Text>
-                </Text>
+            <Text h5 semibold center color={colors.primary} marginBottom={sizes.xs / 2}>
+              {t('register.subtitle')}
+            </Text>
 
-              <Block paddingHorizontal={sizes.sm}>
+            <Block paddingHorizontal={sizes.sm}>
               <Text
                 semibold
-                color="rgba(255,255,255,0.85)"
-                marginBottom={sizes.xs}>
+                color={colors.text}
+                marginBottom={sizes.xs / 2}>
                 {t('common.name')}
               </Text>
-                <Input
-                  autoCapitalize="none"
-                  marginBottom={sizes.m}
-                  placeholder={t('common.namePlaceholder')}
-                  success={Boolean(registration.name && isValid.name)}
-                  danger={Boolean(registration.name && !isValid.name)}
-                  onChangeText={(value) => handleChange({name: value})}
-                />
+              <Input
+                autoCapitalize="none"
+                marginBottom={sizes.sm}
+                placeholder={t('common.namePlaceholder')}
+                success={Boolean(registration.name && isValid.name)}
+                danger={Boolean(registration.name && !isValid.name)}
+                onChangeText={(value) => handleChange({name: value})}
+              />
               <Text
                 semibold
-                color="rgba(255,255,255,0.85)"
-                marginBottom={sizes.xs}>
+                color={colors.text}
+                marginBottom={sizes.xs / 2}>
                 {t('common.email')}
               </Text>
-                <Input
-                  autoCapitalize="none"
-                  marginBottom={sizes.m}
-                  keyboardType="email-address"
-                  placeholder={t('common.emailPlaceholder')}
-                  success={Boolean(registration.email && isValid.email)}
-                  danger={Boolean(registration.email && !isValid.email)}
-                  onChangeText={(value) => handleChange({email: value})}
-                />
+              <Input
+                autoCapitalize="none"
+                marginBottom={sizes.sm}
+                keyboardType="email-address"
+                placeholder={t('common.emailPlaceholder')}
+                success={Boolean(registration.email && isValid.email)}
+                danger={Boolean(registration.email && !isValid.email)}
+                onChangeText={(value) => handleChange({email: value})}
+              />
               <Text
                 semibold
-                color="rgba(255,255,255,0.85)"
-                marginBottom={sizes.xs}>
+                color={colors.text}
+                marginBottom={sizes.xs / 2}>
                 {t('common.password')}
               </Text>
+              <View style={{position: 'relative', marginBottom: sizes.sm}}>
                 <Input
-                  secureTextEntry
+                  secureTextEntry={!showPassword}
                   autoCapitalize="none"
-                  marginBottom={sizes.m}
+                  marginBottom={0}
                   placeholder={t('common.passwordPlaceholder')}
                   onChangeText={(value) => handleChange({password: value})}
-                  success={Boolean(registration.password && isValid.password)}
                   danger={Boolean(registration.password && !isValid.password)}
                 />
-              </Block>
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: sizes.sm,
+                    top: '50%',
+                    marginTop: -10,
+                    zIndex: 10,
+                    padding: sizes.xs,
+                  }}
+                  activeOpacity={0.7}>
+                  <Ionicons
+                    name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                    size={20}
+                    color={colors.text}
+                    style={{opacity: 0.6}}
+                  />
+                </TouchableOpacity>
+              </View>
+            </Block>
 
             <Block
               row
@@ -186,24 +214,26 @@ const Register = () => {
               justify="center"
               marginTop={sizes.xs}
               marginBottom={sizes.xs}>
-                  <Text
+              <Text
                 size={sizes.p - 2}
-                color="rgba(255,255,255,0.7)"
+                color={colors.text}
+                opacity={0.7}
                 marginRight={sizes.xs}>
                 {t('register.google')}
-                </Text>
+              </Text>
               <Button
                 round
-                outlined="rgba(255,255,255,0.35)"
+                outlined={colors.primary}
                 shadow={false}
                 height={sizes.sm * 1.8}
                 width={sizes.sm * 1.8}
                 padding={sizes.xs}
                 radius={(sizes.sm * 1.8) / 2}
                 justify="center"
-                align="center">
+                align="center"
+                onPress={handleGoogleSignIn}>
                 <Image
-                  source={assets.google}
+                  source={icons.google}
                   height={sizes.sm * 1.1}
                   width={sizes.sm * 1.1}
                 />
@@ -213,9 +243,10 @@ const Register = () => {
             {infoMessage ? (
               <Text
                 center
-                color={colors.success ?? '#60CB58'}
+                color={colors.success}
                 size={sizes.p - 2}
-                marginBottom={sizes.xs}>
+                marginBottom={sizes.xs / 2}
+                marginHorizontal={sizes.sm}>
                 {infoMessage}
               </Text>
             ) : null}
@@ -223,9 +254,10 @@ const Register = () => {
             {errorMessage ? (
               <Text
                 center
-                color={colors.danger ?? '#FF6B6B'}
+                color={colors.danger}
                 size={sizes.p - 2}
-                marginBottom={sizes.xs}>
+                marginBottom={sizes.xs / 2}
+                marginHorizontal={sizes.sm}>
                 {errorMessage}
               </Text>
             ) : null}
@@ -234,14 +266,14 @@ const Register = () => {
               label={loading ? 'Creando cuenta...' : t('common.signup')}
               onPress={handleSignUp}
               disabled={loading || Object.values(isValid).includes(false)}
-              style={{marginVertical: sizes.s, marginHorizontal: sizes.sm}}
+              style={{marginVertical: sizes.xs, marginHorizontal: sizes.sm}}
             />
 
-              <Button
-              outlined="rgba(255,255,255,0.35)"
+            <Button
+              outlined={colors.primary}
               shadow={false}
-                marginVertical={sizes.s}
-                marginHorizontal={sizes.sm}
+              marginVertical={sizes.xs}
+              marginHorizontal={sizes.sm}
               onPress={() => {
                 if (navigation.canGoBack()) {
                   navigation.goBack();
@@ -249,11 +281,11 @@ const Register = () => {
                   navigation.navigate('Login');
                 }
               }}>
-              <Text bold white transform="uppercase">
-                  {t('common.signin')}
-                </Text>
-              </Button>
-          </LinearGradient>
+              <Text bold color={colors.primary} transform="uppercase">
+                {t('common.signin')}
+              </Text>
+            </Button>
+          </Block>
         </Block>
       </Block>
     </BrandBackground>
@@ -264,20 +296,14 @@ export default Register;
 
 const styles = StyleSheet.create({
   card: {
-    borderWidth: 1,
-    borderColor: 'rgba(96,203,88,0.28)',
-    shadowColor: 'rgba(0,0,0,0.55)',
-    shadowOpacity: 0.35,
-    shadowRadius: 16,
-    shadowOffset: {width: 0, height: 12},
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
     elevation: 8,
   },
-  mediaWrapper: {
-    borderRadius: 18,
-    overflow: 'hidden',
-  },
-  media: {
-    width: '100%',
-    height: 176,
+  cardContent: {
+    borderWidth: 1,
+    borderColor: 'rgba(11,61,77,0.1)',
   },
 });

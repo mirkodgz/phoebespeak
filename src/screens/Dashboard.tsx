@@ -43,7 +43,7 @@ const Dashboard = () => {
               {greeting}
             </Text>
             <Text h4 white semibold>
-              {user?.name ?? 'Studente'}
+              {user?.name || ''}
             </Text>
           </Block>
           <BrandActionButton

@@ -1,0 +1,12 @@
+Conferma la tua registrazione - Phoebe
+
+Ciao,
+
+Grazie per esserti registrato su Phoebe! Per completare la registrazione, conferma il tuo indirizzo email visitando questo link:
+
+{{ .ConfirmationURL }}
+
+Importante: Se non hai richiesto questa registrazione, ignora questa email. Il link di conferma scadrà tra 24 ore.
+
+Benvenuto in Phoebe! 🎉
+

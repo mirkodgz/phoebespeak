@@ -13,3 +13,10 @@ export const supabaseServerClient = supabaseUrl && supabaseServiceKey
   ? createClient(supabaseUrl, supabaseServiceKey)
   : null;
 
+export const getSupabaseClient = () => {
+  if (!supabaseServerClient) {
+    throw new Error('Supabase client not configured. Check SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY environment variables.');
+  }
+  return supabaseServerClient;
+};
+

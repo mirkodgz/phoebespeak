@@ -1,11 +1,11 @@
-import React from 'react';
+import React, {useMemo} from 'react';
 import {ScrollView, StyleSheet, TouchableOpacity, View, Text as RNText} from 'react-native';
 import {useNavigation, useRoute} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Ionicons} from '@expo/vector-icons';
 
 import {Text} from '../components';
-import {useTheme} from '../hooks';
+import {useTheme, useData} from '../hooks';
 import {
   type RolePlayScenarioId,
   type RolePlayLevelId,
@@ -21,16 +21,27 @@ const RolePlayModeSelection = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const {sizes} = useTheme();
+  const {user} = useData();
   const insets = useSafeAreaInsets();
   const {scenarioId, levelId} = (route?.params as RolePlayModeSelectionRouteParams) ?? {};
 
   const scenarioConfig = ROLE_PLAY_SCENARIOS[scenarioId || 'jobInterview'];
   const styles = createStyles(sizes);
 
+  // Obtener el nivel del usuario como fallback
+  const userLevel = useMemo<RolePlayLevelId>(() => {
+    const level = (user?.department || 'beginner') as RolePlayLevelId;
+    // Validar que el nivel sea uno de los permitidos
+    if (['beginner', 'intermediate', 'advanced'].includes(level)) {
+      return level;
+    }
+    return 'beginner';
+  }, [user?.department]);
+
   const handleModeSelect = (mode: 'guided' | 'free') => {
     navigation.navigate('PracticeSession', {
       scenarioId,
-      levelId: levelId || 'beginner',
+      levelId: levelId || userLevel,
       mode,
     });
   };

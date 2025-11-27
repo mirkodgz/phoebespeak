@@ -9,6 +9,8 @@ import {useData, ThemeProvider, TranslationProvider} from '../hooks';
 import {
   Login,
   Register,
+  VerifyCode,
+  ResetPassword,
   PremiumUpsell,
   Onboarding,
   OnboardingStepTwo,
@@ -17,6 +19,7 @@ import {
   OnboardingStepFive,
   OnboardingStepSix,
   OnboardingStepSeven,
+  LoadingScreen,
 } from '../screens';
 
 const RootStack = createStackNavigator();
@@ -27,6 +30,8 @@ const AuthNavigator = () => (
   <AuthStack.Navigator screenOptions={{headerShown: false}}>
     <AuthStack.Screen name="Login" component={Login} />
     <AuthStack.Screen name="Register" component={Register} />
+    <AuthStack.Screen name="VerifyCode" component={VerifyCode} />
+    <AuthStack.Screen name="ResetPassword" component={ResetPassword} />
     <AuthStack.Screen name="PremiumUpsell" component={PremiumUpsell} />
   </AuthStack.Navigator>
 );
@@ -67,7 +72,7 @@ const OnboardingNavigator = () => (
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
 export default () => {
-  const {isDark, theme, setTheme, isAuthenticated, hasOnboarded} = useData();
+  const {isDark, theme, setTheme, isAuthenticated, hasOnboarded, isProfileLoading} = useData();
 
   /* set the status bar based on isDark constant */
   useEffect(() => {
@@ -112,10 +117,28 @@ export default () => {
     },
   };
 
+  // Configuración de deep linking
+  const linking = {
+    prefixes: ['phoebe://'],
+    config: {
+      screens: {
+        Auth: {
+          screens: {
+            ResetPassword: 'reset-password',
+            Login: 'login',
+            Register: 'register',
+            // auth/callback será manejado por WebBrowser.openAuthSessionAsync
+            // No necesita una pantalla específica
+          },
+        },
+      },
+    },
+  };
+
   return (
     <TranslationProvider>
       <ThemeProvider theme={theme} setTheme={setTheme}>
-        <NavigationContainer theme={navigationTheme}>
+        <NavigationContainer linking={linking} theme={navigationTheme}>
           <RootStack.Navigator screenOptions={{headerShown: false}}>
             {!hasOnboarded ? (
               <RootStack.Screen

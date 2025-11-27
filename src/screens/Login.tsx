@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {Platform, StyleSheet, View} from 'react-native';
+import {Platform, StyleSheet, TouchableOpacity, Alert, View} from 'react-native';
 import {useNavigation} from '@react-navigation/core';
-import {LinearGradient} from 'expo-linear-gradient';
+import {Ionicons} from '@expo/vector-icons';
 
 import {useData, useTheme, useTranslation} from '../hooks/';
 import {
@@ -12,10 +12,10 @@ import {
   Text,
   BrandBackground,
   BrandActionButton,
+  AssistantOrb,
 } from '../components/';
 
 const isAndroid = Platform.OS === 'android';
-const CARD_GRADIENT = ['rgba(11,61,77,0.52)', 'rgba(4,25,35,0.85)'] as const;
 
 interface ICredentials {
   email: string;
@@ -28,7 +28,7 @@ interface ICredentialsValidation {
 }
 
 const Login = () => {
-  const {signIn} = useData();
+  const {signIn, signInWithGoogle, forgotPassword} = useData();
   const {t} = useTranslation();
   const navigation = useNavigation<any>();
   const [isValid, setIsValid] = useState<ICredentialsValidation>({
@@ -41,7 +41,11 @@ const Login = () => {
   });
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const {assets, colors, sizes} = useTheme();
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const {colors, sizes, icons} = useTheme();
 
   const handleChange = useCallback(
     (value: Partial<ICredentials>) => {
@@ -80,6 +84,47 @@ const Login = () => {
     });
   }, [credentials]);
 
+  const handleGoogleSignIn = useCallback(async () => {
+    setLoading(true);
+    setErrorMessage(null);
+    try {
+      await signInWithGoogle();
+      navigation.replace('PremiumUpsell');
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'No se pudo iniciar sesión con Google. Inténtalo nuevamente.';
+      setErrorMessage(message);
+    } finally {
+      setLoading(false);
+    }
+  }, [signInWithGoogle, navigation]);
+
+  const handleForgotPassword = useCallback(async () => {
+    if (!resetEmail.trim() || !resetEmail.includes('@')) {
+      Alert.alert('Errore', 'Inserisci un indirizzo email valido.');
+      return;
+    }
+
+    setResetLoading(true);
+    try {
+      await forgotPassword(resetEmail.trim());
+      // Navegar a la pantalla de verificación de código
+      navigation.navigate('VerifyCode', {email: resetEmail.trim()});
+      setShowForgotPassword(false);
+      setResetEmail('');
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Impossibile inviare l\'email di recupero. Riprova più tardi.';
+      Alert.alert('Errore', message);
+    } finally {
+      setResetLoading(false);
+    }
+  }, [resetEmail, forgotPassword, navigation]);
+
   return (
     <BrandBackground>
       <Block
@@ -92,40 +137,30 @@ const Login = () => {
           flexGrow: 1,
           justifyContent: 'center',
           paddingHorizontal: sizes.s,
-          paddingVertical: sizes.xl,
+          paddingVertical: sizes.l,
         }}>
-        <Block flex={0} marginHorizontal="8%" style={{borderRadius: sizes.sm}}>
-          <LinearGradient
-            colors={CARD_GRADIENT}
-            start={{x: 0, y: 0}}
-            end={{x: 1, y: 1}}
-            style={[styles.card, {borderRadius: sizes.sm, paddingVertical: sizes.md}]}>
-            <Block marginHorizontal={sizes.sm} marginBottom={sizes.sm}>
-              <View style={styles.mediaWrapper}>
-                <Image
-                  source={assets.gifPresentationAvatar}
-                  style={styles.media}
-                  resizeMode="cover"
-                />
-              </View>
+        <Block flex={0} marginHorizontal="8%" style={[styles.card, {borderRadius: sizes.sm}]}>
+          <Block
+            color={colors.white}
+            style={[styles.cardContent, {borderRadius: sizes.sm, paddingVertical: sizes.md}]}>
+            <Block marginHorizontal={sizes.sm} marginBottom={sizes.sm} align="center">
+              <AssistantOrb size={160} state="idle" />
             </Block>
 
-            <Text p semibold center>
-              <Text color="rgba(255,255,255,0.78)" size={sizes.p - 2}>
-                {t('login.subtitle')}
-              </Text>
+            <Text h5 semibold center color={colors.primary} marginBottom={sizes.xs / 2}>
+              {t('login.subtitle')}
             </Text>
 
             <Block paddingHorizontal={sizes.sm}>
               <Text
                 semibold
-                color="rgba(255,255,255,0.85)"
-                marginBottom={sizes.xs}>
+                color={colors.text}
+                marginBottom={sizes.xs / 2}>
                 {t('common.email')}
               </Text>
               <Input
                 autoCapitalize="none"
-                marginBottom={sizes.m}
+                marginBottom={sizes.sm}
                 keyboardType="email-address"
                 placeholder={t('common.emailPlaceholder')}
                 success={Boolean(credentials.email && isValid.email)}
@@ -134,19 +169,38 @@ const Login = () => {
               />
               <Text
                 semibold
-                color="rgba(255,255,255,0.85)"
-                marginBottom={sizes.xs}>
+                color={colors.text}
+                marginBottom={sizes.xs / 2}>
                 {t('common.password')}
               </Text>
-              <Input
-                secureTextEntry
-                autoCapitalize="none"
-                marginBottom={sizes.m}
-                placeholder={t('common.passwordPlaceholder')}
-                onChangeText={(value) => handleChange({password: value})}
-                success={Boolean(credentials.password && isValid.password)}
-                danger={Boolean(credentials.password && !isValid.password)}
-              />
+              <View style={{position: 'relative', marginBottom: sizes.sm}}>
+                <Input
+                  secureTextEntry={!showPassword}
+                  autoCapitalize="none"
+                  marginBottom={0}
+                  placeholder={t('common.passwordPlaceholder')}
+                  onChangeText={(value) => handleChange({password: value})}
+                  danger={Boolean(credentials.password && !isValid.password)}
+                />
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: sizes.sm,
+                    top: '50%',
+                    marginTop: -10,
+                    zIndex: 10,
+                    padding: sizes.xs,
+                  }}
+                  activeOpacity={0.7}>
+                  <Ionicons
+                    name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                    size={20}
+                    color={colors.text}
+                    style={{opacity: 0.6}}
+                  />
+                </TouchableOpacity>
+              </View>
             </Block>
 
             <Block
@@ -157,34 +211,52 @@ const Login = () => {
               marginBottom={sizes.xs}>
               <Text
                 size={sizes.p - 2}
-                color="rgba(255,255,255,0.7)"
+                color={colors.text}
+                opacity={0.7}
                 marginRight={sizes.xs}>
                 {t('login.google')}
               </Text>
               <Button
                 round
-                outlined="rgba(255,255,255,0.35)"
+                outlined={colors.primary}
                 shadow={false}
                 height={sizes.sm * 1.8}
                 width={sizes.sm * 1.8}
                 padding={sizes.xs}
                 radius={(sizes.sm * 1.8) / 2}
                 justify="center"
-                align="center">
+                align="center"
+                onPress={handleGoogleSignIn}>
                 <Image
-                  source={assets.google}
+                  source={icons.google}
                   height={sizes.sm * 1.1}
                   width={sizes.sm * 1.1}
                 />
               </Button>
             </Block>
 
+            <Block align="center" marginTop={sizes.xs} marginBottom={sizes.xs}>
+              <TouchableOpacity
+                onPress={() => {
+                  setResetEmail(credentials.email);
+                  setShowForgotPassword(true);
+                }}>
+                <Text
+                  size={sizes.p - 2}
+                  color={colors.primary}
+                  opacity={0.8}>
+                  Ho dimenticato la password
+                </Text>
+              </TouchableOpacity>
+            </Block>
+
             {errorMessage ? (
               <Text
                 center
-                color={colors.danger ?? '#FF6B6B'}
+                color={colors.danger}
                 size={sizes.p - 2}
-                marginBottom={sizes.xs}>
+                marginBottom={sizes.xs / 2}
+                marginHorizontal={sizes.sm}>
                 {errorMessage}
               </Text>
             ) : null}
@@ -193,22 +265,107 @@ const Login = () => {
               label={loading ? 'Iniciando...' : t('common.signin')}
               onPress={handleSignIn}
               disabled={loading || Object.values(isValid).includes(false)}
-              style={{marginVertical: sizes.s, marginHorizontal: sizes.sm}}
+              style={{marginVertical: sizes.xs, marginHorizontal: sizes.sm}}
             />
 
             <Button
-              outlined="rgba(255,255,255,0.35)"
+              outlined={colors.primary}
               shadow={false}
-              marginVertical={sizes.s}
+              marginVertical={sizes.xs}
               marginHorizontal={sizes.sm}
               onPress={() => navigation.navigate('Register')}>
-              <Text bold white transform="uppercase">
+              <Text bold color={colors.primary} transform="uppercase">
                 {t('common.signup')}
               </Text>
             </Button>
-          </LinearGradient>
+          </Block>
         </Block>
       </Block>
+
+      {/* Modal de Olvidé mi contraseña */}
+      {showForgotPassword && (
+        <TouchableOpacity
+          activeOpacity={1}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.7)',
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingHorizontal: sizes.padding,
+            zIndex: 1000,
+          }}
+          onPress={() => {
+            setShowForgotPassword(false);
+            setResetEmail('');
+          }}>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={(e) => e.stopPropagation()}
+            style={{width: '100%', maxWidth: 400}}>
+            <View
+              style={{
+                backgroundColor: colors.white,
+                borderRadius: sizes.sm,
+                padding: sizes.md,
+                width: '100%',
+                borderWidth: 1,
+                borderColor: 'rgba(11,61,77,0.15)',
+                shadowColor: '#000',
+                shadowOffset: {width: 0, height: 4},
+                shadowOpacity: 0.25,
+                shadowRadius: 12,
+                elevation: 10,
+              }}>
+              <Text h5 semibold color={colors.primary} marginBottom={sizes.sm}>
+                Recupera password
+              </Text>
+              <Text
+                size={sizes.p}
+                color={colors.text}
+                opacity={0.8}
+                marginBottom={sizes.md}>
+                Inserisci la tua email e ti invieremo un link per reimpostare la password.
+              </Text>
+              <Input
+                autoCapitalize="none"
+                keyboardType="email-address"
+                placeholder="Email"
+                value={resetEmail}
+                onChangeText={setResetEmail}
+                marginBottom={sizes.md}
+              />
+              <View style={{flexDirection: 'row', marginTop: sizes.xs}}>
+                <View style={{flex: 1, marginRight: sizes.xs / 2}}>
+                  <Button
+                    outlined={colors.primary}
+                    shadow={false}
+                    onPress={() => {
+                      setShowForgotPassword(false);
+                      setResetEmail('');
+                    }}
+                    style={{width: '100%'}}>
+                    <Text bold color={colors.primary}>
+                      Annulla
+                    </Text>
+                  </Button>
+                </View>
+                <View style={{flex: 1, marginLeft: sizes.xs / 2}}>
+                  <BrandActionButton
+                    label={resetLoading ? 'Invio...' : 'Invia'}
+                    onPress={handleForgotPassword}
+                    disabled={resetLoading || !resetEmail.trim() || !resetEmail.includes('@')}
+                    style={{width: '100%'}}
+                  />
+                </View>
+              </View>
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      )}
     </BrandBackground>
   );
 };
@@ -217,21 +374,15 @@ export default Login;
 
 const styles = StyleSheet.create({
   card: {
-    borderWidth: 1,
-    borderColor: 'rgba(96,203,88,0.28)',
-    shadowColor: 'rgba(0,0,0,0.55)',
-    shadowOpacity: 0.35,
-    shadowRadius: 16,
-    shadowOffset: {width: 0, height: 12},
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
     elevation: 8,
   },
-  mediaWrapper: {
-    borderRadius: 18,
-    overflow: 'hidden',
-  },
-  media: {
-    width: '100%',
-    height: 176,
+  cardContent: {
+    borderWidth: 1,
+    borderColor: 'rgba(11,61,77,0.1)',
   },
 });
 

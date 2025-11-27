@@ -1,5 +1,5 @@
-import React, {useMemo} from 'react';
-import {ScrollView, StyleSheet, TouchableOpacity, View} from 'react-native';
+import React, {useMemo, useEffect, useRef} from 'react';
+import {ScrollView, StyleSheet, TouchableOpacity, View, Animated} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Ionicons} from '@expo/vector-icons';
@@ -11,12 +11,67 @@ import {
 } from '../components';
 import {useData, useTheme} from '../hooks';
 import {ROLE_PLAY_SCENARIOS, type RolePlayScenarioId} from '../roleplay';
+import {getUserAvatarSource} from '../utils/avatarHelper';
 
 const Home = () => {
   const {user, progress} = useData();
   const {sizes, colors, assets} = useTheme();
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
+
+  // Animación para el icono sparkles
+  const sparkleAnim = useRef(new Animated.Value(0)).current;
+  const rotateAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Animación de movimiento flotante
+    const floatAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(sparkleAnim, {
+          toValue: 1,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(sparkleAnim, {
+          toValue: 0,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+
+    // Animación de rotación suave
+    const rotateAnimation = Animated.loop(
+      Animated.timing(rotateAnim, {
+        toValue: 1,
+        duration: 3000,
+        useNativeDriver: true,
+      })
+    );
+
+    floatAnimation.start();
+    rotateAnimation.start();
+
+    return () => {
+      floatAnimation.stop();
+      rotateAnimation.stop();
+    };
+  }, []);
+
+  const translateY = sparkleAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -8],
+  });
+
+  const rotate = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
+  const scale = sparkleAnim.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [1, 1.1, 1],
+  });
 
   // Obtener datos de métricas desde progress
   const streakMilestone = progress.milestones.find(m => m.id === 'streak');
@@ -30,23 +85,45 @@ const Home = () => {
     totalStars: 6, // Por ahora hardcodeado, se puede agregar al modelo de datos
   };
 
-  // Datos de progreso (por ahora hardcodeados, se pueden obtener de una fuente de datos)
-  const progressData = {
-    roleplaysCompleted: 0, // Se puede calcular desde historial de sesiones
-    totalPracticeTime: 0, // En minutos, se puede calcular desde historial
-    lastRoleplay: null as RolePlayScenarioId | null, // Último roleplay practicado
+
+  // Nivel de inglés actual
+  const currentLevel = user?.department || 'beginner';
+  const levelLabels = {
+    beginner: 'Principiante',
+    intermediate: 'Intermedio',
+    advanced: 'Avanzato',
   };
 
-  // Roleplays disponibles para mostrar (todos)
-  const availableRoleplays = useMemo(() => {
-    return Object.entries(ROLE_PLAY_SCENARIOS); // Mostrar todos los roleplays
-  }, []);
+  // Últimos roleplays completados (ejemplo)
+  const recentRoleplays = [
+    {id: 'jobInterview' as RolePlayScenarioId, level: 'beginner', date: 'Hace 2 días'},
+    {id: 'atTheCafe' as RolePlayScenarioId, level: 'beginner', date: 'Hace 5 días'},
+    {id: 'dailySmallTalk' as RolePlayScenarioId, level: 'intermediate', date: 'Hace 1 semana'},
+    {id: 'meetingSomeoneNew' as RolePlayScenarioId, level: 'beginner', date: 'Hace 2 semanas'},
+  ];
 
-  // Colores sólidos para las métricas (usando colores del tema y complementarios)
+  // Función para obtener el icono según el tipo de roleplay
+  const getRoleplayIcon = (roleplayId: RolePlayScenarioId): string => {
+    switch (roleplayId) {
+      case 'jobInterview':
+        return 'briefcase';
+      case 'atTheCafe':
+        return 'cafe';
+      case 'dailySmallTalk':
+        return 'chatbubbles';
+      case 'meetingSomeoneNew':
+        return 'person-add';
+      default:
+        return 'chatbubbles';
+    }
+  };
+
+
+  // Colores pastel para las métricas (versiones suaves de los colores originales)
   const metricColors = {
-    streak: colors.primary, // Color primario de marca (#0B3D4D)
-    gems: colors.secondary, // Color secundario de marca (#60CB58)
-    stars: '#FFA500', // Naranja (complementario que va bien con azul/verde)
+    streak: '#A8D5E2', // Azul pastel (versión suave de #0B3D4D)
+    gems: '#B8E6C1', // Verde pastel (versión suave de #60CB58)
+    stars: '#FFD4A3', // Naranja pastel (versión suave de #FFA500)
   };
 
   // Calcular altura aproximada del header
@@ -74,7 +151,10 @@ const Home = () => {
           style={{minHeight: 80}}>
           <Block row align="center" flex={1}>
             <Image
-              source={user?.avatar ? {uri: user.avatar} : assets.avatar1}
+              source={
+                getUserAvatarSource(user?.avatar, assets) ||
+                (user?.avatar ? {uri: user.avatar} : assets.avatar1)
+              }
               width={60}
               height={60}
               radius={30}
@@ -82,7 +162,7 @@ const Home = () => {
             />
             <Block flex={1}>
               <Text h4 semibold color={colors.text}>
-                {user?.name || 'Giulia'}
+                {user?.name || ''}
               </Text>
               <Block row align="center" marginTop={2}>
                 <Ionicons
@@ -92,7 +172,7 @@ const Home = () => {
                   style={{marginRight: 4}}
                 />
                 <Text size={12} color={colors.text} opacity={0.7}>
-                  {progressData.roleplaysCompleted} Roleplays completati
+                  Continua a praticare
                 </Text>
               </Block>
             </Block>
@@ -130,11 +210,11 @@ const Home = () => {
               marginRight: sizes.sm,
             }}>
             <Block style={styles.metricCard}>
-              <Ionicons name="flash" size={24} color="#FFFFFF" />
-              <Text h3 bold white marginTop={sizes.sm}>
+              <Ionicons name="flash" size={24} color={colors.primary} />
+              <Text h3 bold color={colors.primary} marginTop={sizes.sm}>
                 {metrics.streak}
               </Text>
-              <Text size={12} white opacity={0.9} marginTop={4}>
+              <Text size={12} color={colors.primary} opacity={0.8} marginTop={4}>
                 Serie
               </Text>
             </Block>
@@ -149,11 +229,11 @@ const Home = () => {
               marginRight: sizes.sm,
             }}>
             <Block style={styles.metricCard}>
-              <Ionicons name="diamond" size={24} color="#FFFFFF" />
-              <Text h3 bold white marginTop={sizes.sm}>
+              <Ionicons name="diamond" size={24} color={colors.secondary} />
+              <Text h3 bold color={colors.secondary} marginTop={sizes.sm}>
                 {metrics.gems}
               </Text>
-              <Text size={12} white opacity={0.9} marginTop={4}>
+              <Text size={12} color={colors.secondary} opacity={0.8} marginTop={4}>
                 Gemme
               </Text>
             </Block>
@@ -165,22 +245,22 @@ const Home = () => {
             color={metricColors.stars}
             radius={16}>
             <Block style={styles.metricCard}>
-              <Ionicons name="star" size={24} color="#FFFFFF" />
-              <Text h3 bold white marginTop={sizes.sm}>
+              <Ionicons name="star" size={24} color="#FF8C42" />
+              <Text h3 bold color="#FF8C42" marginTop={sizes.sm}>
                 {metrics.totalStars}
               </Text>
-              <Text size={12} white opacity={0.9} marginTop={4}>
+              <Text size={12} color="#FF8C42" opacity={0.8} marginTop={4}>
                 Stelle Totali
               </Text>
             </Block>
           </Block>
         </Block>
 
-        {/* CTA Principal: Inizia a praticare */}
+        {/* CTA Principal: Chatta con il tutor */}
         <Block marginBottom={sizes.md}>
           <TouchableOpacity
             onPress={() => {
-              navigation.navigate('RolePlayMain');
+              navigation.navigate('AI tutor');
             }}
             activeOpacity={0.8}>
             <Block
@@ -191,158 +271,161 @@ const Home = () => {
               <Block row align="center" justify="space-between">
                 <Block flex={1}>
                   <Text h5 white semibold marginBottom={sizes.xs}>
-                    Inizia a praticare
+                    Parla con il tutor
                   </Text>
                   <Text size={12} white opacity={0.9}>
-                    Scegli un roleplay e migliora il tuo inglese
+                    Fai domande e migliora il tuo inglese
                   </Text>
                 </Block>
-                <Block
-                  color="rgba(255,255,255,0.2)"
-                  radius={12}
-                  width={48}
-                  height={48}
-                  align="center"
-                  justify="center"
-                  marginLeft={sizes.sm}>
-                  <Ionicons name="play" size={24} color="#FFFFFF" />
-                </Block>
+                <Animated.View
+                  style={{
+                    marginLeft: sizes.sm,
+                    transform: [{translateY}, {rotate}, {scale}],
+                  }}>
+                  <Ionicons name="sparkles" size={32} color="#FFFFFF" />
+                </Animated.View>
               </Block>
             </Block>
           </TouchableOpacity>
         </Block>
 
-        {/* Sección Il tuo progresso */}
+        {/* Sección Roleplays recenti */}
         <Block marginBottom={sizes.md}>
           <Text h5 semibold color={colors.text} marginBottom={sizes.sm}>
-            Il tuo progresso
+            Roleplays recenti
           </Text>
 
           <Block
             color={colors.card}
             radius={16}
             padding={sizes.md}
-            style={[styles.progressCard, styles.card]}>
-            <Block row justify="space-between" align="center" marginBottom={sizes.md}>
-              <Block row align="center" flex={1}>
-                <Block
-                  color="rgba(11,61,77,0.1)"
-                  radius={12}
-                  width={44}
-                  height={44}
-                  align="center"
-                  justify="center"
-                  marginRight={sizes.sm}>
-                  <Ionicons name="checkmark-circle" size={24} color={colors.primary} />
-                </Block>
-                <Block flex={1}>
-                  <Text semibold color={colors.text}>
-                    Roleplays completati
-                  </Text>
-                  <Text size={12} color={colors.text} opacity={0.6} marginTop={2}>
-                    Totale sessioni completate
-                  </Text>
-                </Block>
+            style={styles.recentRoleplaysCard}>
+            {recentRoleplays.length > 0 ? (
+              recentRoleplays.map((roleplay, index) => {
+                const scenario = ROLE_PLAY_SCENARIOS[roleplay.id];
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    onPress={() => {
+                      navigation.navigate('RolePlays');
+                    }}
+                    style={{
+                      marginBottom: index < recentRoleplays.length - 1 ? sizes.md : 0,
+                    }}>
+                    <Block row align="center">
+                      <Block
+                        color="rgba(96,203,88,0.1)"
+                        radius={12}
+                        width={44}
+                        height={44}
+                        align="center"
+                        justify="center"
+                        marginRight={sizes.sm}>
+                        <Ionicons name={getRoleplayIcon(roleplay.id)} size={20} color={colors.secondary} />
+                      </Block>
+                      <Block flex={1}>
+                        <Text semibold color={colors.text}>
+                          {scenario?.title || roleplay.id}
+                        </Text>
+                        <Text size={12} color={colors.text} opacity={0.6} marginTop={2}>
+                          {levelLabels[roleplay.level as keyof typeof levelLabels]} • {roleplay.date}
+                        </Text>
+                      </Block>
+                      <Ionicons name="chevron-forward" size={20} color={colors.text} opacity={0.4} />
+                    </Block>
+                  </TouchableOpacity>
+                );
+              })
+            ) : (
+              <Block align="center" padding={sizes.md}>
+                <Ionicons name="chatbubbles-outline" size={48} color={colors.text} opacity={0.3} />
+                <Text semibold color={colors.text} marginTop={sizes.sm} marginBottom={sizes.xs}>
+                  Nessun roleplay completato
+                </Text>
+                <Text size={12} color={colors.text} opacity={0.6} center>
+                  Inizia a praticare per vedere i tuoi progressi qui
+                </Text>
               </Block>
-              <Text h4 bold color={colors.primary}>
-                {progressData.roleplaysCompleted}
-              </Text>
+            )}
+          </Block>
+        </Block>
+
+        {/* Sección Consigli per migliorare */}
+        <Block marginBottom={sizes.md}>
+          <Text h5 semibold color={colors.text} marginBottom={sizes.sm}>
+            Consigli per migliorare
+          </Text>
+
+          <Block
+            color={colors.card}
+            radius={16}
+            padding={sizes.md}
+            style={styles.tipsCard}>
+            <Block row align="center" marginBottom={sizes.sm}>
+              <Block
+                color="rgba(11,61,77,0.1)"
+                radius={12}
+                width={44}
+                height={44}
+                align="center"
+                justify="center"
+                marginRight={sizes.sm}>
+                <Ionicons name="bulb" size={24} color={colors.primary} />
+              </Block>
+              <Block flex={1}>
+                <Text semibold color={colors.text}>
+                  Pratica ogni giorno
+                </Text>
+                <Text size={12} color={colors.text} opacity={0.6} marginTop={2}>
+                  Anche solo 10 minuti al giorno fanno la differenza
+                </Text>
+              </Block>
             </Block>
 
-            <Block row justify="space-between" align="center">
-              <Block row align="center" flex={1}>
-                <Block
-                  color="rgba(11,61,77,0.1)"
-                  radius={12}
-                  width={44}
-                  height={44}
-                  align="center"
-                  justify="center"
-                  marginRight={sizes.sm}>
-                  <Ionicons name="time" size={24} color={colors.secondary} />
-                </Block>
-                <Block flex={1}>
-                  <Text semibold color={colors.text}>
-                    Tempo di pratica
-                  </Text>
-                  <Text size={12} color={colors.text} opacity={0.6} marginTop={2}>
-                    Minuti totali di pratica
-                  </Text>
-                </Block>
+            <Block row align="center" marginBottom={sizes.sm}>
+              <Block
+                color="rgba(11,61,77,0.1)"
+                radius={12}
+                width={44}
+                height={44}
+                align="center"
+                justify="center"
+                marginRight={sizes.sm}>
+                <Ionicons name="repeat" size={24} color={colors.primary} />
               </Block>
-              <Text h4 bold color={colors.secondary}>
-                {progressData.totalPracticeTime}
-              </Text>
+              <Block flex={1}>
+                <Text semibold color={colors.text}>
+                  Ripeti i roleplays
+                </Text>
+                <Text size={12} color={colors.text} opacity={0.6} marginTop={2}>
+                  La ripetizione aiuta a consolidare le conoscenze
+                </Text>
+              </Block>
+            </Block>
+
+            <Block row align="center">
+              <Block
+                color="rgba(11,61,77,0.1)"
+                radius={12}
+                width={44}
+                height={44}
+                align="center"
+                justify="center"
+                marginRight={sizes.sm}>
+                <Ionicons name="trending-up" size={24} color={colors.primary} />
+              </Block>
+              <Block flex={1}>
+                <Text semibold color={colors.text}>
+                  Prova livelli più alti
+                </Text>
+                <Text size={12} color={colors.text} opacity={0.6} marginTop={2}>
+                  Sfidati con roleplays più complessi quando ti senti pronto
+                </Text>
+              </Block>
             </Block>
           </Block>
         </Block>
 
-        {/* Sección Roleplays disponibili */}
-        <Block marginBottom={sizes.md}>
-          <Text h5 semibold color={colors.text} marginBottom={sizes.sm}>
-            Roleplays disponibili
-          </Text>
-
-          {availableRoleplays.length > 0 ? (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{paddingRight: sizes.padding}}>
-              {availableRoleplays.map(([scenarioId, scenario], index) => (
-                <TouchableOpacity
-                  key={scenarioId}
-                  onPress={() => {
-                    navigation.navigate('RolePlayMain');
-                  }}
-                  style={[
-                    styles.roleplayCard,
-                    {marginRight: index < availableRoleplays.length - 1 ? sizes.sm : 0},
-                  ]}>
-                  <Block
-                    color={colors.primary}
-                    radius={16}
-                    padding={sizes.md}
-                    style={styles.roleplayCardInner}>
-                    <Block align="center">
-                      <Block
-                        color="rgba(255,255,255,0.2)"
-                        radius={12}
-                        width={56}
-                        height={56}
-                        align="center"
-                        justify="center"
-                        marginBottom={sizes.sm}>
-                        <Ionicons name="chatbubbles" size={28} color="#FFFFFF" />
-                      </Block>
-                      <Text white semibold center marginBottom={sizes.xs}>
-                        {scenario.title}
-                      </Text>
-                      <Text size={11} white opacity={0.8} center>
-                        {scenario.introIt}
-                      </Text>
-                    </Block>
-                  </Block>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          ) : (
-            <Block
-              color={colors.card}
-              radius={16}
-              padding={sizes.md}
-              style={[styles.emptyStateCard, styles.card]}>
-              <Block align="center">
-                <Ionicons name="chatbubbles-outline" size={48} color={colors.text} opacity={0.3} />
-                <Text semibold color={colors.text} marginTop={sizes.md} marginBottom={sizes.xs}>
-                  Inizia il tuo primo roleplay
-                </Text>
-                <Text size={12} color={colors.text} opacity={0.6} center>
-                  Clicca su "Inizia a praticare" per iniziare
-                </Text>
-              </Block>
-            </Block>
-          )}
-        </Block>
       </ScrollView>
     </View>
   );
@@ -358,18 +441,11 @@ const styles = StyleSheet.create({
   ctaCard: {
     minHeight: 80,
   },
-  progressCard: {
-    minHeight: 140,
+  tipsCard: {
+    minHeight: 200,
   },
-  roleplayCard: {
-    width: 180,
-  },
-  roleplayCardInner: {
-    minHeight: 160,
-  },
-  emptyStateCard: {
-    minHeight: 160,
-    justifyContent: 'center',
+  recentRoleplaysCard: {
+    minHeight: 120,
   },
 });
 

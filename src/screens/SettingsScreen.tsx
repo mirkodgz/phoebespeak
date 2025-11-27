@@ -102,6 +102,7 @@ const SettingsScreen = () => {
   } = useData();
 
   const [isUpdatingLevel, setIsUpdatingLevel] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const styles = createStyles(sizes);
 
   const currentLevel = (user?.department || 'beginner') as LevelOption;
@@ -143,6 +144,10 @@ const SettingsScreen = () => {
   };
 
   const handleSignOut = () => {
+    if (isSigningOut) {
+      return; // Prevenir múltiples llamadas
+    }
+
     Alert.alert(
       'Esci',
       'Sei sicuro di voler uscire?',
@@ -155,12 +160,22 @@ const SettingsScreen = () => {
           text: 'Esci',
           style: 'destructive',
           onPress: async () => {
+            setIsSigningOut(true);
             try {
+              // signOut ahora actualiza el estado inmediatamente
+              // No esperamos a que termine para navegar
               await signOut();
               // La navegación se manejará automáticamente por el estado de autenticación
+              // El listener onAuthStateChange también actualizará el estado
+              // Resetear el estado después de un breve delay para permitir la navegación
+              setTimeout(() => {
+                setIsSigningOut(false);
+              }, 500);
             } catch (error) {
               console.error('[SettingsScreen] Error signing out:', error);
-              Alert.alert('Errore', 'Impossibile uscire. Riprova più tardi.');
+              // Aún así, el estado ya debería estar limpio
+              setIsSigningOut(false);
+              // No mostramos error porque el signOut limpia el estado local incluso si falla
             }
           },
         },
@@ -299,6 +314,36 @@ const SettingsScreen = () => {
           </Block>
         </Block>
 
+        {/* Editar perfil */}
+        <Block paddingHorizontal={sizes.padding} marginBottom={sizes.md}>
+          <Text h5 semibold color={colors.text} marginBottom={sizes.sm}>
+            Profilo
+          </Text>
+          <Block
+            color={colors.card}
+            radius={sizes.cardRadius}
+            padding={sizes.md}
+            style={styles.sectionCard}>
+            <TouchableOpacity
+              style={styles.settingRow}
+              onPress={() => {
+                navigation.navigate('EditProfile');
+              }}>
+              <Block row align="center" flex={1}>
+                <Ionicons
+                  name="person-outline"
+                  size={20}
+                  color={colors.text}
+                  style={{marginRight: sizes.sm}}
+                />
+                <Text semibold color={colors.text}>
+                  Modifica profilo
+                </Text>
+              </Block>
+            </TouchableOpacity>
+          </Block>
+        </Block>
+
         {/* Preferencias generales */}
         <Block paddingHorizontal={sizes.padding} marginBottom={sizes.md}>
           <Text h5 semibold color={colors.text} marginBottom={sizes.sm}>
@@ -419,11 +464,13 @@ const SettingsScreen = () => {
         <Block paddingHorizontal={sizes.padding} marginBottom={sizes.md}>
           <TouchableOpacity
             onPress={handleSignOut}
+            disabled={isSigningOut}
             style={[
               styles.signOutButton,
               {
                 backgroundColor: colors.card,
                 borderRadius: sizes.cardRadius,
+                opacity: isSigningOut ? 0.6 : 1,
               },
             ]}>
             <Block row align="center" justify="center">
@@ -434,7 +481,7 @@ const SettingsScreen = () => {
                 style={{marginRight: sizes.sm}}
               />
               <Text semibold color="#FF4444">
-                Esci
+                {isSigningOut ? 'Uscita in corso...' : 'Esci'}
               </Text>
             </Block>
           </TouchableOpacity>

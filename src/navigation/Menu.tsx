@@ -12,6 +12,7 @@ import {
   PracticeSession,
   Profile,
   SettingsScreen,
+  EditProfile,
 } from '../screens';
 import AITutor from '../screens/AITutor';
 import ProPlans from '../screens/ProPlans';
@@ -26,6 +27,7 @@ const HomeStackNavigator = () => (
   <HomeStack.Navigator screenOptions={{headerShown: false}}>
     <HomeStack.Screen name="HomeMain" component={Home} />
     <HomeStack.Screen name="SettingsScreen" component={SettingsScreen} />
+    <HomeStack.Screen name="EditProfile" component={EditProfile} />
   </HomeStack.Navigator>
 );
 
@@ -50,6 +52,7 @@ const ProfileStackNavigator = () => (
   <ProfileStack.Navigator screenOptions={{headerShown: false}}>
     <ProfileStack.Screen name="ProfileMain" component={Profile} />
     <ProfileStack.Screen name="SettingsScreen" component={SettingsScreen} />
+    <ProfileStack.Screen name="EditProfile" component={EditProfile} />
     <ProfileStack.Screen name="ProPlans" component={ProPlans} />
   </ProfileStack.Navigator>
 );

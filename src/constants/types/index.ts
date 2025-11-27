@@ -152,6 +152,7 @@ export interface IUseData {
   hasActiveTrial: boolean;
   isProfileLoading: boolean;
   signIn: (credentials: {email: string; password: string}) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   signUp: (payload: {
     email: string;
     password: string;
@@ -160,6 +161,9 @@ export interface IUseData {
   signOut: () => Promise<void>;
   activateTrial: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  forgotPassword: (email: string) => Promise<void>;
+  verifyPasswordResetCode: (email: string, code: string) => Promise<void>;
+  updatePassword: (newPassword: string, email?: string) => Promise<void>;
   hasOnboarded: boolean;
   completeOnboarding: () => void;
   user: IUser;

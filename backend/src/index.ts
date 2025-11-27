@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 
 import practiceRouter from './routes/practice';
+import authRouter from './routes/auth';
 
 const app = express();
 const port = Number(process.env.PORT) || 4000;
@@ -19,6 +20,7 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/practice', practiceRouter);
+app.use('/auth', authRouter);
 
 app.use(
   (

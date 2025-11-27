@@ -102,9 +102,16 @@ export const ASSETS: ThemeAssets = {
   photo6: require('../assets/images/photo6.png'),
   carousel1: require('../assets/images/carousel1.png'),
 
-  // avatars
+  // avatars (legacy - mantener para compatibilidad)
   avatar1: require('../assets/images/avatar1.png'),
   avatar2: require('../assets/images/avatar2.png'),
+  // Avatares predefinidos para selección
+  avatar3: require('../../assets/avatars/1.webp'),
+  avatar4: require('../../assets/avatars/2.webp'),
+  avatar5: require('../../assets/avatars/3.webp'),
+  avatar6: require('../../assets/avatars/4.webp'),
+  avatar7: require('../../assets/avatars/5.webp'),
+  avatar8: require('../../assets/avatars/6.webp'),
 
   // cars
   x5: require('../assets/images/x5.png'),

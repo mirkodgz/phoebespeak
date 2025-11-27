@@ -2,7 +2,7 @@ import OpenAI from 'openai';
 import type {Express} from 'express';
 import {toFile} from 'openai/uploads';
 
-const OPENAI_MODEL_FEEDBACK = process.env.OPENAI_FEEDBACK_MODEL ?? 'gpt-4o-mini';
+export const OPENAI_MODEL_FEEDBACK = process.env.OPENAI_FEEDBACK_MODEL ?? 'gpt-4o-mini';
 const OPENAI_TRANSCRIBE_MODEL =
   process.env.OPENAI_TRANSCRIBE_MODEL ?? 'whisper-1';
 

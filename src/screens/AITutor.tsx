@@ -76,7 +76,7 @@ const AITutor = () => {
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
   const defaultAvatarX = 20;
-  const defaultAvatarY = 120;
+  const defaultAvatarY = insets.top + 20; // Posición inicial visible desde arriba
   const avatarPosition = useRef(new Animated.ValueXY({x: defaultAvatarX, y: defaultAvatarY})).current;
   const avatarSize = useRef(new Animated.Value(120)).current;
   const recordingPulse1 = useRef(new Animated.Value(0)).current;
@@ -190,7 +190,7 @@ const AITutor = () => {
           useNativeDriver: false,
         }),
         Animated.spring(avatarPosition, {
-          toValue: {x: defaultAvatarX, y: defaultAvatarY},
+          toValue: {x: defaultAvatarX, y: insets.top + 20},
           useNativeDriver: false,
         }),
       ]).start();
@@ -198,7 +198,7 @@ const AITutor = () => {
     } else {
       // Expandir y mover a la posición central
       const expandedX = (screenWidth - 250) / 2;
-      const expandedY = 100;
+      const expandedY = insets.top + 80;
       Animated.parallel([
         Animated.spring(avatarSize, {
           toValue: 250,
@@ -211,7 +211,7 @@ const AITutor = () => {
       ]).start();
       setIsAvatarExpanded(true);
     }
-  }, [isAvatarExpanded, avatarSize, avatarPosition, screenWidth, defaultAvatarX, defaultAvatarY]);
+  }, [isAvatarExpanded, avatarSize, avatarPosition, screenWidth, insets.top, defaultAvatarX]);
 
   // Saludo inicial del tutor
   useEffect(() => {
@@ -539,56 +539,18 @@ const AITutor = () => {
 
   return (
     <View style={{flex: 1, backgroundColor: '#f1f5f9'}}>
-      {/* HEADER */}
-      <View
-        style={{
-          paddingTop: insets.top,
-          paddingHorizontal: sizes.padding,
-          paddingBottom: sizes.xs,
-          backgroundColor: '#f1f5f9',
-        }}>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginTop: sizes.xs / 2,
-          }}>
-          <Text size={sizes.p * 1.5} color="#334155" semibold>
-            🤖
-          </Text>
-          <View style={{flex: 1, marginLeft: sizes.xs / 2}}>
-            <Text size={sizes.p - 2} color="#334155" semibold>
-              AI Tutor
-            </Text>
-          </View>
-          <Button
-            onPress={() => {
-              navigation.goBack();
-            }}
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 16,
-              backgroundColor: 'transparent',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: 0,
-            }}>
-            <Ionicons name="close" size={24} color="#334155" />
-          </Button>
-        </View>
-      </View>
-
       {/* CONTENIDO PRINCIPAL */}
       <View style={{flex: 1}}>
         {/* AVATAR FLOTANTE */}
         <Animated.View
           style={{
             position: 'absolute',
+            left: 0,
+            top: 0,
             width: avatarSize,
             height: avatarSize,
-            zIndex: 10,
+            zIndex: 1000,
+            elevation: 10,
             transform: [
               {translateX: avatarPosition.x},
               {translateY: avatarPosition.y},
@@ -647,7 +609,7 @@ const AITutor = () => {
           style={{flex: 1}}
           contentContainerStyle={{
             paddingHorizontal: sizes.padding,
-            paddingTop: 180,
+            paddingTop: Math.max(insets.top + 160, 180),
             paddingBottom: (sizes.sm * 2 + 32) + 3,
             flexGrow: 1,
           }}

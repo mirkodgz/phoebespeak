@@ -1,5 +1,5 @@
-import React, {useCallback, useState} from 'react';
-import {Alert, ScrollView, StyleSheet, TouchableOpacity, View, Image as RNImage} from 'react-native';
+import React, {useCallback, useState, useMemo, useEffect, useRef} from 'react';
+import {Alert, ScrollView, StyleSheet, TouchableOpacity, View, Image as RNImage, Animated} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -9,7 +9,7 @@ import {
   Image,
   Text,
 } from '../components';
-import {useTheme} from '../hooks';
+import {useTheme, useData} from '../hooks';
 import {
   ROLE_PLAY_SCENARIOS,
   type RolePlayScenarioId,
@@ -31,11 +31,96 @@ const ROLE_PLAY_ENTRIES: Array<{
 const RolePlay = () => {
   const navigation = useNavigation<any>();
   const {colors, sizes} = useTheme();
+  const {user} = useData();
   const insets = useSafeAreaInsets();
+  
+  // Animación para alternar entre imágenes de tutores
+  const fadeAnim1 = useRef(new Animated.Value(1)).current; // Donna - visible inicialmente
+  const fadeAnim2 = useRef(new Animated.Value(0)).current; // Uomo - oculta inicialmente
+  
+  const tutors = [
+    require('../../assets/donnafrontew.webp'),
+    require('../../assets/uomofrontew.webp'),
+  ];
+  
+  // Efecto para alternar las imágenes cada 0.5 segundos
+  useEffect(() => {
+    let isMounted = true;
+    let currentIndex = 0;
+    
+    const animate = () => {
+      if (!isMounted) return;
+      
+      const nextIndex = (currentIndex + 1) % tutors.length;
+      
+      // Animar fade out de la imagen actual y fade in de la nueva con transición suave
+      Animated.parallel([
+        Animated.timing(currentIndex === 0 ? fadeAnim1 : fadeAnim2, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(nextIndex === 0 ? fadeAnim1 : fadeAnim2, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]).start();
+      
+      currentIndex = nextIndex;
+    };
+    
+    // Iniciar la animación cada 1.5 segundos
+    const interval = setInterval(animate, 1500);
+    
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [fadeAnim1, fadeAnim2, tutors.length]);
+  
+  // Obtener el nivel del usuario (por defecto 'beginner')
+  const userLevel = useMemo<RolePlayLevelId>(() => {
+    const level = (user?.department || 'beginner') as RolePlayLevelId;
+    // Validar que el nivel sea uno de los permitidos
+    if (['beginner', 'intermediate', 'advanced'].includes(level)) {
+      return level;
+    }
+    return 'beginner';
+  }, [user?.department]);
+  
   // Estado para almacenar el nivel seleccionado por cada scenario
+  // Inicializar con 'beginner' por defecto, se actualizará con el nivel del usuario cuando esté disponible
   const [selectedLevels, setSelectedLevels] = useState<Record<RolePlayScenarioId, RolePlayLevelId>>(
-    {} as Record<RolePlayScenarioId, RolePlayLevelId>
+    () => {
+      const initialLevels = {} as Record<RolePlayScenarioId, RolePlayLevelId>;
+      // Inicializar todos los scenarios con 'beginner' por defecto
+      (['jobInterview', 'atTheCafe', 'dailySmallTalk', 'meetingSomeoneNew'] as RolePlayScenarioId[]).forEach(
+        (scenarioId) => {
+          initialLevels[scenarioId] = 'beginner';
+        }
+      );
+      return initialLevels;
+    }
   );
+  
+  // Actualizar selectedLevels cuando cambie el nivel del usuario o cuando se cargue por primera vez
+  useEffect(() => {
+    setSelectedLevels(prev => {
+      const updated = {...prev};
+      let hasChanges = false;
+      // Actualizar todos los scenarios con el nuevo nivel del usuario
+      (['jobInterview', 'atTheCafe', 'dailySmallTalk', 'meetingSomeoneNew'] as RolePlayScenarioId[]).forEach(
+        (scenarioId) => {
+          if (updated[scenarioId] !== userLevel) {
+            updated[scenarioId] = userLevel;
+            hasChanges = true;
+          }
+        }
+      );
+      return hasChanges ? updated : prev;
+    });
+  }, [userLevel]);
 
   const handleLevelSelect = useCallback(
     (scenarioId: RolePlayScenarioId, levelId: RolePlayLevelId) => {
@@ -57,15 +142,15 @@ const RolePlay = () => {
         return;
       }
 
-      // Obtener el nivel seleccionado para este scenario, o usar 'beginner' por defecto
-      const levelId = selectedLevels[entry.id] || 'beginner';
+      // Obtener el nivel seleccionado para este scenario, o usar el nivel del usuario por defecto
+      const levelId = selectedLevels[entry.id] || userLevel;
 
       navigation.navigate('RolePlayModeSelection', {
         scenarioId: entry.id,
         levelId: levelId,
       });
     },
-    [navigation, selectedLevels],
+    [navigation, selectedLevels, userLevel],
   );
 
   return (
@@ -90,11 +175,30 @@ const RolePlay = () => {
               onPress={() => handleScenarioPress({id: 'jobInterview', available: true})}>
               <View style={styles.classicCardContent}>
                 <View style={styles.classicImageContainer}>
-                  <RNImage
-                    source={require('../../assets/uomofronte.png')}
-                    style={styles.classicImage}
-                    resizeMode="cover"
-                  />
+                  {/* Imagen 1: Donna */}
+                  <Animated.View
+                    style={[
+                      StyleSheet.absoluteFill,
+                      {opacity: fadeAnim1},
+                    ]}>
+                    <RNImage
+                      source={tutors[0]}
+                      style={styles.classicImage}
+                      resizeMode="cover"
+                    />
+                  </Animated.View>
+                  {/* Imagen 2: Uomo */}
+                  <Animated.View
+                    style={[
+                      StyleSheet.absoluteFill,
+                      {opacity: fadeAnim2},
+                    ]}>
+                    <RNImage
+                      source={tutors[1]}
+                      style={styles.classicImage}
+                      resizeMode="cover"
+                    />
+                  </Animated.View>
                 </View>
                 <View style={styles.classicTextContainer}>
                   <Text h5 semibold color="#334155" marginBottom={sizes.xs} style={styles.classicTitle}>
