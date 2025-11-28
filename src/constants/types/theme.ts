@@ -245,11 +245,11 @@ export interface ThemeIcons {
 }
 
 export interface ThemeAssets {
-  OpenSansLight?: any;
-  OpenSansRegular?: any;
-  OpenSansSemiBold?: any;
-  OpenSansExtraBold?: any;
-  OpenSansBold?: any;
+  UrbanistLight?: any;
+  UrbanistRegular?: any;
+  UrbanistSemiBold?: any;
+  UrbanistExtraBold?: any;
+  UrbanistBold?: any;
 
   logo: ImageSourcePropType;
   header: ImageSourcePropType;

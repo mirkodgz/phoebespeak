@@ -140,6 +140,7 @@ export interface IUserPreferences {
   accent: string;
   targetLevel: string;
   remindersEnabled: boolean;
+  reminderTime?: string; // Formato: "HH:mm" (ej: "09:00")
   selectedTutor?: 'davide' | 'phoebe';
 }
 
@@ -164,7 +165,7 @@ export interface IUseData {
   forgotPassword: (email: string) => Promise<void>;
   verifyPasswordResetCode: (email: string, code: string) => Promise<void>;
   updatePassword: (newPassword: string, email?: string) => Promise<void>;
-  hasOnboarded: boolean;
+  hasOnboarded: boolean | null;
   completeOnboarding: () => void;
   user: IUser;
   setUser: (data: Partial<IUser>) => void;

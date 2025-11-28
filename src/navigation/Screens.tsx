@@ -3,7 +3,6 @@ import {createStackNavigator} from '@react-navigation/stack';
 import {useRoute} from '@react-navigation/native';
 
 import {
-  Dashboard,
   Home,
   PracticeSession,
   Profile,
@@ -30,12 +29,6 @@ export default () => {
       <Stack.Screen
         name="Home"
         component={Home}
-        options={{headerShown: false}}
-      />
-
-      <Stack.Screen
-        name="Dashboard"
-        component={Dashboard}
         options={{headerShown: false}}
       />
 

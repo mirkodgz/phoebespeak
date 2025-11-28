@@ -19,6 +19,7 @@ import AssistantOrb, {type AssistantOrbState} from './AssistantOrb';
 import RolePlayAvatar from './RolePlayAvatar';
 import RoundCompleteModal from './RoundCompleteModal';
 import CrownIcon from './CrownIcon';
+import UserHeader from './UserHeader';
 
 export {
   Block,
@@ -42,6 +43,7 @@ export {
   RolePlayAvatar,
   RoundCompleteModal,
   CrownIcon,
+  UserHeader,
 };
 
 export type {AssistantOrbState};

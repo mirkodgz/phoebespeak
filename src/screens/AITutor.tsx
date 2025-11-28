@@ -8,7 +8,7 @@ import {
   PanResponder,
   Dimensions,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, useFocusEffect} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Ionicons} from '@expo/vector-icons';
 import {
@@ -67,7 +67,7 @@ const AITutor = () => {
   const studentName = user?.name || 'Student';
   const studentFirstName = studentName.split(' ')[0] || studentName;
   const studentLevel = (user?.department || 'beginner') as 'beginner' | 'intermediate' | 'advanced';
-  const tutorName = preferences.selectedTutor === 'phoebe' ? 'PHOEBE' : 'DAVIDE';
+  const tutorName = preferences.selectedTutor === 'phoebe' ? 'Ace' : 'Víctor';
 
   // Determinar el modo del avatar
   const avatarMode = isLoading || isRecording ? 'listening' : isPlayingVoice ? 'speaking' : 'idle';
@@ -236,16 +236,73 @@ const AITutor = () => {
     }
   }, [messages]);
 
+  // Función para detener la reproducción de voz
+  const stopVoicePlayback = useCallback(async () => {
+    if (soundRef.current) {
+      try {
+        await soundRef.current.stopAsync();
+      } catch (error) {
+        if (__DEV__) {
+          console.warn('[AITutor] Stop voice playback error', error);
+        }
+      }
+      try {
+        await soundRef.current.unloadAsync();
+      } catch (error) {
+        if (__DEV__) {
+          console.warn('[AITutor] Unload voice playback error', error);
+        }
+      }
+      soundRef.current = null;
+    }
+    setIsPlayingVoice(false);
+  }, []);
+
+  // Cleanup cuando el componente se desmonta
+  useEffect(() => {
+    return () => {
+      stopVoicePlayback();
+    };
+  }, [stopVoicePlayback]);
+
+  // Detener audio cuando la pantalla pierde el foco (navegación a otra pantalla)
+  useFocusEffect(
+    useCallback(() => {
+      // Cuando la pantalla gana el foco, no hacemos nada especial
+      
+      return () => {
+        // Cuando la pantalla pierde el foco, detener todo el audio
+        void stopVoicePlayback();
+        
+        // Si está grabando, detener la grabación
+        if (isRecording) {
+          void stopRecording().catch((error) => {
+            if (__DEV__) {
+              console.warn('[AITutor] Error stopping recording on blur', error);
+            }
+          });
+        }
+      };
+    }, [stopVoicePlayback, isRecording, stopRecording]),
+  );
+
   const playVoiceMessage = useCallback(async (text: string) => {
     try {
       // Detener audio anterior si está reproduciéndose
-      if (soundRef.current) {
-        await soundRef.current.unloadAsync();
-        soundRef.current = null;
-      }
+      await stopVoicePlayback();
 
       setIsPlayingVoice(true);
-      const audioUri = await requestPracticeVoice(text);
+      const selectedTutor = preferences.selectedTutor || 'davide';
+      
+      if (__DEV__) {
+        console.log('[AITutor] Requesting voice:', {
+          textLength: text.length,
+          tutor: selectedTutor === 'phoebe' ? 'Ace' : 'Víctor',
+          tutorId: selectedTutor,
+        });
+      }
+      
+      const audioUri = await requestPracticeVoice(text, undefined, selectedTutor);
       
       const {sound} = await Audio.Sound.createAsync(
         {uri: audioUri},
@@ -267,7 +324,7 @@ const AITutor = () => {
       console.error('[AITutor] Error playing voice:', error);
       setIsPlayingVoice(false);
     }
-  }, []);
+  }, [preferences.selectedTutor, stopVoicePlayback]);
 
   const handleTranslate = useCallback(
     async (messageId: string, text: string) => {
@@ -421,12 +478,13 @@ const AITutor = () => {
           flexDirection: 'row',
           justifyContent: alignLeft ? 'flex-start' : 'flex-end',
           marginBottom: sizes.sm,
-          paddingHorizontal: sizes.xs,
+          paddingHorizontal: sizes.sm,
         }}>
         <View
           style={{
-            paddingHorizontal: sizes.md,
-            paddingVertical: sizes.sm,
+            paddingHorizontal: sizes.sm,
+            paddingTop: sizes.sm,
+            paddingBottom: sizes.sm,
             backgroundColor: alignLeft
               ? '#0b3d4d'
               : '#60CB58',
@@ -459,6 +517,9 @@ const AITutor = () => {
             color="#FFFFFF"
             style={{
               lineHeight: sizes.p * 1.4,
+              includeFontPadding: false,
+              marginBottom: -4,
+              paddingBottom: 0,
             }}>
             {message.text}
           </Text>
@@ -468,6 +529,7 @@ const AITutor = () => {
             <View
               style={{
                 marginTop: sizes.xs,
+                marginBottom: -2,
                 paddingHorizontal: sizes.xs,
                 paddingVertical: sizes.xs / 2,
                 width: '100%',
@@ -488,7 +550,7 @@ const AITutor = () => {
           
           {/* Iconos para mensajes del tutor */}
           {isTutor && (
-            <View style={{flexDirection: 'row', marginTop: sizes.sm, gap: sizes.sm}}>
+            <View style={{flexDirection: 'row', marginTop: sizes.xs, gap: sizes.sm, marginBottom: 0}}>
               {/* Icono de traducción */}
               <Button
                 onPress={() => {

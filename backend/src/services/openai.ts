@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import type {Express} from 'express';
 import {toFile} from 'openai/uploads';
+import type {RolePlayScenarioId, RolePlayLevelId} from '../prompts/types';
 
 export const OPENAI_MODEL_FEEDBACK = process.env.OPENAI_FEEDBACK_MODEL ?? 'gpt-4o-mini';
 const OPENAI_TRANSCRIBE_MODEL =
@@ -316,8 +317,8 @@ export const generateNextConversationTurn = async ({
       
       // Usar el nuevo sistema de prompts
       const promptConfig = getPrompt({
-        scenarioId,
-        levelId,
+        scenarioId: scenarioId as RolePlayScenarioId,
+        levelId: levelId as RolePlayLevelId,
         mode: 'guided',
         context: {
           studentName,
@@ -428,8 +429,8 @@ export const generateNextConversationTurn = async ({
   // Si no hay preguntas predefinidas o no aplican, usar el flujo original (generación dinámica)
   // Usar el nuevo sistema de prompts
   const promptConfig = getPrompt({
-    scenarioId: scenarioId as any,
-    levelId: levelId as any,
+    scenarioId: scenarioId as RolePlayScenarioId,
+    levelId: levelId as RolePlayLevelId,
     mode: 'guided',
     context: {
       studentName,

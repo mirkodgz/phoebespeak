@@ -78,3 +78,4 @@ Si quieres usar tu propio servicio de email en lugar del de Supabase:
    - Configura un dominio para los correos
    - Esto mejora la deliverabilidad y evita spam
 
+

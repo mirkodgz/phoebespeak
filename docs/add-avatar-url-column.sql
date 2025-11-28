@@ -12,3 +12,4 @@ WHERE table_schema = 'public'
   AND table_name = 'profiles'
   AND column_name = 'avatar_url';
 
+

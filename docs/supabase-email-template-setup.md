@@ -62,3 +62,4 @@ Después de configurar el template:
 - El remitente aparecerá como "Phoebe" o el nombre que configures en "From name"
 - El correo se enviará desde la dirección configurada en "From email" (por defecto, Supabase usa su propio dominio)
 
+

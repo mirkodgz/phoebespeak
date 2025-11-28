@@ -12,7 +12,7 @@ import {
   Text,
 } from '../components/';
 
-const TOTAL_STEPS = 7;
+const TOTAL_STEPS = 9;
 const CURRENT_STEP = 6;
 
 type TimeOption = {

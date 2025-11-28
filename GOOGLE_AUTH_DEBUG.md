@@ -22,3 +22,4 @@ Safari intenta abrir "localhost" en lugar de la URL correcta de Google OAuth.
 
 Si el problema persiste, podemos usar el método de Supabase que maneja todo automáticamente sin `skipBrowserRedirect`.
 
+

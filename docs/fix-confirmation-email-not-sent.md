@@ -60,3 +60,4 @@ El correo de confirmación de registro no llega, pero el correo de recuperación
 
 Para desarrollo, usa la **Opción 1** (desactivar confirmación). Para producción, usa la **Opción 2** (configurar SMTP personalizado).
 
+

@@ -12,7 +12,7 @@ import {
   Text,
 } from '../components/';
 
-const TOTAL_STEPS = 7;
+const TOTAL_STEPS = 9;
 const CURRENT_STEP = 2;
 
 const BRAND_GRADIENT = ['#0B3D4D', '#60CB58'] as const;

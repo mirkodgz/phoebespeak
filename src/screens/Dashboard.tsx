@@ -125,7 +125,7 @@ const Dashboard = () => {
         />
         <Block
           row
-          wrap
+          wrap="wrap"
           justify="space-between"
           style={{gap: sizes.sm}}>
           {dashboard.quickActions.map(action => (

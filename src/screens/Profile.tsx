@@ -1,14 +1,14 @@
-import React, {useMemo, useEffect, useRef} from 'react';
-import {ScrollView, StyleSheet, TouchableOpacity, View, Animated} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import React, {useMemo, useEffect, useRef, useState} from 'react';
+import {ScrollView, StyleSheet, TouchableOpacity, View, Animated, Easing} from 'react-native';
+import {useNavigation, useFocusEffect} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Ionicons} from '@expo/vector-icons';
 import {LinearGradient} from 'expo-linear-gradient';
 
-import {Block, Text, Image, CrownIcon} from '../components';
+import {Block, Text, Image, CrownIcon, UserHeader} from '../components';
 import {useData, useTheme} from '../hooks';
-import {ROLE_PLAY_SCENARIOS, type RolePlayScenarioId} from '../roleplay';
-import {getUserAvatarSource} from '../utils/avatarHelper';
+import {ROLE_PLAY_SCENARIOS, type RolePlayScenarioId, type RolePlayLevelId} from '../roleplay';
+import {getLevelStats, getAllScenarioStats, getAllRoundsByScenario, getAllRoundsByScenarioAndLevel} from '../services/progressService';
 
 const Profile = () => {
   const {user, progress} = useData();
@@ -82,87 +82,163 @@ const Profile = () => {
     stars: '#FFD4A3', // Naranja pastel (versión suave de #FFA500)
   };
 
-  // Datos de progreso
+  // Datos de progreso desde el resumen
+  const sessionsMilestone = progress.milestones.find(m => m.id === 'sessions');
+  const timeMilestone = progress.milestones.find(m => m.id === 'time');
+  
   const progressData = {
-    roleplaysCompleted: 0, // Se puede calcular desde historial de sesiones
-    totalPracticeTime: 0, // En minutos, se puede calcular desde historial
+    roleplaysCompleted: sessionsMilestone?.value 
+      ? parseInt(sessionsMilestone.value.replace(/\D/g, ''), 10) || 0
+      : 0,
+    totalPracticeTime: timeMilestone?.value
+      ? parseInt(timeMilestone.value.replace(/\D/g, ''), 10) || 0
+      : 0,
   };
 
-  // Nivel de inglés actual
-  const currentLevel = user?.department || 'beginner';
+  // Nivel de inglés actual - validar que sea un nivel válido
+  const getValidLevel = (level: string | undefined): RolePlayLevelId => {
+    if (level && ['beginner', 'intermediate', 'advanced'].includes(level)) {
+      return level as RolePlayLevelId;
+    }
+    return 'beginner';
+  };
+  
+  const currentLevel = getValidLevel(user?.department);
   const levelLabels = {
     beginner: 'Principiante',
     intermediate: 'Intermedio',
     advanced: 'Avanzato',
   };
 
-  // Estadísticas por nivel (ejemplo - se pueden obtener de datos reales)
-  const levelStats = {
-    beginner: {completed: 3, total: 12},
-    intermediate: {completed: 1, total: 12},
+  // Estados para estadísticas reales
+  const [levelStats, setLevelStats] = useState<{
+    beginner: {completed: number; total: number};
+    intermediate: {completed: number; total: number};
+    advanced: {completed: number; total: number};
+  }>({
+    beginner: {completed: 0, total: 12},
+    intermediate: {completed: 0, total: 12},
     advanced: {completed: 0, total: 12},
-  };
+  });
+  
+  const [scenarioStats, setScenarioStats] = useState<Record<RolePlayScenarioId, number>>({
+    jobInterview: 0,
+    atTheCafe: 0,
+    dailySmallTalk: 0,
+    meetingSomeoneNew: 0,
+  });
+  
+  const [roundsStats, setRoundsStats] = useState<Record<RolePlayScenarioId, number>>({
+    jobInterview: 0,
+    atTheCafe: 0,
+    dailySmallTalk: 0,
+    meetingSomeoneNew: 0,
+  });
+  
+  const [roundsByScenarioAndLevel, setRoundsByScenarioAndLevel] = useState<
+    Record<RolePlayScenarioId, Record<RolePlayLevelId, number>>
+  >({
+    jobInterview: {beginner: 0, intermediate: 0, advanced: 0},
+    atTheCafe: {beginner: 0, intermediate: 0, advanced: 0},
+    dailySmallTalk: {beginner: 0, intermediate: 0, advanced: 0},
+    meetingSomeoneNew: {beginner: 0, intermediate: 0, advanced: 0},
+  });
+  
+  // Obtener nivel actual del usuario - validar que sea un nivel válido
+  const currentUserLevel = getValidLevel(user?.department);
+
+  // Animaciones para el banner del nivel
+  const levelBannerScale = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    // Animación de entrada con spring
+    Animated.spring(levelBannerScale, {
+      toValue: 1,
+      tension: 50,
+      friction: 7,
+      useNativeDriver: true,
+    }).start();
+
+    // Animación de pulso suave continua
+    const pulseAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(levelBannerScale, {
+          toValue: 1.02,
+          duration: 2000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(levelBannerScale, {
+          toValue: 1,
+          duration: 2000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+
+    // Iniciar el pulso después de un pequeño delay
+    const timeout = setTimeout(() => {
+      pulseAnimation.start();
+    }, 500);
+
+    return () => {
+      pulseAnimation.stop();
+      clearTimeout(timeout);
+    };
+  }, [currentUserLevel]);
+
+  // Cargar estadísticas reales
+  useFocusEffect(
+    React.useCallback(() => {
+      const loadStats = async () => {
+        try {
+          const [levelData, scenarioData, roundsData, roundsByLevelData] = await Promise.all([
+            getLevelStats(),
+            getAllScenarioStats(),
+            getAllRoundsByScenario(),
+            getAllRoundsByScenarioAndLevel(),
+          ]);
+
+          // Calcular total de rounds posibles por nivel
+          // Cada escenario tiene 3 niveles, y cada nivel puede tener múltiples rounds
+          // Por ahora usamos un total estimado de 12 rounds por nivel (4 escenarios × 3 niveles)
+          const totalRoundsPerLevel = 12;
+          
+          setLevelStats({
+            beginner: {
+              completed: levelData.beginner,
+              total: totalRoundsPerLevel,
+            },
+            intermediate: {
+              completed: levelData.intermediate,
+              total: totalRoundsPerLevel,
+            },
+            advanced: {
+              completed: levelData.advanced,
+              total: totalRoundsPerLevel,
+            },
+          });
+
+          setScenarioStats(scenarioData);
+          setRoundsStats(roundsData);
+          setRoundsByScenarioAndLevel(roundsByLevelData);
+        } catch (error) {
+          console.error('[Profile] Error al cargar estadísticas:', error);
+          // Mantener valores por defecto si hay error
+        }
+      };
+
+      loadStats();
+    }, []),
+  );
 
   // Calcular altura aproximada del header
   const headerHeight = Math.max(insets.top + 5, 15) + 80 + sizes.xs;
 
   return (
     <View style={{flex: 1, backgroundColor: '#F5F5F5'}}>
-      {/* Header fijo */}
-      <View
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 10,
-          paddingTop: Math.max(insets.top + 5, 15),
-          paddingHorizontal: sizes.padding,
-          paddingBottom: sizes.xs,
-          backgroundColor: '#F5F5F5',
-        }}>
-        <Block
-          row
-          justify="space-between"
-          align="center"
-          style={{minHeight: 80}}>
-          <Block row align="center" flex={1}>
-            <Image
-              source={
-                getUserAvatarSource(user?.avatar, assets) ||
-                (user?.avatar ? {uri: user.avatar} : assets.avatar1)
-              }
-              width={60}
-              height={60}
-              radius={30}
-              style={{marginRight: sizes.sm}}
-            />
-            <Block flex={1}>
-              <Text h4 semibold color={colors.text}>
-                {user?.name || ''}
-              </Text>
-              <Block row align="center" marginTop={2}>
-                <Ionicons
-                  name="trophy"
-                  size={14}
-                  color={colors.primary}
-                  style={{marginRight: 4}}
-                />
-                <Text size={12} color={colors.text} opacity={0.7}>
-                  {progressData.roleplaysCompleted} Roleplays completati
-                </Text>
-              </Block>
-            </Block>
-          </Block>
-          <TouchableOpacity
-            onPress={() => {
-              navigation.navigate('SettingsScreen');
-            }}
-            style={{padding: sizes.sm}}>
-            <Ionicons name="settings-outline" size={24} color={colors.text} />
-          </TouchableOpacity>
-        </Block>
-      </View>
+      <UserHeader />
 
       <ScrollView
         style={{flex: 1}}
@@ -347,127 +423,149 @@ const Profile = () => {
           </Block>
         </Block>
 
-        {/* Sección Il tuo livello */}
+        {/* Sección: Nivel actual del usuario */}
         <Block marginBottom={sizes.md}>
-          <Text h5 semibold color={colors.text} marginBottom={sizes.sm}>
-            Il tuo livello di inglese
-          </Text>
-
-          <Block
-            color={colors.card}
-            radius={sizes.cardRadius}
-            padding={sizes.md}
-            style={styles.progressCard}>
-            <Block row align="center" marginBottom={sizes.sm}>
-              <Block
-                color="rgba(11,61,77,0.1)"
-                radius={12}
-                width={44}
-                height={44}
-                align="center"
-                justify="center"
-                marginRight={sizes.sm}>
-                <Ionicons name="school" size={24} color={colors.primary} />
-              </Block>
-              <Block flex={1}>
-                <Text semibold color={colors.text}>
-                  Livello attuale
+          <Animated.View
+            style={{
+              transform: [{scale: levelBannerScale}],
+            }}>
+            <Block
+              color={colors.primary}
+              radius={sizes.cardRadius}
+              padding={sizes.md}
+              style={styles.progressCard}>
+              <Block align="center">
+                <Text size={12} color="#FFFFFF" opacity={0.9} marginBottom={4}>
+                  Il tuo livello attuale
                 </Text>
-                <Text size={12} color={colors.text} opacity={0.6} marginTop={2}>
-                  {levelLabels[currentLevel as keyof typeof levelLabels]}
-                </Text>
-              </Block>
-              <Block
-                color={colors.primary}
-                radius={8}
-                paddingHorizontal={sizes.sm}
-                paddingVertical={sizes.xs / 2}>
-                <Text size={12} white semibold>
-                  {currentLevel.toUpperCase()}
+                <Text h4 white semibold>
+                  {levelLabels[currentUserLevel]}
                 </Text>
               </Block>
             </Block>
-
-            {/* Barra de progreso por nivel */}
-            {Object.entries(levelStats).map(([level, stats]) => (
-              <Block key={level} marginTop={sizes.sm}>
-                <Block row justify="space-between" align="center" marginBottom={sizes.xs / 2}>
-                  <Text size={12} color={colors.text} opacity={0.7}>
-                    {levelLabels[level as keyof typeof levelLabels]}
-                  </Text>
-                  <Text size={12} color={colors.text} opacity={0.7}>
-                    {stats.completed}/{stats.total}
-                  </Text>
-                </Block>
-                <View
-                  style={{
-                    height: 6,
-                    backgroundColor: 'rgba(0,0,0,0.1)',
-                    borderRadius: 3,
-                    overflow: 'hidden',
-                  }}>
-                  <View
-                    style={{
-                      height: '100%',
-                      width: `${(stats.completed / stats.total) * 100}%`,
-                      backgroundColor: level === currentLevel ? colors.primary : colors.secondary,
-                      borderRadius: 3,
-                    }}
-                  />
-                </View>
-              </Block>
-            ))}
-          </Block>
+          </Animated.View>
         </Block>
 
-        {/* Sección Statistiche per scenario */}
+        {/* Sección Statistiche per scenario - Separado por nivel */}
         <Block marginBottom={sizes.md}>
-          <Text h5 semibold color={colors.text} marginBottom={sizes.sm}>
-            Statistiche per scenario
-          </Text>
-
-          <Block
-            color={colors.card}
-            radius={sizes.cardRadius}
-            padding={sizes.md}
-            style={styles.progressCard}>
-            {Object.entries(ROLE_PLAY_SCENARIOS).map(([scenarioId, scenario], index) => {
-              const stats = {
-                completed: Math.floor(Math.random() * 5), // Ejemplo - se puede obtener de datos reales
-                total: 9, // Total de rounds disponibles
-              };
+          {/* Ordenar niveles: primero el nivel actual, luego los otros */}
+          {(['beginner', 'intermediate', 'advanced'] as RolePlayLevelId[])
+            .sort((a, b) => {
+              // El nivel actual va primero
+              if (a === currentUserLevel) return -1;
+              if (b === currentUserLevel) return 1;
+              return 0;
+            })
+            .map(levelId => {
+              const isCurrentLevel = levelId === currentUserLevel;
+              
               return (
-                <Block
-                  key={scenarioId}
-                  marginBottom={index < Object.keys(ROLE_PLAY_SCENARIOS).length - 1 ? sizes.md : 0}>
-                  <Block row justify="space-between" align="center" marginBottom={sizes.xs / 2}>
-                    <Text size={14} semibold color={colors.text}>
-                      {scenario.title}
-                    </Text>
-                    <Text size={12} color={colors.text} opacity={0.7}>
-                      {stats.completed}/{stats.total}
-                    </Text>
-                  </Block>
-                  <View
+                <Block key={levelId} marginBottom={sizes.xl}>
+                  <Block 
+                    row 
+                    align="center" 
+                    justify="space-between"
+                    marginBottom={sizes.md}
+                    paddingBottom={sizes.sm}
                     style={{
-                      height: 4,
-                      backgroundColor: 'rgba(0,0,0,0.1)',
-                      borderRadius: 2,
-                      overflow: 'hidden',
+                      borderBottomWidth: 1,
+                      borderBottomColor: 'rgba(0,0,0,0.1)',
                     }}>
-                    <View
-                      style={{
-                        height: '100%',
-                        width: `${(stats.completed / stats.total) * 100}%`,
-                        backgroundColor: colors.secondary,
-                        borderRadius: 2,
-                      }}
-                    />
-                  </View>
+                    <Block row align="center" flex={1}>
+                      <Text h4 semibold color={colors.text}>
+                        {levelLabels[levelId]}
+                      </Text>
+                      {isCurrentLevel && (
+                        <LinearGradient
+                          colors={[colors.primary, colors.secondary]}
+                          start={{x: 0, y: 0}}
+                          end={{x: 1, y: 0}}
+                          style={{
+                            borderRadius: 12,
+                            paddingHorizontal: sizes.sm,
+                            paddingVertical: sizes.xs / 2,
+                            marginLeft: sizes.sm,
+                            shadowColor: colors.primary,
+                            shadowOffset: {width: 0, height: 2},
+                            shadowOpacity: 0.3,
+                            shadowRadius: 4,
+                            elevation: 3,
+                          }}>
+                          <Text size={11} white semibold>
+                            ATTIVO
+                          </Text>
+                        </LinearGradient>
+                      )}
+                    </Block>
+                  </Block>
+                  <Block
+                    color={colors.card}
+                    radius={sizes.cardRadius}
+                    padding={sizes.md}
+                    style={[
+                      styles.progressCard,
+                      isCurrentLevel && {
+                        borderWidth: 2,
+                        borderColor: colors.secondary,
+                      },
+                    ]}>
+                    {Object.entries(ROLE_PLAY_SCENARIOS).map(([scenarioId, scenario], index) => {
+                      // Obtener rounds completados para este escenario y nivel específico
+                      const completedRounds = roundsByScenarioAndLevel[scenarioId as RolePlayScenarioId]?.[levelId] || 0;
+                      
+                      // Calcular total de rounds posibles para este escenario y nivel
+                      const levelConfig = scenario.levels.find(l => l.id === levelId);
+                      const rounds = levelConfig?.flowConfig?.rounds || [];
+                      const totalRounds = rounds.length;
+                      
+                      const percentage = totalRounds > 0 ? Math.round((completedRounds / totalRounds) * 100) : 0;
+                      
+                      return (
+                        <Block
+                          key={scenarioId}
+                          marginBottom={index < Object.keys(ROLE_PLAY_SCENARIOS).length - 1 ? sizes.md : 0}>
+                          <Block row justify="space-between" align="center" marginBottom={sizes.xs / 2}>
+                            <Block flex={1}>
+                              <Text size={14} semibold color={colors.text} marginBottom={2}>
+                                {scenario.title}
+                              </Text>
+                              <Text size={11} color={colors.text} opacity={0.6}>
+                                Rounds completati
+                              </Text>
+                            </Block>
+                            <Block align="flex-end">
+                              <Text size={16} bold color={isCurrentLevel ? colors.primary : colors.text}>
+                                {completedRounds}/{totalRounds}
+                              </Text>
+                              <Text size={10} color={colors.text} opacity={0.5}>
+                                {percentage}%
+                              </Text>
+                            </Block>
+                          </Block>
+                          <View
+                            style={{
+                              height: 8,
+                              backgroundColor: 'rgba(0,0,0,0.1)',
+                              borderRadius: 4,
+                              overflow: 'hidden',
+                              marginTop: sizes.xs / 2,
+                            }}>
+                            <View
+                              style={{
+                                height: '100%',
+                                width: `${percentage}%`,
+                                backgroundColor: colors.secondary,
+                                borderRadius: 4,
+                              }}
+                            />
+                          </View>
+                        </Block>
+                      );
+                    })}
+                  </Block>
                 </Block>
               );
             })}
-          </Block>
         </Block>
 
       </ScrollView>

@@ -4,7 +4,7 @@ import {useNavigation} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Ionicons} from '@expo/vector-icons';
 
-import {Block, Text, CrownIcon, Button} from '../components';
+import {Block, Text, Button} from '../components';
 import {useTheme} from '../hooks';
 
 const ProPlans = () => {
@@ -17,10 +17,10 @@ const ProPlans = () => {
       {/* Header */}
       <View
         style={{
-          paddingTop: Math.max(insets.top, 5),
+          paddingTop: Math.max(insets.top / 2, 5),
           paddingLeft: sizes.padding,
           paddingRight: sizes.padding / 4,
-          paddingBottom: sizes.sm / 4,
+          paddingBottom: sizes.xs / 2,
           backgroundColor: '#F5F5F5',
         }}>
         <View
@@ -28,7 +28,7 @@ const ProPlans = () => {
             flexDirection: 'row',
             justifyContent: 'flex-end',
             alignItems: 'center',
-            minHeight: 60,
+            minHeight: 50,
           }}>
           <TouchableOpacity
             onPress={() => {
@@ -73,12 +73,61 @@ const ProPlans = () => {
             align="center"
             justify="center"
             marginBottom={sizes.sm / 2}>
-            <CrownIcon size={70} color={colors.secondary} />
+            <Ionicons name="trophy" size={70} color={colors.secondary} />
           </Block>
-          <Text h3 semibold color={colors.text} marginBottom={sizes.xs / 4}>
+          <Text h5 semibold color={colors.text} marginBottom={sizes.xs / 4}>
             Sblocca tutte le funzionalità
           </Text>
         </Block>
+
+        {/* Opción Free 5 Days */}
+        <TouchableOpacity
+          onPress={() => {
+            // Procesar prueba gratuita 5 días
+            console.log('Prueba gratuita 5 días seleccionada');
+          }}
+          activeOpacity={0.7}
+          style={{marginBottom: sizes.sm / 2}}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              backgroundColor: '#FFFFFF',
+              borderRadius: 16,
+              padding: sizes.md,
+              borderWidth: 1.5,
+              borderColor: 'rgba(11,61,77,0.15)',
+            }}>
+            <View style={{flexDirection: 'row', alignItems: 'center', flex: 1}}>
+              <View
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 10,
+                  backgroundColor: 'rgba(96,203,88,0.1)',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: sizes.sm,
+                }}>
+                <Ionicons name="gift-outline" size={20} color={colors.secondary} />
+              </View>
+              <View style={{flex: 1}}>
+                <Text style={{fontSize: sizes.p, fontWeight: '600', color: colors.text, marginBottom: 2}}>
+                  Prova Gratuita
+                </Text>
+                <Text style={{fontSize: sizes.p - 3, color: colors.text, opacity: 0.6}}>
+                  Primi 5 giorni gratis
+                </Text>
+              </View>
+            </View>
+            <View style={{alignItems: 'flex-end'}}>
+              <Text style={{fontSize: sizes.p * 1.3, fontWeight: '700', color: colors.secondary}}>
+                Gratis
+              </Text>
+            </View>
+          </View>
+        </TouchableOpacity>
 
         {/* Opción Mensual */}
         <TouchableOpacity
@@ -123,7 +172,7 @@ const ProPlans = () => {
             </View>
             <View style={{alignItems: 'flex-end'}}>
               <Text style={{fontSize: sizes.p * 1.3, fontWeight: '700', color: colors.primary}}>
-                19 €
+                19,99 €
               </Text>
               <Text style={{fontSize: sizes.p - 4, color: colors.text, opacity: 0.5}}>
                 /mese
@@ -132,11 +181,11 @@ const ProPlans = () => {
           </View>
         </TouchableOpacity>
 
-        {/* Opción 6 Meses - Destacada */}
+        {/* Opción 3 Meses - Destacada */}
         <TouchableOpacity
           onPress={() => {
-            // Procesar suscripción 6 meses
-            console.log('Suscripción 6 meses seleccionada');
+            // Procesar suscripción 3 meses
+            console.log('Suscripción 3 meses seleccionada');
           }}
           activeOpacity={0.7}
           style={{marginBottom: sizes.sm / 2}}>
@@ -173,7 +222,7 @@ const ProPlans = () => {
               <View style={{flex: 1, minWidth: 0, marginRight: sizes.sm}}>
                 <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 4, flexWrap: 'wrap'}}>
                   <Text style={{fontSize: sizes.p, fontWeight: '600', color: colors.text, marginRight: 6}}>
-                    6 Mesi
+                    3 Mesi
                   </Text>
                   <View
                     style={{
@@ -189,28 +238,16 @@ const ProPlans = () => {
                   </View>
                 </View>
                 <Text style={{fontSize: sizes.p - 3, color: colors.secondary, fontWeight: '500'}}>
-                  Risparmia il 13%
+                  Solo 15,99 €/mese
                 </Text>
               </View>
             </View>
             <View style={{alignItems: 'flex-end', flexShrink: 0, marginLeft: sizes.xs}}>
-              <View style={{flexDirection: 'row', alignItems: 'baseline', marginBottom: 2}}>
-                <Text
-                  style={{
-                    fontSize: sizes.p - 4,
-                    color: colors.text,
-                    opacity: 0.5,
-                    textDecorationLine: 'line-through',
-                    marginRight: 4,
-                  }}>
-                  114 €
-                </Text>
-                <Text style={{fontSize: sizes.p * 1.3, fontWeight: '700', color: colors.secondary}}>
-                  99 €
-                </Text>
-              </View>
+              <Text style={{fontSize: sizes.p * 1.3, fontWeight: '700', color: colors.secondary}}>
+                47,99 €
+              </Text>
               <Text style={{fontSize: sizes.p - 4, color: colors.text, opacity: 0.6}}>
-                16.50 €/mese
+                15,99 €/mese
               </Text>
             </View>
           </View>
@@ -252,28 +289,16 @@ const ProPlans = () => {
                   1 Anno
                 </Text>
                 <Text style={{fontSize: sizes.p - 3, color: colors.text, opacity: 0.6}}>
-                  Risparmia il 17%
+                  Solo 9,49 €/mese
                 </Text>
               </View>
             </View>
             <View style={{alignItems: 'flex-end'}}>
-              <View style={{flexDirection: 'row', alignItems: 'baseline', marginBottom: 2}}>
-                <Text
-                  style={{
-                    fontSize: sizes.p - 4,
-                    color: colors.text,
-                    opacity: 0.5,
-                    textDecorationLine: 'line-through',
-                    marginRight: 4,
-                  }}>
-                  228 €
-                </Text>
-                <Text style={{fontSize: sizes.p * 1.3, fontWeight: '700', color: colors.primary}}>
-                  199 €
-                </Text>
-              </View>
+              <Text style={{fontSize: sizes.p * 1.3, fontWeight: '700', color: colors.primary}}>
+                113,88 €
+              </Text>
               <Text style={{fontSize: sizes.p - 4, color: colors.text, opacity: 0.6}}>
-                16.58 €/mese
+                9,49 €/mese
               </Text>
             </View>
           </View>

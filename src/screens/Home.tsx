@@ -8,10 +8,10 @@ import {
   Block,
   Text,
   Image,
+  UserHeader,
 } from '../components';
 import {useData, useTheme} from '../hooks';
-import {ROLE_PLAY_SCENARIOS, type RolePlayScenarioId} from '../roleplay';
-import {getUserAvatarSource} from '../utils/avatarHelper';
+import {ROLE_PLAY_SCENARIOS, type RolePlayScenarioId, type RolePlayLevelId} from '../roleplay';
 
 const Home = () => {
   const {user, progress} = useData();
@@ -86,9 +86,9 @@ const Home = () => {
   };
 
 
-  // Nivel de inglés actual
-  const currentLevel = user?.department || 'beginner';
-  const levelLabels = {
+
+  // Labels para los niveles
+  const levelLabels: Record<RolePlayLevelId, string> = {
     beginner: 'Principiante',
     intermediate: 'Intermedio',
     advanced: 'Avanzato',
@@ -103,7 +103,7 @@ const Home = () => {
   ];
 
   // Función para obtener el icono según el tipo de roleplay
-  const getRoleplayIcon = (roleplayId: RolePlayScenarioId): string => {
+  const getRoleplayIcon = (roleplayId: RolePlayScenarioId): keyof typeof Ionicons.glyphMap => {
     switch (roleplayId) {
       case 'jobInterview':
         return 'briefcase';
@@ -131,61 +131,7 @@ const Home = () => {
 
   return (
     <View style={{flex: 1, backgroundColor: '#F5F5F5'}}>
-      {/* Header fijo */}
-      <View
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 10,
-          paddingTop: Math.max(insets.top + 5, 15),
-          paddingHorizontal: sizes.padding,
-          paddingBottom: sizes.xs,
-          backgroundColor: '#F5F5F5',
-        }}>
-        <Block
-          row
-          justify="space-between"
-          align="center"
-          style={{minHeight: 80}}>
-          <Block row align="center" flex={1}>
-            <Image
-              source={
-                getUserAvatarSource(user?.avatar, assets) ||
-                (user?.avatar ? {uri: user.avatar} : assets.avatar1)
-              }
-              width={60}
-              height={60}
-              radius={30}
-              style={{marginRight: sizes.sm}}
-            />
-            <Block flex={1}>
-              <Text h4 semibold color={colors.text}>
-                {user?.name || ''}
-              </Text>
-              <Block row align="center" marginTop={2}>
-                <Ionicons
-                  name="trophy"
-                  size={14}
-                  color={colors.primary}
-                  style={{marginRight: 4}}
-                />
-                <Text size={12} color={colors.text} opacity={0.7}>
-                  Continua a praticare
-                </Text>
-              </Block>
-            </Block>
-          </Block>
-          <TouchableOpacity
-            onPress={() => {
-              navigation.navigate('SettingsScreen');
-            }}
-            style={{padding: sizes.sm}}>
-            <Ionicons name="settings-outline" size={24} color={colors.text} />
-          </TouchableOpacity>
-        </Block>
-      </View>
+      <UserHeader />
 
       <ScrollView
         style={{flex: 1}}

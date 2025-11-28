@@ -63,7 +63,7 @@ const Login = () => {
     setErrorMessage(null);
     try {
       await signIn(credentials);
-      navigation.replace('PremiumUpsell');
+      // El cambio de isAuthenticated hará que App.tsx muestre Main automáticamente
     } catch (error: unknown) {
       const message =
         error instanceof Error
@@ -89,7 +89,7 @@ const Login = () => {
     setErrorMessage(null);
     try {
       await signInWithGoogle();
-      navigation.replace('PremiumUpsell');
+      // El cambio de isAuthenticated hará que App.tsx muestre Main automáticamente
     } catch (error: unknown) {
       const message =
         error instanceof Error
@@ -218,7 +218,7 @@ const Login = () => {
               </Text>
               <Button
                 round
-                outlined={colors.primary}
+                outlined={String(colors.primary)}
                 shadow={false}
                 height={sizes.sm * 1.8}
                 width={sizes.sm * 1.8}
@@ -269,7 +269,7 @@ const Login = () => {
             />
 
             <Button
-              outlined={colors.primary}
+              outlined={String(colors.primary)}
               shadow={false}
               marginVertical={sizes.xs}
               marginHorizontal={sizes.sm}
@@ -341,7 +341,7 @@ const Login = () => {
               <View style={{flexDirection: 'row', marginTop: sizes.xs}}>
                 <View style={{flex: 1, marginRight: sizes.xs / 2}}>
                   <Button
-                    outlined={colors.primary}
+                    outlined={String(colors.primary)}
                     shadow={false}
                     onPress={() => {
                       setShowForgotPassword(false);

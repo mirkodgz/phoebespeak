@@ -36,6 +36,14 @@ import {
   requestFreeInterviewTurn,
 } from '../services/practice';
 import {
+  createSession,
+  createTurn,
+  createRound,
+  completeRound,
+  completeSession,
+  type CreateTurnPayload,
+} from '../services/progressService';
+import {
   ROLE_PLAY_SCENARIOS,
   type RolePlayScenarioConfig,
   type RolePlayScenarioId,
@@ -95,6 +103,7 @@ const PracticeSession = () => {
   }, [userLevel, routeLevelId, activeLevelId]);
   const sessionMode = routeMode || 'guided'; // 'guided' o 'free'
   const isFreeMode = sessionMode === 'free';
+  const FREE_MODE_MAX_TURNS = 8; // Máximo de turnos para modo libre
   const scenarioConfig = useMemo<RolePlayScenarioConfig>(() => {
     const fallback = ROLE_PLAY_SCENARIOS.jobInterview;
     return ROLE_PLAY_SCENARIOS[scenarioId] ?? fallback;
@@ -127,6 +136,11 @@ const PracticeSession = () => {
   // Estados para modo libre
   const [companyName, setCompanyName] = useState<string | undefined>(undefined);
   const [positionName, setPositionName] = useState<string | undefined>(undefined);
+  // Estados para tracking de progreso
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [currentRoundId, setCurrentRoundId] = useState<string | null>(null);
+  const sessionStartTime = useRef<number | null>(null);
+  const turnsScores = useRef<number[]>([]);
   const currentLevel = useMemo(() => {
     const fallback = scenarioConfig.levels[0];
     return (
@@ -208,14 +222,49 @@ const PracticeSession = () => {
     return currentPair?.user(studentFirstName) ?? '';
   }, [currentPair, studentFirstName, isDynamicFlow]);
 
-  // Obtener el nombre del tutor seleccionado (DAVIDE o PHOEBE)
+  // Obtener el nombre del tutor seleccionado (Ace o Víctor)
   const tutorNameOnly = useMemo(() => {
     const selectedTutor = preferences.selectedTutor || 'davide';
-    return selectedTutor === 'phoebe' ? 'PHOEBE' : 'DAVIDE';
+    return selectedTutor === 'phoebe' ? 'Ace' : 'Víctor';
   }, [preferences.selectedTutor]);
 
   const sessionProgress = useMemo(() => {
-    // Si hay rounds, calcular el progreso del round actual
+    // Modo libre: usar el máximo de turnos definido (debe evaluarse PRIMERO)
+    // La bienvenida (turn 1) no cuenta para el progreso
+    if (isFreeMode) {
+      const total = FREE_MODE_MAX_TURNS; // 8 turnos totales
+      // En modo libre, currentTurn representa el último turno del tutor
+      // Turn 1 = saludo (no cuenta, 0 preguntas completadas = 0/8)
+      // Turn 2 = primera pregunta (1 pregunta completada = 1/8)
+      // Turn 3 = segunda pregunta (2 preguntas completadas = 2/8)
+      // ...
+      // Turn 8 = última pregunta (7 preguntas completadas = 7/8)
+      // Cuando termina (shouldEnd), está al 100% (8/8)
+      // El progreso se basa en las preguntas, no en los turnos
+      // Si currentTurn es 0 o 1, completed = 0 (aún no hay preguntas)
+      // Si currentTurn es 2, completed = 1 (primera pregunta)
+      // Si currentTurn es 3, completed = 2 (segunda pregunta)
+      // etc.
+      const completed = currentTurn <= 1 ? 0 : Math.min(currentTurn - 1, total);
+      const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+      
+      if (__DEV__) {
+        console.log('[PracticeSession] Modo libre - Progreso:', {
+          currentTurn,
+          completed,
+          total,
+          percentage: `${percentage}%`,
+        });
+      }
+      
+      return {
+        completed,
+        total,
+        percentage,
+      };
+    }
+    
+    // Si hay rounds (solo para modo guiado), calcular el progreso del round actual
     if (hasRounds && currentRoundData) {
       const total = currentRoundData.questions.length;
       // currentQuestionInRound es el índice de la pregunta actual que se está mostrando
@@ -234,7 +283,7 @@ const PracticeSession = () => {
       };
     }
     
-    // Sin rounds, usar la lógica anterior
+    // Sin rounds, usar la lógica anterior para modo guiado
     if (isDynamicFlow) {
       const total = currentLevel?.flowConfig?.maxTurns ?? 6;
       const completed = Math.min(currentTurn, total);
@@ -254,10 +303,11 @@ const PracticeSession = () => {
       percentage,
     };
   }, [
+    isFreeMode, // Mover isFreeMode al principio para que tenga prioridad
+    currentTurn,
     conversationPairs.length,
     completedTurns,
     isDynamicFlow,
-    currentTurn,
     currentLevel?.flowConfig?.maxTurns,
     hasRounds,
     currentRoundData,
@@ -492,11 +542,17 @@ const PracticeSession = () => {
         setVoiceError(null);
         await stopVoicePlayback();
         
+        const selectedTutor = preferences.selectedTutor || 'davide';
+        
         if (__DEV__) {
-          console.log('[PracticeSession] Requesting voice for text:', text.substring(0, 50) + '...');
+          console.log('[PracticeSession] Requesting voice:', {
+            textLength: text.length,
+            tutor: selectedTutor === 'phoebe' ? 'Ace' : 'Víctor',
+            tutorId: selectedTutor,
+          });
         }
         
-        const uri = await requestPracticeVoice(text);
+        const uri = await requestPracticeVoice(text, undefined, selectedTutor);
         
         if (__DEV__) {
           console.log('[PracticeSession] Voice URI received, creating audio sound...');
@@ -582,7 +638,7 @@ const PracticeSession = () => {
         setIsPlayingVoice(false);
       }
     },
-    [stopVoicePlayback],
+    [stopVoicePlayback, preferences.selectedTutor],
   );
 
   // Agregar mensaje al chat
@@ -611,6 +667,74 @@ const PracticeSession = () => {
       setAssistantState('idle');
     }, 2400);
   }, []);
+
+  // Helper para guardar turno en la base de datos
+  const saveTurn = useCallback(async (
+    questionText: string,
+    userResponseText: string,
+    feedbackText: string | null,
+    verdict: 'correct' | 'needs_improvement' | null,
+    score: number | null,
+    questionLetter?: string | null,
+  ) => {
+    if (!sessionId) return; // No guardar si no hay sesión creada
+
+    try {
+      const turnNumber = conversationHistory.filter(m => m.role === 'tutor').length;
+      
+      await createTurn({
+        session_id: sessionId,
+        round_id: currentRoundId,
+        turn_number: turnNumber,
+        question_letter: questionLetter || null,
+        question_text: questionText,
+        user_response_text: userResponseText,
+        feedback_text: feedbackText,
+        verdict: verdict,
+        score: score,
+      });
+
+      // Guardar score para calcular promedio
+      if (score !== null) {
+        turnsScores.current.push(score);
+      }
+
+      if (__DEV__) {
+        console.log('[PracticeSession] Turno guardado:', turnNumber);
+      }
+    } catch (error) {
+      // No romper la funcionalidad si falla el guardado
+      console.error('[PracticeSession] Error al guardar turno:', error);
+    }
+  }, [sessionId, currentRoundId, conversationHistory]);
+
+  // Helper para completar sesión
+  const finalizeSession = useCallback(async () => {
+    if (!sessionId || !sessionStartTime.current) return;
+
+    try {
+      const durationSeconds = Math.floor((Date.now() - sessionStartTime.current) / 1000);
+      const totalTurns = conversationHistory.filter(m => m.role === 'tutor').length;
+      const totalQuestions = conversationHistory.filter(m => m.role === 'user').length;
+      const averageScore = turnsScores.current.length > 0
+        ? turnsScores.current.reduce((sum, s) => sum + s, 0) / turnsScores.current.length
+        : null;
+
+      await completeSession(sessionId, {
+        total_turns: totalTurns,
+        total_questions: totalQuestions,
+        total_rounds: hasRounds ? currentRound + 1 : 0,
+        duration_seconds: durationSeconds,
+        average_score: averageScore || undefined,
+      });
+
+      if (__DEV__) {
+        console.log('[PracticeSession] Sesión completada:', sessionId);
+      }
+    } catch (error) {
+      console.error('[PracticeSession] Error al completar sesión:', error);
+    }
+  }, [sessionId, sessionStartTime, conversationHistory, hasRounds, currentRound]);
 
   // Manejar continuación después de completar un round
   const handleContinueToNextRound = useCallback(async () => {
@@ -717,10 +841,68 @@ const PracticeSession = () => {
         ...prev,
         {role: 'tutor', text: closingMessage},
       ]);
+      
+      // Completar sesión en la base de datos
+      await finalizeSession();
+      
       triggerSpeakingAnimation();
       await playVoiceMessage(closingMessage);
     }
-  }, [hasRounds, rounds, currentRound, studentFirstName, addChatMessage, triggerSpeakingAnimation, playVoiceMessage]);
+  }, [hasRounds, rounds, currentRound, studentFirstName, addChatMessage, triggerSpeakingAnimation, playVoiceMessage, finalizeSession]);
+
+  // Crear sesión de progreso al iniciar
+  useEffect(() => {
+    let mounted = true;
+    
+    const initializeSession = async () => {
+      try {
+        const newSessionId = await createSession({
+          scenario_id: scenarioId,
+          level_id: activeLevelId,
+          mode: sessionMode,
+          tutor_id: preferences.selectedTutor || 'davide',
+        });
+        
+        if (mounted) {
+          setSessionId(newSessionId);
+          sessionStartTime.current = Date.now();
+          
+          // Si hay rounds, crear el primer round
+          if (hasRounds && rounds.length > 0) {
+            try {
+              const firstRound = rounds[0];
+              const firstRoundId = await createRound({
+                session_id: newSessionId,
+                round_number: 1,
+                round_title: firstRound.title,
+                total_questions: firstRound.questions.length,
+              });
+              setCurrentRoundId(firstRoundId);
+              if (__DEV__) {
+                console.log('[PracticeSession] Primer round creado:', firstRoundId);
+              }
+            } catch (error) {
+              console.error('[PracticeSession] Error al crear primer round:', error);
+            }
+          }
+          
+          if (__DEV__) {
+            console.log('[PracticeSession] Sesión de progreso creada:', newSessionId);
+          }
+        }
+      } catch (error) {
+        // No romper la funcionalidad si falla el guardado de progreso
+        console.error('[PracticeSession] Error al crear sesión de progreso:', error);
+        // Continuar sin guardar progreso
+      }
+    };
+    
+    initializeSession();
+    
+    return () => {
+      mounted = false;
+    };
+  }, []); // Solo ejecutar una vez al montar
 
   // Manejar saludo inicial y primera pregunta para flujo dinámico o modo libre
   useEffect(() => {
@@ -788,7 +970,7 @@ const PracticeSession = () => {
           });
 
           setShouldPlayGreeting(false);
-          setCurrentTurn(2);
+          setCurrentTurn(2); // Turn 2 = primera pregunta (1/8 completado)
 
           triggerSpeakingAnimation();
           await playVoiceMessage(firstQuestion);
@@ -1058,7 +1240,8 @@ const PracticeSession = () => {
             console.log('[PracticeSession] Modo libre: Respuesta recibida:', nextTurn);
           }
 
-          if (nextTurn.shouldEnd) {
+          // Verificar si se alcanzó el máximo de turnos o si la IA decide terminar
+          if (nextTurn.shouldEnd || nextTurnNumber >= FREE_MODE_MAX_TURNS) {
             setIsConversationActive(false);
             const closingMessage =
               nextTurn.closingMessage ??
@@ -1071,6 +1254,13 @@ const PracticeSession = () => {
               ...updatedHistory,
               {role: 'tutor', text: closingMessage},
             ]);
+            // Actualizar el turno al máximo + 1 para mostrar 100% en la barra de progreso
+            // (FREE_MODE_MAX_TURNS + 1 porque el turno 1 es la bienvenida que no cuenta)
+            setCurrentTurn(FREE_MODE_MAX_TURNS + 1);
+            
+            // Completar sesión en la base de datos
+            await finalizeSession();
+            
             triggerSpeakingAnimation();
             await playVoiceMessage(closingMessage);
           } else {
@@ -1089,6 +1279,20 @@ const PracticeSession = () => {
                 {role: 'feedback' as const, text: feedback},
               ];
               setConversationHistory(historyWithFeedback);
+              
+              // Guardar turno en la base de datos (modo libre)
+              const previousTutorMessage = conversationHistory
+                .filter(m => m.role === 'tutor')
+                .slice(-1)[0]?.text || '';
+              await saveTurn(
+                previousTutorMessage,
+                transcriptText,
+                feedback,
+                null, // Verdict no disponible en modo libre
+                null, // Score no disponible en modo libre
+                null,
+              );
+              
               triggerSpeakingAnimation();
               await playVoiceMessage(feedback);
               await new Promise(resolve => setTimeout(resolve, 500));
@@ -1104,9 +1308,27 @@ const PracticeSession = () => {
                 ...prev,
                 {role: 'tutor' as const, text: question},
               ]);
-              setCurrentTurn(nextTurnNumber);
-              triggerSpeakingAnimation();
-              await playVoiceMessage(question);
+              // Verificar si se alcanzó el máximo de turnos antes de continuar
+              if (nextTurnNumber >= FREE_MODE_MAX_TURNS) {
+                // Si alcanzamos el máximo, terminar la conversación
+                setIsConversationActive(false);
+                const closingMessage = `Thank you for the interview practice, ${studentFirstName}. You've completed all ${FREE_MODE_MAX_TURNS} turns. Great job!`;
+                addChatMessage({
+                  type: 'tutor',
+                  text: closingMessage,
+                });
+                setConversationHistory((prev) => [
+                  ...prev,
+                  {role: 'tutor' as const, text: closingMessage},
+                ]);
+                setCurrentTurn(FREE_MODE_MAX_TURNS + 1);
+                triggerSpeakingAnimation();
+                await playVoiceMessage(closingMessage);
+              } else {
+                setCurrentTurn(nextTurnNumber);
+                triggerSpeakingAnimation();
+                await playVoiceMessage(question);
+              }
             }
           }
         } catch (error) {
@@ -1175,10 +1397,41 @@ const PracticeSession = () => {
                   ...updatedHistory,
                   {role: 'feedback' as const, text: nextTurn.feedback},
                 ]);
+                
+                // Guardar turno con feedback
+                const previousTutorMessage = conversationHistory
+                  .filter(m => m.role === 'tutor')
+                  .slice(-1)[0]?.text || '';
+                await saveTurn(
+                  previousTutorMessage,
+                  transcriptText,
+                  nextTurn.feedback,
+                  null,
+                  null,
+                  currentRoundData?.questions[currentQuestionInRound]?.letter || null,
+                );
+                
                 // Reproducir el feedback en inglés
                 triggerSpeakingAnimation();
                 await playVoiceMessage(nextTurn.feedback);
               }
+              
+              // Completar round en la base de datos
+              if (currentRoundId) {
+                try {
+                  await completeRound(
+                    currentRoundId,
+                    currentQuestionInRound + 1,
+                    undefined, // Average score no disponible
+                  );
+                  if (__DEV__) {
+                    console.log('[PracticeSession] Round completado:', currentRoundId);
+                  }
+                } catch (error) {
+                  console.error('[PracticeSession] Error al completar round:', error);
+                }
+              }
+              
               // Mostrar popup de round completado
               setTimeout(() => {
                 setShowRoundCompleteModal(true);
@@ -1201,12 +1454,46 @@ const PracticeSession = () => {
               ...updatedHistory,
               {role: 'tutor', text: closingMessage},
             ]);
+            
+            // Guardar turno con feedback si existe
+            if (nextTurn.feedback) {
+              const previousTutorMessage = conversationHistory
+                .filter(m => m.role === 'tutor')
+                .slice(-1)[0]?.text || '';
+              await saveTurn(
+                previousTutorMessage,
+                transcriptText,
+                nextTurn.feedback,
+                null,
+                null,
+                hasRounds && currentRoundData ? currentRoundData.questions[currentQuestionInRound]?.letter : null,
+              );
+            }
+            
+            // Completar sesión en la base de datos
+            await finalizeSession();
+            
             triggerSpeakingAnimation();
             await playVoiceMessage(closingMessage);
           } else {
             // Separar feedback y pregunta
             const feedback = nextTurn.feedback || "Good!";
             const questionFull = nextTurn.question || nextTurn.tutorMessage;
+            
+            // Guardar turno con feedback (modo dinámico)
+            if (feedback && feedback !== "Good!") {
+              const previousTutorMessage = conversationHistory
+                .filter(m => m.role === 'tutor')
+                .slice(-1)[0]?.text || '';
+              await saveTurn(
+                previousTutorMessage,
+                transcriptText,
+                feedback,
+                null,
+                null,
+                hasRounds && currentRoundData ? currentRoundData.questions[currentQuestionInRound]?.letter : null,
+              );
+            }
             
             // Separar la pregunta del ejemplo (igual que con la primera pregunta)
             let nextQuestionIndex = currentQuestionInRound + 1;
@@ -1400,6 +1687,17 @@ const PracticeSession = () => {
           text: feedbackText,
           verdict: feedback.verdict ?? undefined,
         });
+        
+        // Guardar turno en la base de datos
+        const currentQuestion = currentTutorPrompt || '';
+        await saveTurn(
+          currentQuestion,
+          transcriptText,
+          feedbackText,
+          feedback.verdict ?? null,
+          null, // Score no disponible en modo estático
+          hasRounds && currentRoundData ? currentRoundData.questions[currentQuestionInRound]?.letter : null,
+        );
         
         // Reproducir el feedback en inglés
         triggerSpeakingAnimation();
@@ -1607,12 +1905,13 @@ const PracticeSession = () => {
           flexDirection: 'row',
           justifyContent: alignLeft ? 'flex-start' : 'flex-end',
           marginBottom: sizes.sm,
-          paddingHorizontal: sizes.xs,
+          paddingHorizontal: sizes.sm,
         }}>
         <View
           style={{
-            paddingHorizontal: sizes.md,
-            paddingVertical: sizes.sm,
+            paddingHorizontal: sizes.sm,
+            paddingTop: sizes.sm,
+            paddingBottom: sizes.sm,
             backgroundColor: alignLeft
               ? '#0b3d4d'
               : '#60CB58',
@@ -1666,6 +1965,9 @@ const PracticeSession = () => {
             color="#FFFFFF"
             style={{
               lineHeight: sizes.p * 1.4,
+              includeFontPadding: false,
+              marginBottom: -4,
+              paddingBottom: 0,
             }}>
             {message.text}
           </Text>
@@ -1675,6 +1977,7 @@ const PracticeSession = () => {
             <View
               style={{
                 marginTop: sizes.xs,
+                marginBottom: -2,
                 paddingHorizontal: sizes.xs,
                 paddingVertical: sizes.xs / 2,
                 width: '100%',
@@ -1695,7 +1998,7 @@ const PracticeSession = () => {
           
           {/* Iconos para mensajes del tutor y feedback */}
           {(isTutor || isFeedback) && (
-            <View style={{flexDirection: 'row', marginTop: sizes.sm, gap: sizes.sm}}>
+            <View style={{flexDirection: 'row', marginTop: sizes.xs, gap: sizes.sm, marginBottom: 0}}>
               {/* Icono de traducción */}
               <Button
                 onPress={() => {
@@ -1776,7 +2079,17 @@ const PracticeSession = () => {
           <Text size={sizes.p * 1.5} color="#334155" semibold>
             📊
           </Text>
-          {hasRounds && sessionProgress.roundNumber && (
+          {isFreeMode && (
+            <View style={{flexDirection: 'row', alignItems: 'center', marginLeft: sizes.xs / 2}}>
+              <Text size={sizes.p - 2} color="#334155" semibold>
+                Modo Libero
+              </Text>
+              <Text size={sizes.p - 3} color="#334155" opacity={0.6} style={{marginLeft: sizes.xs / 2}}>
+                ({sessionProgress.completed}/{sessionProgress.total})
+              </Text>
+            </View>
+          )}
+          {hasRounds && sessionProgress.roundNumber && !isFreeMode && (
             <View style={{flexDirection: 'row', alignItems: 'center', marginLeft: sizes.xs / 2}}>
               <Text size={sizes.p - 2} color="#334155">
                 Round {sessionProgress.roundNumber}

@@ -25,6 +25,7 @@ export type ProfileRow = {
   level?: string | null;
   has_premium?: boolean | null;
   trial_started_at?: string | null;
+  has_onboarded?: boolean | null;
   created_at?: string | null;
   updated_at?: string | null;
 };
@@ -36,6 +37,7 @@ type ProfileUpsertPayload = {
   level?: string | null;
   has_premium?: boolean | null;
   trial_started_at?: string | null;
+  has_onboarded?: boolean | null;
 };
 
 const getClient = () => {

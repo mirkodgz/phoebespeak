@@ -48,7 +48,15 @@
     },
     "plugins": [
       "expo-localization",
-      "expo-audio"
+      "expo-audio",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/logo.png",
+          "color": "#0B3D4D",
+          "sounds": []
+        }
+      ]
     ]
   }
 }

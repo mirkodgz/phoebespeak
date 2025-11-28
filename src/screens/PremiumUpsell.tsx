@@ -88,7 +88,7 @@ const PremiumUpsell = () => {
           paddingTop: sizes.l,
         }}>
         <BrandChip
-          label="Prueba gratuita 7 días"
+          label="Prueba gratuita 5 días"
           tone="brand"
           style={{alignSelf: 'center', marginBottom: sizes.md}}
         />
@@ -107,7 +107,7 @@ const PremiumUpsell = () => {
               Hazte Premium y domina el inglés hablado
             </Text>
             <Text center color="rgba(255,255,255,0.72)" size={sizes.p - 1}>
-              Disfruta de 7 días gratis. Después, sólo 15€ al mes para continuar
+              Disfruta de 5 días gratis. Después, sólo 15€ al mes para continuar
               con tu coach IA y planes personalizados sin límites.
             </Text>
           </Block>
@@ -116,9 +116,8 @@ const PremiumUpsell = () => {
             row
             align="flex-end"
             justify="center"
-            marginVertical={sizes.md}
-            gap={sizes.xs}>
-            <Text h1 white>15€</Text>
+            marginVertical={sizes.md}>
+            <Text h1 white marginRight={sizes.xs}>15€</Text>
             <Text color="rgba(255,255,255,0.7)" size={sizes.p}>
               /mes tras la prueba
             </Text>
@@ -127,7 +126,7 @@ const PremiumUpsell = () => {
           {errorMessage ? (
             <Text
               center
-              color={colors.error ?? '#FF6B6B'}
+              color={colors.danger}
               size={sizes.p - 2}
               marginBottom={sizes.xs}>
               {errorMessage}
@@ -145,7 +144,7 @@ const PremiumUpsell = () => {
             color="rgba(255,255,255,0.55)"
             center
             marginTop={sizes.xs}>
-            Cancela cuando quieras dentro de los primeros 7 días sin coste.
+            Cancela cuando quieras dentro de los primeros 5 días sin coste.
           </Text>
         </BrandSurface>
 

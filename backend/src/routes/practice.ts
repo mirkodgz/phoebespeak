@@ -101,13 +101,31 @@ router.post('/generate-next-turn', async (req, res, next) => {
 router.post('/voice', async (req, res, next) => {
   try {
     console.info('[practice] /voice called');
-    const {text} = req.body ?? {};
+    const {text, voiceId, tutorId} = req.body ?? {};
 
     if (!text) {
       return res.status(400).json({error: 'text is required'});
     }
 
-    const audioBuffer = await synthesizeSpeech(text);
+    // Si se proporciona tutorId, mapearlo a voiceId
+    let finalVoiceId = voiceId;
+    if (tutorId && !voiceId) {
+      // Mapeo de tutorId a voiceId desde variables de entorno
+      if (tutorId === 'davide') {
+        finalVoiceId = process.env.ELEVENLABS_VOICE_ID_DAVIDE || process.env.ELEVENLABS_VOICE_ID;
+        console.info(`[practice] /voice - Tutor: Víctor (davide), VoiceId: ${finalVoiceId ? 'configured' : 'NOT SET'}`);
+      } else if (tutorId === 'phoebe') {
+        finalVoiceId = process.env.ELEVENLABS_VOICE_ID_PHOEBE || process.env.ELEVENLABS_VOICE_ID;
+        console.info(`[practice] /voice - Tutor: Ace (phoebe), VoiceId: ${finalVoiceId ? 'configured' : 'NOT SET'}`);
+      }
+    } else if (voiceId) {
+      console.info(`[practice] /voice - Using explicit voiceId: ${voiceId.substring(0, 10)}...`);
+    } else {
+      console.info(`[practice] /voice - Using default ELEVENLABS_VOICE_ID: ${process.env.ELEVENLABS_VOICE_ID ? 'configured' : 'NOT SET'}`);
+      finalVoiceId = process.env.ELEVENLABS_VOICE_ID;
+    }
+
+    const audioBuffer = await synthesizeSpeech(text, finalVoiceId);
 
     res.setHeader('Content-Type', 'audio/mpeg');
     console.info('[practice] /voice success');

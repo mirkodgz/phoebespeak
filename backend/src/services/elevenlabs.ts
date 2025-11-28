@@ -9,15 +9,16 @@ const elevenLabsClient = axios.create({
   responseType: 'arraybuffer',
 });
 
-export const synthesizeSpeech = async (text: string) => {
+export const synthesizeSpeech = async (text: string, voiceId?: string) => {
   if (!process.env.ELEVENLABS_API_KEY) {
     throw new Error('ELEVENLABS_API_KEY is not set');
   }
 
-  const voiceId = process.env.ELEVENLABS_VOICE_ID;
+  // Si no se proporciona voiceId, usar el de la variable de entorno (compatibilidad hacia atrás)
+  const finalVoiceId = voiceId || process.env.ELEVENLABS_VOICE_ID;
 
-  if (!voiceId) {
-    throw new Error('ELEVENLABS_VOICE_ID is not set');
+  if (!finalVoiceId) {
+    throw new Error('ELEVENLABS_VOICE_ID is not set and no voiceId was provided');
   }
 
   const payload = {
@@ -33,7 +34,7 @@ export const synthesizeSpeech = async (text: string) => {
 
   try {
     const {data} = await elevenLabsClient.post(
-      `/text-to-speech/${voiceId}`,
+      `/text-to-speech/${finalVoiceId}`,
       payload,
       {
         headers: {

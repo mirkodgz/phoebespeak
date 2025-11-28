@@ -62,7 +62,7 @@ const Register = () => {
     setInfoMessage(null);
     try {
       await signInWithGoogle();
-      navigation.replace('Main');
+      // El cambio de isAuthenticated hará que App.tsx muestre Main automáticamente
     } catch (error: unknown) {
       const message =
         error instanceof Error
@@ -93,7 +93,7 @@ const Register = () => {
           'Revisa tu correo y confirma tu cuenta antes de iniciar sesión.',
         );
       } else {
-        navigation.replace('PremiumUpsell');
+        // El cambio de isAuthenticated hará que App.tsx muestre Main automáticamente
       }
     } catch (error: unknown) {
       const message =

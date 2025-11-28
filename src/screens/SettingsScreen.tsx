@@ -22,13 +22,13 @@ type TutorOption = {
 const TUTORS: TutorOption[] = [
   {
     id: 'davide',
-    name: 'DAVIDE',
+    name: 'Víctor',
     characteristics: ['Amable', 'Voz clara', 'Paciente'],
     avatar: require('../../assets/uomofrontew.webp'),
   },
   {
     id: 'phoebe',
-    name: 'PHOEBE',
+    name: 'Ace',
     characteristics: ['Empática', 'Voz suave', 'Motivadora'],
     avatar: require('../../assets/donnafrontew.webp'),
   },
@@ -295,11 +295,9 @@ const SettingsScreen = () => {
                     </Text>
                     {isSelected && (
                       <Block
-                        absolute
-                        style={{
-                          top: sizes.sm,
-                          right: sizes.sm,
-                        }}>
+                        position="absolute"
+                        top={sizes.sm}
+                        right={sizes.sm}>
                         <Ionicons
                           name="checkmark-circle"
                           size={24}

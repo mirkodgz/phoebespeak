@@ -1,6 +1,7 @@
 import React, {useCallback, useMemo, useState} from 'react';
 import {Pressable, StyleSheet, View} from 'react-native';
 import {LinearGradient} from 'expo-linear-gradient';
+import {useNavigation} from '@react-navigation/native';
 
 import {useData, useTheme, useTranslation} from '../hooks/';
 import {
@@ -10,8 +11,9 @@ import {
   BrandBackground,
   Text,
 } from '../components/';
+import {getCurrentAuthUser, upsertProfile} from '../services/supabaseAuth';
 
-const TOTAL_STEPS = 7;
+const TOTAL_STEPS = 9;
 const CURRENT_STEP = 7;
 
 type LevelOption = {
@@ -50,11 +52,13 @@ const PROGRESS_GRADIENT = ['#0B3D4D', '#60CB58'] as const;
 const ACTIVE_BG = '#0b3d4d';
 
 const OnboardingStepSeven = () => {
-  const {completeOnboarding} = useData();
+  const {completeOnboarding, isAuthenticated, setUser} = useData();
   const {sizes} = useTheme();
   const {t} = useTranslation();
+  const navigation = useNavigation<any>();
 
   const [selected, setSelected] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const progress = useMemo(
     () => Math.min((CURRENT_STEP / TOTAL_STEPS) * 100, 100),
@@ -65,12 +69,39 @@ const OnboardingStepSeven = () => {
     setSelected(prev => (prev === option.id ? null : option.id));
   }, []);
 
-  const handleContinue = useCallback(() => {
-    if (!selected) {
+  const handleContinue = useCallback(async () => {
+    if (!selected || isSaving) {
       return;
     }
-    completeOnboarding();
-  }, [completeOnboarding, selected]);
+    
+    setIsSaving(true);
+    try {
+      // Guardar el nivel seleccionado
+      if (isAuthenticated) {
+        const authUser = await getCurrentAuthUser();
+        if (authUser) {
+          // Guardar en Supabase
+          await upsertProfile({
+            id: authUser.id,
+            level: selected,
+          });
+        }
+      }
+      
+      // Actualizar estado local
+      setUser({department: selected as 'beginner' | 'intermediate' | 'advanced'});
+      
+      // Navegar a la siguiente pantalla (promemoria)
+      navigation.navigate('OnboardingStepEight');
+    } catch (error) {
+      console.error('[OnboardingStepSeven] Error guardando nivel:', error);
+      // Continuar de todas formas para no bloquear al usuario
+      setUser({department: selected as 'beginner' | 'intermediate' | 'advanced'});
+      navigation.navigate('OnboardingStepEight');
+    } finally {
+      setIsSaving(false);
+    }
+  }, [navigation, selected, isAuthenticated, setUser, isSaving]);
 
   const continueDisabled = useMemo(() => selected === null, [selected]);
 
@@ -158,9 +189,9 @@ const OnboardingStepSeven = () => {
 
         <Block marginTop={sizes.l} marginBottom={sizes.m}>
           <BrandActionButton
-            label={t('common.continue') || 'Continua'}
+            label={isSaving ? 'Salvataggio...' : (t('common.continue') || 'Continua')}
             onPress={handleContinue}
-            disabled={continueDisabled}
+            disabled={continueDisabled || isSaving}
           />
         </Block>
       </Block>

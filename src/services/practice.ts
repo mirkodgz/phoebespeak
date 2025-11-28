@@ -241,12 +241,28 @@ export const requestNextConversationTurn = async ({
   return response.json();
 };
 
-export const requestPracticeVoice = async (text: string): Promise<string> => {
+export const requestPracticeVoice = async (
+  text: string,
+  voiceId?: string,
+  tutorId?: 'davide' | 'phoebe',
+): Promise<string> => {
   try {
+    if (__DEV__) {
+      console.log('[Practice Service] Requesting voice:', {
+        textLength: text.length,
+        tutorId: tutorId || 'not provided',
+        voiceId: voiceId || 'not provided',
+      });
+    }
+    
     const response = await safeFetch('/practice/voice', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({text}),
+      body: JSON.stringify({
+        text,
+        ...(voiceId && {voiceId}),
+        ...(tutorId && {tutorId}),
+      }),
     });
 
     const contentType = response.headers.get('content-type');

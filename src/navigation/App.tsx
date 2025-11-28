@@ -1,7 +1,7 @@
 import React, {useEffect} from 'react';
 import {Platform, StatusBar} from 'react-native';
 import {useFonts} from 'expo-font';
-import {NavigationContainer, DefaultTheme} from '@react-navigation/native';
+import {NavigationContainer, DefaultTheme, LinkingOptions} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import * as SplashScreen from 'expo-splash-screen';
 import Menu from './Menu';
@@ -19,6 +19,8 @@ import {
   OnboardingStepFive,
   OnboardingStepSix,
   OnboardingStepSeven,
+  OnboardingStepEight,
+  OnboardingStepNine,
   LoadingScreen,
 } from '../screens';
 
@@ -66,6 +68,14 @@ const OnboardingNavigator = () => (
       name="OnboardingStepSeven"
       component={OnboardingStepSeven}
     />
+    <OnboardingStack.Screen
+      name="OnboardingStepEight"
+      component={OnboardingStepEight}
+    />
+    <OnboardingStack.Screen
+      name="OnboardingStepNine"
+      component={OnboardingStepNine}
+    />
   </OnboardingStack.Navigator>
 );
 
@@ -83,13 +93,13 @@ export default () => {
     };
   }, [isDark]);
 
-  // load custom fonts
+  // load custom fonts - Urbanist
   const [fontsLoaded] = useFonts({
-    'OpenSans-Light': theme.assets.OpenSansLight,
-    'OpenSans-Regular': theme.assets.OpenSansRegular,
-    'OpenSans-SemiBold': theme.assets.OpenSansSemiBold,
-    'OpenSans-ExtraBold': theme.assets.OpenSansExtraBold,
-    'OpenSans-Bold': theme.assets.OpenSansBold,
+    'Urbanist-Light': theme.assets.UrbanistLight,
+    'Urbanist-Regular': theme.assets.UrbanistRegular,
+    'Urbanist-SemiBold': theme.assets.UrbanistSemiBold,
+    'Urbanist-ExtraBold': theme.assets.UrbanistExtraBold,
+    'Urbanist-Bold': theme.assets.UrbanistBold,
   });
 
   if (fontsLoaded) {
@@ -118,7 +128,7 @@ export default () => {
   };
 
   // Configuración de deep linking
-  const linking = {
+  const linking: LinkingOptions<ReactNavigation.RootParamList> = {
     prefixes: ['phoebe://'],
     config: {
       screens: {
@@ -140,15 +150,19 @@ export default () => {
       <ThemeProvider theme={theme} setTheme={setTheme}>
         <NavigationContainer linking={linking} theme={navigationTheme}>
           <RootStack.Navigator screenOptions={{headerShown: false}}>
-            {!hasOnboarded ? (
+            {!isAuthenticated ? (
+              <RootStack.Screen name="Auth" component={AuthNavigator} />
+            ) : isProfileLoading || hasOnboarded === null ? (
+              // Mostrar pantalla de carga mientras se sincroniza el perfil
+              // También mostrar loading si hasOnboarded aún no se ha determinado
+              <RootStack.Screen name="Loading" component={LoadingScreen} />
+            ) : !hasOnboarded ? (
               <RootStack.Screen
                 name="Onboarding"
                 component={OnboardingNavigator}
               />
-            ) : isAuthenticated ? (
-              <RootStack.Screen name="Main" component={Menu} />
             ) : (
-              <RootStack.Screen name="Auth" component={AuthNavigator} />
+              <RootStack.Screen name="Main" component={Menu} />
             )}
           </RootStack.Navigator>
         </NavigationContainer>

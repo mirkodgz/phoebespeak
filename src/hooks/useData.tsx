@@ -36,6 +36,7 @@ import {
   startTrialForUser,
   resetPassword,
   updatePassword as updatePasswordInSupabase,
+  upsertProfile,
 } from '../services/supabaseAuth';
 import {supabase} from '../lib/supabaseClient';
 
@@ -65,11 +66,46 @@ export const DataProvider = ({children}: {children: React.ReactNode}) => {
     USER_PREFERENCES,
   );
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [hasOnboarded, setHasOnboarded] = useState(false);
+  const [hasOnboarded, setHasOnboarded] = useState<boolean | null>(null); // null = aún no determinado
   const [hasActiveTrial, setHasActiveTrial] = useState(false);
   const [isProfileLoading, setIsProfileLoading] = useState(false);
+  const [hasOnboardedReady, setHasOnboardedReady] = useState(false);
   const isSyncingProfileRef = useRef(false);
-  const completeOnboarding = useCallback(() => setHasOnboarded(true), []);
+  const hasOnboardedReadyRef = useRef(false);
+
+  const completeOnboarding = useCallback(async () => {
+    if (!supabase) {
+      console.warn('[completeOnboarding] Supabase no disponible, guardando solo localmente');
+      setHasOnboarded(true);
+      await Storage.setItem('hasOnboarded', JSON.stringify(true));
+      return;
+    }
+
+    try {
+      const authUser = await getCurrentAuthUser();
+      if (!authUser) {
+        console.warn('[completeOnboarding] Usuario no autenticado, guardando solo localmente');
+        setHasOnboarded(true);
+        await Storage.setItem('hasOnboarded', JSON.stringify(true));
+        return;
+      }
+
+      // Guardar en Supabase
+      await upsertProfile({
+        id: authUser.id,
+        has_onboarded: true,
+      });
+
+      // Actualizar estado local
+      setHasOnboarded(true);
+      console.log('[completeOnboarding] Onboarding completado y guardado en Supabase');
+    } catch (error) {
+      console.error('[completeOnboarding] Error guardando en Supabase, guardando solo localmente:', error);
+      // Fallback: guardar solo localmente si falla Supabase
+      setHasOnboarded(true);
+      await Storage.setItem('hasOnboarded', JSON.stringify(true));
+    }
+  }, []);
 
   const setUser = useCallback(
     (payload: Partial<IUser>) => {
@@ -96,15 +132,25 @@ export const DataProvider = ({children}: {children: React.ReactNode}) => {
   }, [setIsDark]);
 
   const handleIsDark = useCallback(
-    (payload: boolean) => {
-      setIsDark(payload);
-      Storage.setItem('isDark', JSON.stringify(payload));
+    (isDark?: boolean) => {
+      if (isDark !== undefined) {
+        setIsDark(isDark);
+        Storage.setItem('isDark', JSON.stringify(isDark));
+      } else {
+        // Si no se proporciona valor, alternar el estado actual
+        setIsDark(prev => {
+          const newValue = !prev;
+          Storage.setItem('isDark', JSON.stringify(newValue));
+          return newValue;
+        });
+      }
     },
-    [setIsDark],
+    [],
   );
 
   useEffect(() => {
     getIsDark();
+    // hasOnboarded se carga desde syncProfile cuando el usuario se autentica
   }, [getIsDark]);
 
   useEffect(() => {
@@ -129,14 +175,55 @@ export const DataProvider = ({children}: {children: React.ReactNode}) => {
     loadData();
   }, []);
 
+  // Recargar progreso cuando el usuario se autentica
+  useEffect(() => {
+    if (isAuthenticated) {
+      const reloadProgress = async () => {
+        try {
+          const progressData = await fetchProgressOverview();
+          setProgress(progressData);
+        } catch (error) {
+          console.error('[useData] Error al recargar progreso:', error);
+        }
+      };
+      reloadProgress();
+    }
+  }, [isAuthenticated]);
+
+  // useEffect para desactivar loading solo después de que hasOnboarded se haya actualizado
+  // Esto evita pestañeos en la navegación
+  useEffect(() => {
+    if (isAuthenticated && isProfileLoading && hasOnboardedReady) {
+      // Si estamos autenticados, cargando, y hasOnboarded está listo,
+      // esperar un momento para asegurar que React haya procesado el cambio de hasOnboarded
+      const timer = setTimeout(() => {
+        setIsProfileLoading(false);
+        isSyncingProfileRef.current = false;
+        console.log('[useEffect] Loading desactivado después de que hasOnboarded esté listo, valor:', hasOnboarded);
+      }, 200);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthenticated, hasOnboarded, isProfileLoading, hasOnboardedReady]);
+
   const syncProfile = useCallback(
     async (authUser: {id: string; email?: string | null; user_metadata?: Record<string, unknown>}) => {
       if (!supabase) {
         return;
       }
 
-      setIsProfileLoading(true);
-      isSyncingProfileRef.current = true;
+      // Solo activar loading si no estamos ya sincronizando
+      // Pero asegurarnos de que hasOnboarded esté en null mientras se carga
+      if (!isSyncingProfileRef.current) {
+        setIsProfileLoading(true);
+        isSyncingProfileRef.current = true;
+        setHasOnboarded(null); // Resetear a null mientras se carga
+        setHasOnboardedReady(false); // Resetear el flag al iniciar sincronización
+        hasOnboardedReadyRef.current = false;
+      } else {
+        // Si ya estamos sincronizando, asegurarnos de que hasOnboarded esté en null
+        setHasOnboarded(null);
+      }
       try {
         // Obtener el nombre de los metadatos de Google
         // Google puede enviar el nombre en diferentes campos
@@ -178,6 +265,28 @@ export const DataProvider = ({children}: {children: React.ReactNode}) => {
           full_name: profile?.full_name,
         });
 
+        // Si el perfil no existe, NO crearlo automáticamente
+        // El perfil debe crearse solo cuando el usuario se registra (a través del trigger de Supabase)
+        // o cuando se completa el onboarding
+        if (!profile) {
+          console.warn('[syncProfile] Perfil no existe. El perfil debe crearse al registrarse o al completar el onboarding.');
+          // No crear el perfil automáticamente aquí
+          // Solo actualizar el estado con la información disponible
+          // IMPORTANTE: Establecer hasOnboarded ANTES de desactivar loading
+          setHasOnboarded(false); // Usuario nuevo, no ha completado onboarding
+          setHasOnboardedReady(true);
+          hasOnboardedReadyRef.current = true;
+          setUserState(prev => ({
+            ...prev,
+            id: authUser.id,
+            name: googleName,
+            avatar: (authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture) as string | undefined,
+          }));
+          setHasActiveTrial(false);
+          // El loading se desactivará automáticamente por el useEffect cuando hasOnboarded se actualice
+          return; // Salir temprano, no continuar con la sincronización
+        }
+
         // Si el usuario se autenticó con Google y tenemos un nombre de Google válido
         if (isGoogleAuth && googleName && googleName !== 'Alumno') {
           console.log('[syncProfile] Es Google Auth, procesando actualización...');
@@ -204,26 +313,9 @@ export const DataProvider = ({children}: {children: React.ReactNode}) => {
             console.log('[syncProfile] Perfil recargado:', {
               full_name: profile?.full_name,
             });
-          } else if (!profile) {
-            // Si no existe el perfil, crearlo con el nombre de Google
-            console.log('[syncProfile] Creando nuevo perfil con nombre de Google:', googleName);
-            profile = await ensureProfile(authUser.id, {
-              id: authUser.id,
-              full_name: googleName,
-            });
-            console.log('[syncProfile] Perfil creado:', {
-              full_name: profile?.full_name,
-            });
           } else {
             console.log('[syncProfile] Perfil ya tiene el nombre correcto, no se actualiza');
           }
-        } else if (!profile) {
-          // Si no es Google Auth y no existe el perfil, crearlo con el nombre disponible
-          console.log('[syncProfile] No es Google Auth, creando perfil con nombre disponible');
-          profile = await ensureProfile(authUser.id, {
-            id: authUser.id,
-            full_name: googleName,
-          });
         }
 
         // Cargar avatar desde AsyncStorage si existe (respaldo si la columna no existe en Supabase)
@@ -294,18 +386,28 @@ export const DataProvider = ({children}: {children: React.ReactNode}) => {
 
         setHasActiveTrial(Boolean(profile?.has_premium));
         
+        // Cargar has_onboarded desde el perfil (por usuario, no por dispositivo)
+        // IMPORTANTE: Establecer hasOnboarded ANTES de desactivar el loading
+        // para evitar pestañeos en la navegación
+        // Usar un batch de setState para asegurar que se actualicen juntos
+        const hasOnboardedValue = profile?.has_onboarded !== null && profile?.has_onboarded !== undefined
+          ? Boolean(profile.has_onboarded)
+          : false; // Si no está definido, asumir que no ha completado onboarding
+        
+        // Establecer hasOnboarded y marcar como listo
+        setHasOnboarded(hasOnboardedValue);
+        setHasOnboardedReady(true);
+        hasOnboardedReadyRef.current = true;
+        console.log('[syncProfile] has_onboarded establecido:', hasOnboardedValue, '(desde perfil:', profile?.has_onboarded, ')');
+        
         console.log('[syncProfile] Sincronización completada');
+        // El loading se desactivará automáticamente por el useEffect cuando hasOnboarded se actualice
       } catch (error) {
         console.error('[syncProfile] Error sincronizando perfil:', error);
         throw error;
       } finally {
-        // Esperar un momento antes de desactivar el loading para asegurar que el estado se propague
-        // y el componente se re-renderice con el nombre correcto
-        setTimeout(() => {
-          setIsProfileLoading(false);
-          isSyncingProfileRef.current = false;
-          console.log('[syncProfile] Loading desactivado, estado propagado');
-        }, 200);
+        // No desactivar loading aquí, dejar que el useEffect lo maneje
+        // Esto asegura que hasOnboarded se haya actualizado antes de desactivar el loading
       }
     },
     [],
@@ -314,8 +416,10 @@ export const DataProvider = ({children}: {children: React.ReactNode}) => {
   const refreshProfile = useCallback(async () => {
     const authUser = await getCurrentAuthUser();
     if (authUser) {
-      await syncProfile(authUser);
+      setHasOnboarded(null); // Resetear a null mientras se carga
+      setIsProfileLoading(true);
       setIsAuthenticated(true);
+      await syncProfile(authUser);
     }
   }, [syncProfile]);
 
@@ -333,12 +437,44 @@ export const DataProvider = ({children}: {children: React.ReactNode}) => {
 
       const authUser = data.session?.user;
       if (authUser) {
-        setIsAuthenticated(true);
-        await syncProfile(authUser);
+        // Validar que el usuario realmente existe verificando el perfil
+        try {
+          const profile = await fetchProfileById(authUser.id);
+          if (profile) {
+            // Usuario existe, establecer estados ANTES de sincronizar
+            setHasOnboarded(null); // Resetear a null mientras se carga
+            setIsProfileLoading(true);
+            setIsAuthenticated(true);
+            await syncProfile(authUser);
+          } else {
+            // Usuario no existe en Supabase, limpiar sesión local
+            console.log('[getSession] Usuario no existe en Supabase, limpiando sesión local');
+            await signOutFromSupabase();
+            setIsAuthenticated(false);
+            setHasActiveTrial(false);
+            setHasOnboarded(null);
+            setUserState(DEFAULT_USER);
+            await Storage.removeItem('hasOnboarded');
+          }
+        } catch (error) {
+          // Error al verificar perfil, asumir que el usuario no existe
+          console.error('[getSession] Error verificando perfil, limpiando sesión:', error);
+          await signOutFromSupabase();
+          setIsAuthenticated(false);
+          setHasActiveTrial(false);
+          setHasOnboarded(false);
+          setUserState(DEFAULT_USER);
+          await Storage.removeItem('hasOnboarded');
+        }
       } else {
         setIsAuthenticated(false);
         setHasActiveTrial(false);
+        setHasOnboarded(null); // Resetear a null cuando no hay sesión
+        setHasOnboardedReady(false);
+        hasOnboardedReadyRef.current = false;
         setUserState(DEFAULT_USER);
+        // Limpiar también de AsyncStorage por si acaso
+        await Storage.removeItem('hasOnboarded');
       }
     });
 
@@ -356,14 +492,46 @@ export const DataProvider = ({children}: {children: React.ReactNode}) => {
         }
 
         if (session?.user) {
-          console.log('[onAuthStateChange] Usuario autenticado, sincronizando perfil...', event);
-          setIsAuthenticated(true);
-          await syncProfile(session.user);
+          console.log('[onAuthStateChange] Usuario autenticado, verificando perfil...', event);
+          // Validar que el usuario realmente existe
+          try {
+            const profile = await fetchProfileById(session.user.id);
+            if (profile) {
+              // Usuario existe, establecer estados ANTES de sincronizar
+              setHasOnboarded(null); // Resetear a null mientras se carga
+              setIsProfileLoading(true);
+              setIsAuthenticated(true);
+              await syncProfile(session.user);
+            } else {
+              // Usuario no existe, limpiar sesión
+              console.log('[onAuthStateChange] Usuario no existe en Supabase, limpiando sesión');
+              await signOutFromSupabase();
+              setIsAuthenticated(false);
+              setHasActiveTrial(false);
+              setHasOnboarded(false);
+              setUserState(DEFAULT_USER);
+              await Storage.removeItem('hasOnboarded');
+            }
+          } catch (error) {
+            // Error al verificar, limpiar sesión
+            console.error('[onAuthStateChange] Error verificando perfil, limpiando sesión:', error);
+            await signOutFromSupabase();
+            setIsAuthenticated(false);
+            setHasActiveTrial(false);
+            setHasOnboarded(null);
+            setUserState(DEFAULT_USER);
+            await Storage.removeItem('hasOnboarded');
+          }
         } else {
           console.log('[onAuthStateChange] Usuario no autenticado, limpiando estado...', event);
           setIsAuthenticated(false);
           setHasActiveTrial(false);
+          setHasOnboarded(false); // Limpiar hasOnboarded cuando no hay sesión
+          setHasOnboardedReady(false);
+          hasOnboardedReadyRef.current = false;
           setUserState(DEFAULT_USER);
+          // Limpiar también de AsyncStorage por si acaso
+          await Storage.removeItem('hasOnboarded');
         }
       },
     );
@@ -377,6 +545,9 @@ export const DataProvider = ({children}: {children: React.ReactNode}) => {
   const signIn = useCallback(
     async ({email, password}: {email: string; password: string}) => {
       const authUser = await signInWithEmail({email, password});
+      // Establecer estados ANTES de sincronizar para evitar pestañeos
+      setHasOnboarded(null); // Resetear a null mientras se carga
+      setIsProfileLoading(true);
       setIsAuthenticated(true);
       await syncProfile(authUser);
     },
@@ -398,6 +569,9 @@ export const DataProvider = ({children}: {children: React.ReactNode}) => {
         user_metadata: authUser.user_metadata,
       });
       
+      // Establecer estados ANTES de sincronizar para evitar pestañeos
+      setHasOnboarded(null); // Resetear a null mientras se carga
+      setIsProfileLoading(true);
       setIsAuthenticated(true);
       
       // Esperar un momento para que Supabase procese completamente los metadatos de Google
@@ -459,6 +633,8 @@ export const DataProvider = ({children}: {children: React.ReactNode}) => {
       }
 
       // Si no requiere confirmación, crear el perfil inmediatamente
+      setHasOnboarded(null); // Resetear a null mientras se carga
+      setIsProfileLoading(true);
       setIsAuthenticated(true);
       await syncProfile(authUser);
       return 'signed_in';
@@ -471,7 +647,13 @@ export const DataProvider = ({children}: {children: React.ReactNode}) => {
     // No esperamos a Supabase para limpiar el estado local
     setIsAuthenticated(false);
     setHasActiveTrial(false);
+    setHasOnboarded(null); // Resetear a null al cerrar sesión
+    setHasOnboardedReady(false);
+    hasOnboardedReadyRef.current = false;
     setUserState(DEFAULT_USER);
+    
+    // Limpiar AsyncStorage
+    await Storage.removeItem('hasOnboarded');
     
     // Intentar cerrar sesión en Supabase en segundo plano
     // Si falla, no importa porque ya limpiamos el estado local

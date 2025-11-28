@@ -31,7 +31,7 @@ const createTransporter = () => {
   // Si no hay configuración, usar un transporter de prueba (solo para desarrollo)
   // En producción, esto fallará
   console.warn('[email] No SMTP configuration found. Using test account (emails will not be sent).');
-  return nodemailer.createTransporter({
+  return nodemailer.createTransport({
     host: 'smtp.ethereal.email',
     port: 587,
     auth: {
@@ -110,4 +110,5 @@ Importante: Questo codice scadrà tra 10 minuti. Se non hai richiesto questo res
     throw new Error('Impossibile inviare l\'email. Verifica la configurazione SMTP.');
   }
 };
+
 

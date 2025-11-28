@@ -105,3 +105,4 @@ El template HTML personalizado **NO debería** afectar si el correo se envía o 
 3. Límites de rate limiting
 4. Problema con el proveedor de correo del destinatario
 
+

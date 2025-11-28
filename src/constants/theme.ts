@@ -70,12 +70,12 @@ export const ICONS: ThemeIcons = {
 };
 
 export const ASSETS: ThemeAssets = {
-  // fonts
-  OpenSansLight: require('../assets/fonts/OpenSans-Light.ttf'),
-  OpenSansRegular: require('../assets/fonts/OpenSans-Regular.ttf'),
-  OpenSansSemiBold: require('../assets/fonts/OpenSans-SemiBold.ttf'),
-  OpenSansExtraBold: require('../assets/fonts/OpenSans-ExtraBold.ttf'),
-  OpenSansBold: require('../assets/fonts/OpenSans-Bold.ttf'),
+  // fonts - Urbanist
+  UrbanistLight: require('../assets/fonts/Urbanist-Light.ttf'),
+  UrbanistRegular: require('../assets/fonts/Urbanist-Regular.ttf'),
+  UrbanistSemiBold: require('../assets/fonts/Urbanist-SemiBold.ttf'),
+  UrbanistExtraBold: require('../assets/fonts/Urbanist-ExtraBold.ttf'),
+  UrbanistBold: require('../assets/fonts/Urbanist-Bold.ttf'),
 
   // backgrounds/logo
   logo: require('../assets/images/logo.png'),
@@ -121,24 +121,24 @@ export const ASSETS: ThemeAssets = {
 
 export const FONTS: ThemeFonts = {
   // based on font size
-  text: 'OpenSans-Regular',
-  h1: 'OpenSans-Bold',
-  h2: 'OpenSans-Bold',
-  h3: 'OpenSans-Bold',
-  h4: 'OpenSans-Bold',
-  h5: 'OpenSans-SemiBold',
-  p: 'OpenSans-Regular',
+  text: 'Urbanist-Regular',
+  h1: 'Urbanist-Bold',
+  h2: 'Urbanist-Bold',
+  h3: 'Urbanist-Bold',
+  h4: 'Urbanist-Bold',
+  h5: 'Urbanist-SemiBold',
+  p: 'Urbanist-Regular',
 
   // based on fontWeight
-  thin: 'OpenSans-Light',
-  extralight: 'OpenSans-Light',
-  light: 'OpenSans-Light',
-  normal: 'OpenSans-Regular',
-  medium: 'OpenSans-SemiBold',
-  semibold: 'OpenSans-SemiBold',
-  bold: 'OpenSans-Bold',
-  extrabold: 'OpenSans-ExtraBold',
-  black: 'OpenSans-ExtraBold',
+  thin: 'Urbanist-Light',
+  extralight: 'Urbanist-Light',
+  light: 'Urbanist-Light',
+  normal: 'Urbanist-Regular',
+  medium: 'Urbanist-SemiBold',
+  semibold: 'Urbanist-SemiBold',
+  bold: 'Urbanist-Bold',
+  extrabold: 'Urbanist-ExtraBold',
+  black: 'Urbanist-ExtraBold',
 };
 
 export const LINE_HEIGHTS: ThemeLineHeights = {

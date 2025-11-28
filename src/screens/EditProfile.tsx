@@ -95,9 +95,9 @@ const EditProfile = () => {
         full_name: fullName.trim(),
       };
 
-      // Guardar el ID del avatar seleccionado (o null si no hay selección)
+      // Guardar el ID del avatar seleccionado (o undefined si no hay selección)
       // Esto reemplazará cualquier avatar anterior
-      updateData.avatar_url = selectedAvatar || null;
+      updateData.avatar_url = selectedAvatar || undefined;
 
       // Intentar actualizar en Supabase
       // Si la columna avatar_url no existe, se guardará en AsyncStorage como respaldo
@@ -290,10 +290,9 @@ const EditProfile = () => {
           <Button
             primary
             onPress={handleSave}
-            loading={isSaving}
             disabled={isSaving || !fullName.trim()}>
             <Text white semibold>
-              Salva modifiche
+              {isSaving ? 'Salvataggio...' : 'Salva modifiche'}
             </Text>
           </Button>
         </Block>

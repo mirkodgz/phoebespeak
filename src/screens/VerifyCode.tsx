@@ -228,7 +228,7 @@ const VerifyCode = () => {
             />
 
             <Button
-              outlined={colors.primary}
+              outlined={String(colors.primary)}
               shadow={false}
               marginVertical={sizes.xs}
               marginHorizontal={sizes.sm}
@@ -240,7 +240,7 @@ const VerifyCode = () => {
             </Button>
 
             <Button
-              outlined={colors.primary}
+              outlined={String(colors.primary)}
               shadow={false}
               marginVertical={sizes.xs}
               marginHorizontal={sizes.sm}

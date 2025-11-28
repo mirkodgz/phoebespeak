@@ -11,8 +11,9 @@ export {default as OnboardingStepFour} from './OnboardingStepFour';
 export {default as OnboardingStepFive} from './OnboardingStepFive';
 export {default as OnboardingStepSix} from './OnboardingStepSix';
 export {default as OnboardingStepSeven} from './OnboardingStepSeven';
+export {default as OnboardingStepEight} from './OnboardingStepEight';
+export {default as OnboardingStepNine} from './OnboardingStepNine';
 
-export {default as Dashboard} from './Dashboard';
 export {default as Home} from './Home';
 export {default as RolePlay} from './RolePlay';
 export {default as RolePlayModeSelection} from './RolePlayModeSelection';
