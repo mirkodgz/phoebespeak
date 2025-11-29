@@ -24,6 +24,7 @@ import {
   Image,
   RolePlayAvatar,
   RoundCompleteModal,
+  RolePlayCompleteModal,
   Text,
 } from '../components';
 import {useData, usePracticeAudio, useTheme} from '../hooks';
@@ -133,6 +134,7 @@ const PracticeSession = () => {
   const [currentRound, setCurrentRound] = useState(0); // Índice del round actual (0-based)
   const [currentQuestionInRound, setCurrentQuestionInRound] = useState(0); // Índice de la pregunta dentro del round (0-based)
   const [showRoundCompleteModal, setShowRoundCompleteModal] = useState(false);
+  const [showRolePlayCompleteModal, setShowRolePlayCompleteModal] = useState(false);
   // Estados para modo libre
   const [companyName, setCompanyName] = useState<string | undefined>(undefined);
   const [positionName, setPositionName] = useState<string | undefined>(undefined);
@@ -847,6 +849,11 @@ const PracticeSession = () => {
       
       triggerSpeakingAnimation();
       await playVoiceMessage(closingMessage);
+      
+      // Mostrar modal de role play completado después de un delay
+      setTimeout(() => {
+        setShowRolePlayCompleteModal(true);
+      }, 1500);
     }
   }, [hasRounds, rounds, currentRound, studentFirstName, addChatMessage, triggerSpeakingAnimation, playVoiceMessage, finalizeSession]);
 
@@ -1263,6 +1270,11 @@ const PracticeSession = () => {
             
             triggerSpeakingAnimation();
             await playVoiceMessage(closingMessage);
+            
+            // Mostrar modal de role play completado después de un delay
+            setTimeout(() => {
+              setShowRolePlayCompleteModal(true);
+            }, 1500);
           } else {
             // Separar feedback y pregunta si existen
             const feedback = nextTurn.feedback;
@@ -1475,6 +1487,11 @@ const PracticeSession = () => {
             
             triggerSpeakingAnimation();
             await playVoiceMessage(closingMessage);
+            
+            // Mostrar modal de role play completado después de un delay
+            setTimeout(() => {
+              setShowRolePlayCompleteModal(true);
+            }, 1500);
           } else {
             // Separar feedback y pregunta
             const feedback = nextTurn.feedback || "Good!";
@@ -2438,6 +2455,20 @@ const PracticeSession = () => {
           isLastRound={currentRound + 1 >= rounds.length}
         />
       )}
+
+      {/* Modal de role play completado */}
+      <RolePlayCompleteModal
+        visible={showRolePlayCompleteModal}
+        scenarioName={scenarioConfig?.title}
+        onClose={() => {
+          setShowRolePlayCompleteModal(false);
+          // Navegar de vuelta después de cerrar
+          setTimeout(() => {
+            navigation.navigate('RolePlayMain');
+          }, 500);
+        }}
+        autoCloseDelay={4000}
+      />
     </View>
   );
 };

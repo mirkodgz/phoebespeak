@@ -1,37 +1,32 @@
 import React, {useRef, useEffect} from 'react';
-import {Modal, StyleSheet, TouchableOpacity, Dimensions, Animated, View} from 'react-native';
+import {Modal, StyleSheet, View, Animated, Dimensions} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {LinearGradient} from 'expo-linear-gradient';
 
-import {Block, Text, FullScreenConfetti} from './';
+import {Text, FullScreenConfetti} from './';
 import {useTheme} from '../hooks';
 
 const {width: SCREEN_WIDTH} = Dimensions.get('window');
 
-interface RoundCompleteModalProps {
+interface RolePlayCompleteModalProps {
   visible: boolean;
-  roundNumber: number;
-  roundTitle: string;
-  onContinue: () => void;
-  isLastRound?: boolean;
+  scenarioName?: string;
+  onClose?: () => void;
+  autoCloseDelay?: number; // Tiempo en ms antes de cerrar automáticamente
 }
 
-const RoundCompleteModal = ({
+const RolePlayCompleteModal = ({
   visible,
-  roundNumber,
-  roundTitle,
-  onContinue,
-  isLastRound = false,
-}: RoundCompleteModalProps) => {
+  scenarioName,
+  onClose,
+  autoCloseDelay = 4000,
+}: RolePlayCompleteModalProps) => {
   const {sizes, colors} = useTheme();
   const insets = useSafeAreaInsets();
-  const styles = createStyles(sizes, colors);
-  
-  // Animaciones para el texto flotante
+  const styles = createStyles(sizes);
+
+  // Animaciones para el texto
   const textOpacity = useRef(new Animated.Value(0)).current;
   const textTranslateY = useRef(new Animated.Value(-20)).current;
-  const buttonOpacity = useRef(new Animated.Value(0)).current;
-  const buttonScale = useRef(new Animated.Value(0.8)).current;
   
   // Animación de resplandor (glow) para el texto
   const glowAnimation = useRef(new Animated.Value(0)).current;
@@ -53,21 +48,6 @@ const RoundCompleteModal = ({
           delay: 300,
           useNativeDriver: true,
         }),
-        Animated.parallel([
-          Animated.timing(buttonOpacity, {
-            toValue: 1,
-            duration: 500,
-            delay: 800,
-            useNativeDriver: true,
-          }),
-          Animated.spring(buttonScale, {
-            toValue: 1,
-            tension: 50,
-            friction: 7,
-            delay: 800,
-            useNativeDriver: true,
-          }),
-        ]),
       ]).start();
 
       // Animación de resplandor (glow) pulsante
@@ -85,54 +65,33 @@ const RoundCompleteModal = ({
           }),
         ])
       ).start();
+
+      // Auto-cerrar después del delay
+      if (autoCloseDelay > 0 && onClose) {
+        const timer = setTimeout(() => {
+          onClose();
+        }, autoCloseDelay);
+
+        return () => clearTimeout(timer);
+      }
     } else {
       // Resetear animaciones
       textOpacity.setValue(0);
       textTranslateY.setValue(-20);
-      buttonOpacity.setValue(0);
-      buttonScale.setValue(0.8);
       glowAnimation.setValue(0);
     }
-  }, [visible]);
-
-  // Textos en italiano según el número de round
-  const getRoundText = () => {
-    const roundNames: Record<number, string> = {
-      1: 'primo',
-      2: 'secondo',
-      3: 'terzo',
-      4: 'quarto',
-      5: 'quinto',
-      6: 'sesto',
-      7: 'settimo',
-      8: 'ottavo',
-      9: 'nono',
-      10: 'decimo',
-    };
-    return roundNames[roundNumber] || `${roundNumber}°`;
-  };
-
-  // Texto de felicitación más usado en Italia con emojis
-  const getCelebrationText = () => {
-    return `🎉 Ottimo lavoro! 🎊 Hai completato il ${getRoundText()} round! ✨`;
-  };
-
-  // Interpolación del resplandor (glow) - oscila entre 8 y 20 de radio
-  const glowRadius = glowAnimation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [8, 20],
-  });
+  }, [visible, autoCloseDelay, onClose]);
 
   return (
     <Modal
       visible={visible}
       transparent
       animationType="fade"
-      onRequestClose={onContinue}>
+      onRequestClose={onClose}>
       <View style={styles.fullScreenContainer}>
         {/* Confeti a pantalla completa - por debajo del contenido */}
         <View style={{zIndex: 1}}>
-          <FullScreenConfetti visible={visible} duration={0} />
+          <FullScreenConfetti visible={visible} duration={autoCloseDelay} />
         </View>
 
         {/* Contenido flotante sin fondo - por encima del confeti */}
@@ -145,7 +104,7 @@ const RoundCompleteModal = ({
               zIndex: 1000,
             },
           ]}>
-          {/* Contenedor con texto y botón sin fondo */}
+          {/* Contenedor con texto sin fondo */}
           <Animated.View
             style={{
               opacity: textOpacity,
@@ -161,31 +120,26 @@ const RoundCompleteModal = ({
                 style={[
                   styles.animatedText,
                   {
-                    textShadowRadius: glowRadius,
+                    textShadowRadius: glowAnimation.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [8, 20],
+                    }),
                   },
                 ]}>
-                {getCelebrationText()}
+                🎉 Ottimo lavoro! 🎊 Hai completato il role play! ✨
               </Animated.Text>
             </View>
-
-            {/* Botón */}
-            <Animated.View
-              style={{
-                opacity: buttonOpacity,
-                transform: [{scale: buttonScale}],
-                alignItems: 'center',
-                marginTop: sizes.md,
-                zIndex: 1002,
-              }}>
-              <TouchableOpacity
-                onPress={onContinue}
-                activeOpacity={0.9}
-                style={[styles.button, {backgroundColor: colors.background}]}>
-                <Text h5 semibold color={colors.primary} center>
-                  {isLastRound ? 'Termina Role Play' : 'Continua al Prossimo Round'}
-                </Text>
-              </TouchableOpacity>
-            </Animated.View>
+            {scenarioName && (
+              <Text
+                h5
+                semibold
+                color="#FFFFFF"
+                opacity={0.9}
+                center
+                style={{marginTop: sizes.sm, ...styles.floatingText}}>
+                {scenarioName}
+              </Text>
+            )}
           </Animated.View>
         </View>
       </View>
@@ -193,7 +147,7 @@ const RoundCompleteModal = ({
   );
 };
 
-const createStyles = (sizes: any, colors: any) => StyleSheet.create({
+const createStyles = (sizes: any) => StyleSheet.create({
   fullScreenContainer: {
     flex: 1,
     backgroundColor: 'transparent',
@@ -219,24 +173,12 @@ const createStyles = (sizes: any, colors: any) => StyleSheet.create({
     // textShadowRadius se anima dinámicamente
     includeFontPadding: false,
   },
-  button: {
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    alignSelf: 'center',
-    minWidth: 200,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
+  floatingText: {
+    textShadowColor: 'rgba(0, 0, 0, 0.8)',
+    textShadowOffset: {width: 0, height: 2},
+    textShadowRadius: 6,
   },
 });
 
-export default RoundCompleteModal;
+export default RolePlayCompleteModal;
 

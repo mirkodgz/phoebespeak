@@ -18,8 +18,10 @@ import BrandLineChart from './BrandLineChart';
 import AssistantOrb, {type AssistantOrbState} from './AssistantOrb';
 import RolePlayAvatar from './RolePlayAvatar';
 import RoundCompleteModal from './RoundCompleteModal';
+import FullScreenConfetti from './FullScreenConfetti';
 import CrownIcon from './CrownIcon';
 import UserHeader from './UserHeader';
+import RolePlayCompleteModal from './RolePlayCompleteModal';
 
 export {
   Block,
@@ -44,6 +46,8 @@ export {
   RoundCompleteModal,
   CrownIcon,
   UserHeader,
+  FullScreenConfetti,
+  RolePlayCompleteModal,
 };
 
 export type {AssistantOrbState};
