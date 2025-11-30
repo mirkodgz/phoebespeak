@@ -30,6 +30,8 @@ import {
   requestTranslate,
   transcribePracticeAudio,
 } from '../services/practice';
+import {shouldShowPlansScreen} from '../services/subscription';
+import {getCurrentAuthUser, fetchProfileById} from '../services/supabaseAuth';
 
 type ChatMessage = {
   id: string;
@@ -98,6 +100,47 @@ const AITutor = () => {
   useEffect(() => {
     loadMicPermission();
   }, [loadMicPermission]);
+
+  // Verificar acceso a AI Tutor cuando se monta o se enfoca
+  useFocusEffect(
+    useCallback(() => {
+      const checkAccess = async () => {
+        try {
+          const authUser = await getCurrentAuthUser();
+          if (!authUser) {
+            console.error('[AITutor] Usuario no autenticado');
+            navigation.navigate('Home');
+            return;
+          }
+          
+          const profile = await fetchProfileById(authUser.id);
+          if (!profile) {
+            console.error('[AITutor] No se pudo obtener el perfil del usuario');
+            navigation.navigate('Home');
+            return;
+          }
+          
+          const shouldShow = await shouldShowPlansScreen(profile, authUser.id, 'ai_tutor');
+          
+          if (shouldShow) {
+            // No tiene acceso, mostrar pantalla de planes
+            navigation.navigate('ProPlans', {
+              fromAITutor: true,
+            });
+          }
+        } catch (error) {
+          console.error('[AITutor] Error verificando acceso:', error);
+          // En caso de error, NO permitir acceso por seguridad
+          // Redirigir a la pantalla de planes
+          navigation.navigate('ProPlans', {
+            fromAITutor: true,
+          });
+        }
+      };
+      
+      checkAccess();
+    }, [navigation]),
+  );
 
   // Animación de pulso para cuando está grabando
   useEffect(() => {

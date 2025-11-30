@@ -22,6 +22,8 @@ import {
   OnboardingStepEight,
   OnboardingStepNine,
   LoadingScreen,
+  ProPlans,
+  PaymentScreen,
 } from '../screens';
 
 const RootStack = createStackNavigator();
@@ -75,6 +77,14 @@ const OnboardingNavigator = () => (
     <OnboardingStack.Screen
       name="OnboardingStepNine"
       component={OnboardingStepNine}
+    />
+    <OnboardingStack.Screen
+      name="ProPlans"
+      component={ProPlans}
+    />
+    <OnboardingStack.Screen
+      name="PaymentScreen"
+      component={PaymentScreen}
     />
   </OnboardingStack.Navigator>
 );

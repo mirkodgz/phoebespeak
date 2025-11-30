@@ -16,6 +16,7 @@ import {
 } from '../screens';
 import AITutor from '../screens/AITutor';
 import ProPlans from '../screens/ProPlans';
+import PaymentScreen from '../screens/PaymentScreen';
 
 const Tab = createBottomTabNavigator();
 const HomeStack = createStackNavigator();
@@ -54,6 +55,7 @@ const ProfileStackNavigator = () => (
     <ProfileStack.Screen name="SettingsScreen" component={SettingsScreen} />
     <ProfileStack.Screen name="EditProfile" component={EditProfile} />
     <ProfileStack.Screen name="ProPlans" component={ProPlans} />
+    <ProfileStack.Screen name="PaymentScreen" component={PaymentScreen} />
   </ProfileStack.Navigator>
 );
 

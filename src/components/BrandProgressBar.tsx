@@ -27,7 +27,11 @@ const BrandProgressBar = ({
   const {colors, gradients, sizes} = useTheme();
   const normalized = Math.min(1, Math.max(0, value / total));
   const percentage = Math.round(normalized * 100);
-  const barGradient = gradient ?? gradients.primary;
+  const barGradient = useMemo(() => {
+    const grad = gradient ?? gradients.primary ?? ['#0B3D4D', '#60CB58'];
+    // Convertir a array mutable y asegurar que tenga al menos 2 elementos
+    return grad ? [...grad] : ['#0B3D4D', '#60CB58'];
+  }, [gradient, gradients.primary]);
 
   const progressWidth = useMemo(() => `${percentage}%`, [percentage]);
 
@@ -51,13 +55,13 @@ const BrandProgressBar = ({
         color="rgba(255,255,255,0.12)"
         style={{overflow: 'hidden'}}>
         <LinearGradient
-          colors={barGradient}
+          colors={barGradient as [string, string, ...string[]]}
           start={{x: 0, y: 0}}
           end={{x: 1, y: 0}}
           style={{
             width: progressWidth,
             height: '100%',
-          }}
+          } as ViewStyle}
         />
       </Block>
     </Block>

@@ -81,7 +81,6 @@ export const createRecordingHandle = (): RecordingHandle => {
     try {
       await recorder.stop();
       const uri = recorder.uri;
-      recorder.remove?.();
       recorder = null;
       await setAudioModeAsync(idleAudioMode);
       await setIsAudioActiveAsync(false);

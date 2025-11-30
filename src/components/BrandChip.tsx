@@ -29,17 +29,17 @@ const BrandChip = ({
 
   const toneStyles: Record<
     BrandChipTone,
-    {background: string[] | undefined; borderColor: string; textColor: string}
+    {background: typeof gradients.primary; borderColor: string; textColor: string}
   > = {
     brand: {
       background: gradients.primary,
       borderColor: 'transparent',
-      textColor: colors.white,
+      textColor: String(colors.white || '#FFFFFF'),
     },
     accent: {
       background: gradients.secondary,
       borderColor: 'transparent',
-      textColor: colors.white,
+      textColor: String(colors.white || '#FFFFFF'),
     },
     neutral: {
       background: undefined,
@@ -49,7 +49,7 @@ const BrandChip = ({
     outline: {
       background: undefined,
       borderColor: 'rgba(11,61,77,0.45)',
-      textColor: colors.primary,
+      textColor: String(colors.primary || '#0B3D4D'),
     },
   };
 

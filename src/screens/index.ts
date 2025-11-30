@@ -25,3 +25,4 @@ export {default as EditProfile} from './EditProfile';
 export {default as Profile} from './Profile';
 export {default as AITutor} from './AITutor';
 export {default as ProPlans} from './ProPlans';
+export {default as PaymentScreen} from './PaymentScreen';

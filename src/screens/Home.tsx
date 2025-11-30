@@ -9,8 +9,6 @@ import {
   Text,
   Image,
   UserHeader,
-  RoundCompleteModal,
-  RolePlayCompleteModal,
 } from '../components';
 import {useData, useTheme} from '../hooks';
 import {ROLE_PLAY_SCENARIOS, type RolePlayScenarioId, type RolePlayLevelId} from '../roleplay';
@@ -241,10 +239,6 @@ const Home = () => {
   const confettiTimeout = useRef<NodeJS.Timeout | null>(null);
   const confettiKey = useRef(0);
   const hasScrolledDown = useRef(false); // Para saber si el usuario ha scrolleado hacia abajo primero
-
-  // Estados temporales para probar los modales de confeti
-  const [showRoundCompleteModal, setShowRoundCompleteModal] = useState(false);
-  const [showRolePlayCompleteModal, setShowRolePlayCompleteModal] = useState(false);
 
   // Animación para el icono sparkles
   const sparkleAnim = useRef(new Animated.Value(0)).current;
@@ -682,76 +676,7 @@ const Home = () => {
           </Block>
         </Block>
 
-        {/* ============================================
-            BOTONES TEMPORALES PARA PROBAR CONFETI
-            TODO: Eliminar antes de producción
-            ============================================ */}
-        {__DEV__ && (
-          <Block
-            marginTop={sizes.xl}
-            marginBottom={sizes.md}
-            color={colors.card}
-            radius={16}
-            padding={sizes.md}>
-            <Text h5 semibold color={colors.text} marginBottom={sizes.sm}>
-              🧪 Prueba de Confeti (Temporal)
-            </Text>
-            <Text size={12} color={colors.text} opacity={0.6} marginBottom={sizes.md}>
-              Botones temporales para probar los efectos de confeti
-            </Text>
-            
-            <Block row justify="space-between">
-              <TouchableOpacity
-                onPress={() => setShowRoundCompleteModal(true)}
-                style={{
-                  flex: 1,
-                  backgroundColor: colors.primary,
-                  borderRadius: 12,
-                  paddingVertical: sizes.sm,
-                  paddingHorizontal: sizes.md,
-                  marginRight: sizes.sm,
-                  alignItems: 'center',
-                }}>
-                <Text white semibold center>
-                  Probar Round Complete
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => setShowRolePlayCompleteModal(true)}
-                style={{
-                  flex: 1,
-                  backgroundColor: colors.secondary,
-                  borderRadius: 12,
-                  paddingVertical: sizes.sm,
-                  paddingHorizontal: sizes.md,
-                  alignItems: 'center',
-                }}>
-                <Text white semibold center>
-                  Probar Role Play Complete
-                </Text>
-              </TouchableOpacity>
-            </Block>
-          </Block>
-        )}
-
       </ScrollView>
-
-      {/* Modales de confeti para pruebas */}
-      <RoundCompleteModal
-        visible={showRoundCompleteModal}
-        roundNumber={1}
-        roundTitle="Round 1"
-        onContinue={() => setShowRoundCompleteModal(false)}
-        isLastRound={false}
-      />
-
-      <RolePlayCompleteModal
-        visible={showRolePlayCompleteModal}
-        scenarioName="Job Interview"
-        onClose={() => setShowRolePlayCompleteModal(false)}
-        autoCloseDelay={4000}
-      />
     </View>
   );
 };

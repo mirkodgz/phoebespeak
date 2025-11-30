@@ -11,6 +11,8 @@ import {
   type RolePlayLevelId,
   ROLE_PLAY_SCENARIOS,
 } from '../roleplay';
+import {shouldShowPlansScreen} from '../services/subscription';
+import {getCurrentAuthUser, fetchProfileById} from '../services/supabaseAuth';
 
 type RolePlayModeSelectionRouteParams = {
   scenarioId: RolePlayScenarioId;
@@ -38,7 +40,62 @@ const RolePlayModeSelection = () => {
     return 'beginner';
   }, [user?.department]);
 
-  const handleModeSelect = (mode: 'guided' | 'free') => {
+  const handleModeSelect = async (mode: 'guided' | 'free') => {
+    try {
+      const authUser = await getCurrentAuthUser();
+      if (!authUser) {
+        console.error('[RolePlayModeSelection] Usuario no autenticado');
+        return; // No navegar si no está autenticado
+      }
+      
+      const profile = await fetchProfileById(authUser.id);
+      if (!profile) {
+        console.error('[RolePlayModeSelection] No se pudo obtener el perfil del usuario');
+        return; // No navegar si no se puede obtener el perfil
+      }
+      
+      // Importar getFeatureAccess para verificar acceso completo
+      const {getFeatureAccess} = await import('../services/subscription');
+      const access = await getFeatureAccess(profile, authUser.id);
+      
+      // Si es Modalità Libera, verificar acceso (siempre requiere suscripción de pago)
+      if (mode === 'free') {
+        if (!access.canAccessFreeMode) {
+          // No tiene acceso, mostrar pantalla de planes
+          navigation.navigate('ProPlans', {
+            fromFreeMode: true,
+            scenarioId,
+            levelId: levelId || userLevel,
+          });
+          return; // Salir temprano, no navegar a PracticeSession
+        }
+      }
+      
+      // Si es Modalità Guidata, verificar acceso (después de 5 días, incluso Round 1 está bloqueado)
+      if (mode === 'guided') {
+        if (!access.canAccessGuidedMode || !access.canAccessRound1) {
+          // No tiene acceso, mostrar pantalla de planes
+          navigation.navigate('ProPlans', {
+            fromFreeMode: false, // No es free mode, pero necesita suscripción
+            scenarioId,
+            levelId: levelId || userLevel,
+          });
+          return; // Salir temprano, no navegar a PracticeSession
+        }
+      }
+    } catch (error) {
+      console.error('[RolePlayModeSelection] Error verificando acceso:', error);
+      // En caso de error, NO permitir acceso por seguridad
+      // Mostrar pantalla de planes
+      navigation.navigate('ProPlans', {
+        fromFreeMode: mode === 'free',
+        scenarioId,
+        levelId: levelId || userLevel,
+      });
+      return;
+    }
+    
+    // Si tiene acceso, navegar normalmente
     navigation.navigate('PracticeSession', {
       scenarioId,
       levelId: levelId || userLevel,

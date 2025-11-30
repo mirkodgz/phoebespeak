@@ -45,6 +45,12 @@ import {
   type CreateTurnPayload,
 } from '../services/progressService';
 import {
+  shouldShowPlansScreen,
+  getFeatureAccess,
+} from '../services/subscription';
+import {getCurrentAuthUser} from '../services/supabaseAuth';
+import {fetchProfileById} from '../services/supabaseAuth';
+import {
   ROLE_PLAY_SCENARIOS,
   type RolePlayScenarioConfig,
   type RolePlayScenarioId,
@@ -746,6 +752,47 @@ const PracticeSession = () => {
     
     const nextRoundIndex = currentRound + 1;
     
+    // Si se completó el round 1 y se intenta continuar al round 2, verificar acceso
+    if (currentRound === 0 && nextRoundIndex < rounds.length) {
+      try {
+        const authUser = await getCurrentAuthUser();
+        if (!authUser) {
+          console.error('[PracticeSession] Usuario no autenticado');
+          return; // No continuar si no está autenticado
+        }
+        
+        const profile = await fetchProfileById(authUser.id);
+        if (!profile) {
+          console.error('[PracticeSession] No se pudo obtener el perfil del usuario');
+          return; // No continuar si no se puede obtener el perfil
+        }
+        
+        const shouldShow = await shouldShowPlansScreen(profile, authUser.id, 'guided_round2');
+        
+        if (shouldShow) {
+          // No tiene acceso al round 2, mostrar pantalla de planes
+          navigation.navigate('ProPlans', {
+            fromRoundComplete: true,
+            roundNumber: nextRoundIndex + 1,
+            scenarioId,
+            levelId: activeLevelId,
+          });
+          return; // Salir temprano, no continuar al siguiente round
+        }
+      } catch (error) {
+        console.error('[PracticeSession] Error verificando acceso:', error);
+        // En caso de error, NO permitir acceso por seguridad
+        // Mostrar pantalla de planes para que el usuario pueda suscribirse
+        navigation.navigate('ProPlans', {
+          fromRoundComplete: true,
+          roundNumber: nextRoundIndex + 1,
+          scenarioId,
+          levelId: activeLevelId,
+        });
+        return;
+      }
+    }
+    
     // Si hay más rounds, avanzar al siguiente
     if (nextRoundIndex < rounds.length) {
       setCurrentRound(nextRoundIndex);
@@ -855,7 +902,7 @@ const PracticeSession = () => {
         setShowRolePlayCompleteModal(true);
       }, 1500);
     }
-  }, [hasRounds, rounds, currentRound, studentFirstName, addChatMessage, triggerSpeakingAnimation, playVoiceMessage, finalizeSession]);
+  }, [hasRounds, rounds, currentRound, studentFirstName, addChatMessage, triggerSpeakingAnimation, playVoiceMessage, finalizeSession, navigation, scenarioId, activeLevelId]);
 
   // Crear sesión de progreso al iniciar
   useEffect(() => {

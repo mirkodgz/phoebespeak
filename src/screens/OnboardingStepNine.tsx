@@ -2,6 +2,7 @@ import React, {useCallback, useMemo, useState, useRef, useEffect} from 'react';
 import {Pressable, StyleSheet, View, Animated} from 'react-native';
 import {LinearGradient} from 'expo-linear-gradient';
 import {Ionicons} from '@expo/vector-icons';
+import {useNavigation} from '@react-navigation/native';
 
 import {useData, useTheme, useTranslation} from '../hooks/';
 import {
@@ -44,6 +45,7 @@ const OnboardingStepNine = () => {
   const {completeOnboarding, isAuthenticated, preferences, updatePreferences} = useData();
   const {sizes, colors} = useTheme();
   const {t} = useTranslation();
+  const navigation = useNavigation<any>();
 
   const [selectedTutor, setSelectedTutor] = useState<'davide' | 'phoebe' | null>(
     preferences.selectedTutor || null,
@@ -91,18 +93,21 @@ const OnboardingStepNine = () => {
       return;
     }
     
-    // Verificar que el usuario esté autenticado antes de completar el onboarding
+    // Verificar que el usuario esté autenticado
     if (!isAuthenticated) {
-      console.error('[OnboardingStepNine] Usuario no autenticado, no se puede completar el onboarding');
+      console.error('[OnboardingStepNine] Usuario no autenticado, no se puede continuar');
       return;
     }
     
     // Asegurar que la preferencia del tutor esté guardada
     updatePreferences({selectedTutor: selectedTutor});
     
-    await completeOnboarding();
-    // El cambio de hasOnboarded hará que App.tsx muestre Main automáticamente
-  }, [completeOnboarding, selectedTutor, isAuthenticated, updatePreferences]);
+    // Navegar a la pantalla de planes (después del onboarding)
+    // ProPlans manejará el flujo de suscripción y completará el onboarding cuando corresponda
+    navigation.navigate('ProPlans', {
+      fromOnboarding: true, // Flag para indicar que viene del onboarding
+    });
+  }, [selectedTutor, isAuthenticated, updatePreferences, navigation]);
 
   const continueDisabled = useMemo(() => selectedTutor === null, [selectedTutor]);
 

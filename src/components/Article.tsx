@@ -36,7 +36,7 @@ const Article = ({
               marginTop={sizes.s}
               transform="uppercase"
               marginLeft={sizes.xs}
-              gradient={gradients.primary}>
+              gradient={gradients.primary ? [...gradients.primary] : undefined}>
               {category?.name}
             </Text>
           )}
