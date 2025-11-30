@@ -6,6 +6,8 @@ import {
   ViewStyle,
   StyleSheet,
   Platform,
+  NativeSyntheticEvent,
+  TextInputFocusEventData,
 } from 'react-native';
 
 import Block from './Block';
@@ -46,7 +48,7 @@ const Input = ({
   const [isFocused, setFocused] = useState(false);
 
   const handleFocus = useCallback(
-    (event, focus) => {
+    (event: NativeSyntheticEvent<TextInputFocusEventData>, focus: boolean) => {
       setFocused(focus);
       focus && onFocus?.(event);
       !focus && onBlur?.(event);

@@ -36,7 +36,7 @@ const BrandSurface = ({
 
   const toneConfig: Record<
     BrandSurfaceTone,
-    {gradient?: string[]; color?: string; borderColor?: string}
+    {gradient?: typeof gradients.primary; color?: string; borderColor?: string}
   > = {
     brand: {gradient: gradients.primary},
     accent: {gradient: gradients.secondary},

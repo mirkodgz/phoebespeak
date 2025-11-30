@@ -192,7 +192,7 @@ const Typography = (props: ITextProps) => {
           </Text>
         }>
         <LinearGradient
-          colors={gradient}
+          colors={gradient as [string, string, ...string[]]}
           end={end || [0.2, 0]}
           start={start || [0, 0]}
           style={{flex: 1, height: gradientHeight, flexWrap: 'wrap'}}

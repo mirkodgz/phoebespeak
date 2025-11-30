@@ -44,7 +44,7 @@ const BrandSectionHeader = ({
             {icon}
           </Block>
         ) : null}
-        <Block flex>
+        <Block flex={1}>
           <Text h5 semibold color={colors.white}>
             {title}
           </Text>
