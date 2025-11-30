@@ -370,17 +370,15 @@ export const generateNextConversationTurn = async ({
         
         // La pregunta siempre debe ser la predefinida, pero extraer solo la parte antes del ejemplo
         // Esto evita que el ejemplo aparezca en la pregunta devuelta
-        // Formato esperado: "Question text Here is a possible answer: 'example' Now please tell me..."
+        // Formato esperado: "Question text Here is an answer you can use as a guide. Now why don't you try? 'example'"
         let finalQuestion = question;
-        const hereIsIndex = question.search(/Here is (?:a simple )?(?:example|possible) answer:/i);
+        const hereIsIndex = question.search(/Here is an answer you can use as a guide/i);
         if (hereIsIndex > 0) {
-          // Extraer solo la parte antes de "Here is..."
+          // Extraer solo la parte antes de "Here is an answer you can use as a guide..."
           finalQuestion = question.substring(0, hereIsIndex).trim();
         } else {
-          // Si no se encuentra "Here is", intentar eliminar "Now please tell me..." y cualquier ejemplo que pueda quedar
-          finalQuestion = question.replace(/\s*Now please tell me.*$/i, '').trim();
-          // Eliminar cualquier rastro del ejemplo que pueda quedar
-          finalQuestion = finalQuestion.replace(/Here is.*answer:.*$/i, '').trim();
+          // Si no se encuentra, intentar eliminar la nueva frase y el ejemplo
+          finalQuestion = question.replace(/Here is an answer you can use as a guide\. Now why don't you try\?.*$/i, '').trim();
         }
         
         return {
@@ -394,15 +392,13 @@ export const generateNextConversationTurn = async ({
         console.error('[openai] generateNextTurn error', error);
         // Fallback: usar la pregunta directamente sin feedback, pero extraer solo la parte antes del ejemplo
         let finalQuestion = question;
-        const hereIsIndex = question.search(/Here is (?:a simple )?(?:example|possible) answer:/i);
+        const hereIsIndex = question.search(/Here is an answer you can use as a guide/i);
         if (hereIsIndex > 0) {
-          // Extraer solo la parte antes de "Here is..."
+          // Extraer solo la parte antes de "Here is an answer you can use as a guide..."
           finalQuestion = question.substring(0, hereIsIndex).trim();
         } else {
-          // Si no se encuentra "Here is", intentar eliminar "Now please tell me..." y cualquier ejemplo que pueda quedar
-          finalQuestion = question.replace(/\s*Now please tell me.*$/i, '').trim();
-          // Eliminar cualquier rastro del ejemplo que pueda quedar
-          finalQuestion = finalQuestion.replace(/Here is.*answer:.*$/i, '').trim();
+          // Si no se encuentra, intentar eliminar la nueva frase y el ejemplo
+          finalQuestion = question.replace(/Here is an answer you can use as a guide\. Now why don't you try\?.*$/i, '').trim();
         }
         
         return {

@@ -13,7 +13,7 @@ export const meetingSomeoneNewIntermediateRounds: RoundConfig[] = [
       {
         letter: 'A',
         question: (studentName: string) =>
-          `Nice to meet you. What's your name? Here is a possible answer: 'Nice to meet you too. I'm Alex.' Now please tell me your name.`,
+          `Nice to meet you. What's your name? Here is an answer you can use as a guide. Now why don't you try? 'Nice to meet you too. I'm Alex.' your name.`,
         exampleAnswer: "Nice to meet you too. I'm Alex.",
         difficulty: 'medium',
         expectedTopics: ['introductions', 'names', 'greetings'],
@@ -21,7 +21,7 @@ export const meetingSomeoneNewIntermediateRounds: RoundConfig[] = [
       {
         letter: 'B',
         question: (studentName: string) =>
-          `Where are you from? Here is a possible answer: 'I'm from Florence, but I live here now.' Now please tell me where you are from.`,
+          `Where are you from? Here is an answer you can use as a guide. Now why don't you try? 'I'm from Florence, but I live here now.' where you are from.`,
         exampleAnswer: "I'm from Florence, but I live here now.",
         difficulty: 'medium',
         expectedTopics: ['origin', 'location', 'background'],
@@ -29,7 +29,7 @@ export const meetingSomeoneNewIntermediateRounds: RoundConfig[] = [
       {
         letter: 'C',
         question: (studentName: string) =>
-          `Is this your first time at this event? Here is a possible answer: 'Yes, it is. Everything looks really nice.' Now please tell me if this is your first time at this event.`,
+          `Is this your first time at this event? Here is an answer you can use as a guide. Now why don't you try? 'Yes, it is. Everything looks really nice.' if this is your first time at this event.`,
         exampleAnswer: 'Yes, it is. Everything looks really nice.',
         difficulty: 'medium',
         expectedTopics: ['first time', 'events', 'impressions'],
@@ -44,7 +44,7 @@ export const meetingSomeoneNewIntermediateRounds: RoundConfig[] = [
       {
         letter: 'A',
         question: (studentName: string) =>
-          `What do you do for work? Here is a possible answer: 'I work in marketing. I help with online content and communication.' Now please tell me what you do for work.`,
+          `What do you do for work? Here is an answer you can use as a guide. Now why don't you try? 'I work in marketing. I help with online content and communication.' what you do for work.`,
         exampleAnswer: 'I work in marketing. I help with online content and communication.',
         difficulty: 'medium',
         expectedTopics: ['work', 'profession', 'career'],
@@ -52,7 +52,7 @@ export const meetingSomeoneNewIntermediateRounds: RoundConfig[] = [
       {
         letter: 'B',
         question: (studentName: string) =>
-          `How do you know the host? Here is a possible answer: 'We met through a friend some time ago.' Now please tell me how you know the host.`,
+          `How do you know the host? Here is an answer you can use as a guide. Now why don't you try? 'We met through a friend some time ago.' how you know the host.`,
         exampleAnswer: 'We met through a friend some time ago.',
         difficulty: 'medium',
         expectedTopics: ['connections', 'relationships', 'social'],
@@ -60,7 +60,7 @@ export const meetingSomeoneNewIntermediateRounds: RoundConfig[] = [
       {
         letter: 'C',
         question: (studentName: string) =>
-          `What do you like doing in your free time? Here is a possible answer: 'I like reading, going for walks, and meeting friends.' Now please tell me what you like doing in your free time.`,
+          `What do you like doing in your free time? Here is an answer you can use as a guide. Now why don't you try? 'I like reading, going for walks, and meeting friends.' what you like doing in your free time.`,
         exampleAnswer: 'I like reading, going for walks, and meeting friends.',
         difficulty: 'medium',
         expectedTopics: ['hobbies', 'interests', 'free time'],
@@ -75,7 +75,7 @@ export const meetingSomeoneNewIntermediateRounds: RoundConfig[] = [
       {
         letter: 'A',
         question: (studentName: string) =>
-          `Can I ask what brought you here today? Here is a possible answer: 'Sure. I wanted to meet new people and see what this event is like.' Now please tell me what brought you here today.`,
+          `Can I ask what brought you here today? Here is an answer you can use as a guide. Now why don't you try? 'Sure. I wanted to meet new people and see what this event is like.' what brought you here today.`,
         exampleAnswer: 'Sure. I wanted to meet new people and see what this event is like.',
         difficulty: 'medium',
         expectedTopics: ['reasons', 'motivations', 'intentions'],
@@ -83,7 +83,7 @@ export const meetingSomeoneNewIntermediateRounds: RoundConfig[] = [
       {
         letter: 'B',
         question: (studentName: string) =>
-          `Sorry, I didn't catch your name. Could you say it again? Here is a possible answer: 'Of course! It's Alex.' Now please tell me your name again.`,
+          `Sorry, I didn't catch your name. Could you say it again? Here is an answer you can use as a guide. Now why don't you try? 'Of course! It's Alex.' your name again.`,
         exampleAnswer: "Of course! It's Alex.",
         difficulty: 'medium',
         expectedTopics: ['clarification', 'repetition', 'politeness'],
@@ -91,7 +91,7 @@ export const meetingSomeoneNewIntermediateRounds: RoundConfig[] = [
       {
         letter: 'C',
         question: (studentName: string) =>
-          `Would you like to stay in touch? Here is a possible answer: 'Yes, that would be nice. I can give you my number or Instagram.' Now please tell me if you would like to stay in touch.`,
+          `Would you like to stay in touch? Here is an answer you can use as a guide. Now why don't you try? 'Yes, that would be nice. I can give you my number or Instagram.' if you would like to stay in touch.`,
         exampleAnswer: 'Yes, that would be nice. I can give you my number or Instagram.',
         difficulty: 'medium',
         expectedTopics: ['contact', 'future plans', 'social connections'],

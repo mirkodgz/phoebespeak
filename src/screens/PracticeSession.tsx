@@ -813,36 +813,25 @@ const PracticeSession = () => {
         if (firstQuestion.exampleAnswer) {
           // Usar exampleAnswer del objeto - NUNCA extraer del texto
           exampleText = firstQuestion.exampleAnswer;
-          // Extraer SOLO la parte antes de "Here is..."
-          const hereIsIndex = questionFull.search(/Here is (?:a simple )?(?:example|possible) answer:/i);
+          // Extraer SOLO la parte antes de "Here is an answer you can use as a guide..."
+          const hereIsIndex = questionFull.search(/Here is an answer you can use as a guide/i);
           if (hereIsIndex > 0) {
             beforeExample = questionFull.substring(0, hereIsIndex).trim();
           } else {
-            // Si no se encuentra "Here is", usar split como fallback
-            const parts = questionFull.split(/Here is (?:a simple )?(?:example|possible) answer:/i);
+            // Si no se encuentra, usar split como fallback
+            const parts = questionFull.split(/Here is an answer you can use as a guide/i);
             beforeExample = parts[0] ? parts[0].trim() : questionFull.trim();
-            // Si el split no funcionó, tomar todo hasta "Now please tell me" como último recurso
-            if (beforeExample === questionFull.trim()) {
-              const nowIndex = questionFull.search(/Now please tell me/i);
-              if (nowIndex > 0) {
-                beforeExample = questionFull.substring(0, nowIndex).trim();
-                // Eliminar cualquier rastro del ejemplo que pueda quedar
-                beforeExample = beforeExample.replace(/Here is.*answer:.*$/i, '').trim();
-              }
-            }
           }
         } else {
           // Fallback: solo si NO hay exampleAnswer del objeto, intentar extraer del texto
-          const exampleMatch = questionFull.match(/Here is (?:a simple )?(?:example|possible) answer:\s*'([^']+)'/i);
-          const parts = questionFull.split(/Here is (?:a simple )?(?:example|possible) answer:/i);
+          const exampleMatch = questionFull.match(/Now why don't you try\?\s*'([^']+)'/i);
+          const parts = questionFull.split(/Here is an answer you can use as a guide/i);
           beforeExample = parts[0] ? parts[0].trim() : questionFull.trim();
           exampleText = exampleMatch ? exampleMatch[1] : '';
         }
         
-        // Detectar qué tipo de texto de ejemplo se usó
-        const exampleTypeMatch = questionFull.match(/Here is (?:a simple )?(example|possible) answer:/i);
-        const exampleType = exampleTypeMatch ? exampleTypeMatch[1] : 'possible';
-        const exampleLabel = exampleType === 'example' ? 'Here is a simple example answer:' : 'Here is a possible answer:';
+        // Usar la nueva frase estándar para el ejemplo
+        const exampleLabel = 'Here is an answer you can use as a guide. Now why don\'t you try?';
         
         const questionText = beforeExample + (exampleText ? ` ${exampleLabel}` : "");
         const exampleMessage = exampleText ? `'${exampleText}'` : '';
@@ -1068,36 +1057,25 @@ const PracticeSession = () => {
       if (exampleAnswerFromObject) {
         // Usar exampleAnswer del objeto - NUNCA extraer del texto
         exampleText = exampleAnswerFromObject;
-        // Extraer SOLO la parte antes de "Here is..."
-        const hereIsIndex = firstQuestionFull.search(/Here is (?:a simple )?(?:example|possible) answer:/i);
+        // Extraer SOLO la parte antes de "Here is an answer you can use as a guide..."
+        const hereIsIndex = firstQuestionFull.search(/Here is an answer you can use as a guide/i);
         if (hereIsIndex > 0) {
           beforeExample = firstQuestionFull.substring(0, hereIsIndex).trim();
         } else {
-          // Si no se encuentra "Here is", usar split como fallback
-          const parts = firstQuestionFull.split(/Here is (?:a simple )?(?:example|possible) answer:/i);
+          // Si no se encuentra, usar split como fallback
+          const parts = firstQuestionFull.split(/Here is an answer you can use as a guide/i);
           beforeExample = parts[0] ? parts[0].trim() : firstQuestionFull.trim();
-          // Si el split no funcionó, tomar todo hasta "Now please tell me" como último recurso
-          if (beforeExample === firstQuestionFull.trim()) {
-            const nowIndex = firstQuestionFull.search(/Now please tell me/i);
-            if (nowIndex > 0) {
-              beforeExample = firstQuestionFull.substring(0, nowIndex).trim();
-              // Eliminar cualquier rastro del ejemplo que pueda quedar
-              beforeExample = beforeExample.replace(/Here is.*answer:.*$/i, '').trim();
-            }
-          }
         }
       } else {
         // Fallback: solo si NO hay exampleAnswer del objeto, intentar extraer del texto
-        const exampleMatch = firstQuestionFull.match(/Here is (?:a simple )?(?:example|possible) answer:\s*'([^']+)'/i);
-        const parts = firstQuestionFull.split(/Here is (?:a simple )?(?:example|possible) answer:/i);
+        const exampleMatch = firstQuestionFull.match(/Now why don't you try\?\s*'([^']+)'/i);
+        const parts = firstQuestionFull.split(/Here is an answer you can use as a guide/i);
         beforeExample = parts[0] ? parts[0].trim() : firstQuestionFull.trim();
         exampleText = exampleMatch ? exampleMatch[1] : '';
       }
       
-      // Detectar qué tipo de texto de ejemplo se usó
-      const exampleTypeMatch = firstQuestionFull.match(/Here is (?:a simple )?(example|possible) answer:/i);
-      const exampleType = exampleTypeMatch ? exampleTypeMatch[1] : 'example';
-      const exampleLabel = exampleType === 'example' ? 'Here is a simple example answer:' : 'Here is a possible answer:';
+      // Usar la nueva frase estándar para el ejemplo
+      const exampleLabel = 'Here is an answer you can use as a guide. Now why don\'t you try?';
       
       // Construir la pregunta con el label del ejemplo pero sin el ejemplo y sin "Now please tell me..."
       const questionText = beforeExample + (exampleText ? ` ${exampleLabel}` : "");
@@ -1578,30 +1556,19 @@ const PracticeSession = () => {
               // y NUNCA intentar extraer el ejemplo del texto de la pregunta
               exampleText = currentQuestionObj.exampleAnswer;
               
-              // Extraer SOLO la parte antes de "Here is..." - esto es crítico
-              // Buscar el índice de "Here is" y tomar todo antes
-              const hereIsIndex = questionFull.search(/Here is (?:a simple )?(?:example|possible) answer:/i);
+              // Extraer SOLO la parte antes de "Here is an answer you can use as a guide..." - esto es crítico
+              // Buscar el índice de "Here is an answer" y tomar todo antes
+              const hereIsIndex = questionFull.search(/Here is an answer you can use as a guide/i);
               if (hereIsIndex > 0) {
                 beforeExample = questionFull.substring(0, hereIsIndex).trim();
               } else {
-                // Si no se encuentra "Here is", usar split como fallback
-                const parts = questionFull.split(/Here is (?:a simple )?(?:example|possible) answer:/i);
+                // Si no se encuentra, usar split como fallback
+                const parts = questionFull.split(/Here is an answer you can use as a guide/i);
                 beforeExample = parts[0] ? parts[0].trim() : questionFull.trim();
-                // Si el split no funcionó, tomar todo hasta "Now please tell me" como último recurso
-                if (beforeExample === questionFull.trim()) {
-                  const nowIndex = questionFull.search(/Now please tell me/i);
-                  if (nowIndex > 0) {
-                    beforeExample = questionFull.substring(0, nowIndex).trim();
-                    // Eliminar cualquier rastro del ejemplo que pueda quedar
-                    beforeExample = beforeExample.replace(/Here is.*answer:.*$/i, '').trim();
-                  }
-                }
               }
               
-              // Detectar qué tipo de texto de ejemplo se usó
-              const exampleTypeMatch = questionFull.match(/Here is (?:a simple )?(example|possible) answer:/i);
-              const exampleType = exampleTypeMatch ? exampleTypeMatch[1] : 'possible';
-              const exampleLabel = exampleType === 'example' ? 'Here is a simple example answer:' : 'Here is a possible answer:';
+              // Usar la nueva frase estándar para el ejemplo
+              const exampleLabel = 'Here is an answer you can use as a guide. Now why don\'t you try?';
             
               // Construir la pregunta con el label del ejemplo pero sin el ejemplo y sin "Now please tell me..."
               const questionText = beforeExample + (exampleText ? ` ${exampleLabel}` : "");
@@ -1609,18 +1576,16 @@ const PracticeSession = () => {
             } else {
               // Fallback: intentar extraer del texto usando regex
               // Primero intentar split para obtener la parte antes del ejemplo
-              const parts = questionFull.split(/Here is (?:a simple )?(?:example|possible) answer:/i);
+              const parts = questionFull.split(/Here is an answer you can use as a guide/i);
               beforeExample = parts[0] ? parts[0].trim() : '';
               
               // Si el split funcionó, intentar extraer el ejemplo con regex
               if (beforeExample && beforeExample !== questionFull.trim()) {
-                const exampleMatch = questionFull.match(/Here is (?:a simple )?(?:example|possible) answer:\s*'([^']+)'/i);
+                const exampleMatch = questionFull.match(/Now why don't you try\?\s*'([^']+)'/i);
                 exampleText = exampleMatch ? exampleMatch[1] : '';
             
-                // Detectar qué tipo de texto de ejemplo se usó
-                const exampleTypeMatch = questionFull.match(/Here is (?:a simple )?(example|possible) answer:/i);
-                const exampleType = exampleTypeMatch ? exampleTypeMatch[1] : 'possible';
-                const exampleLabel = exampleType === 'example' ? 'Here is a simple example answer:' : 'Here is a possible answer:';
+                // Usar la nueva frase estándar para el ejemplo
+                const exampleLabel = 'Here is an answer you can use as a guide. Now why don\'t you try?';
                 
                 // Construir la pregunta con el label del ejemplo pero sin el ejemplo y sin "Now please tell me..."
                 const questionText = beforeExample + (exampleText ? ` ${exampleLabel}` : "");
@@ -1630,7 +1595,7 @@ const PracticeSession = () => {
                 // Esto es un fallback de seguridad
                 cleanQuestionText = questionFull.replace(/\s*Now please tell me.*$/i, '').trim();
                 // Intentar extraer el ejemplo aunque sea parcialmente
-                const exampleMatch = questionFull.match(/Here is (?:a simple )?(?:example|possible) answer:\s*'([^']+)'/i);
+                const exampleMatch = questionFull.match(/Now why don't you try\?\s*'([^']+)'/i);
                 exampleText = exampleMatch ? exampleMatch[1] : '';
               }
             }

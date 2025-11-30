@@ -13,7 +13,7 @@ export const atTheCafeBeginnerRounds: RoundConfig[] = [
       {
         letter: 'A',
         question: (studentName: string) =>
-          `What would you like? What can I get you? Here is a possible answer: 'I'd like a coffee, please.' Now please tell me what you would like.`,
+          `What would you like? What can I get you? Here is an answer you can use as a guide. Now why don't you try? 'I'd like a coffee, please.' what you would like.`,
         exampleAnswer: "I'd like a coffee, please.",
         difficulty: 'easy',
         expectedTopics: ['ordering', 'requests', 'polite expressions'],
@@ -21,7 +21,7 @@ export const atTheCafeBeginnerRounds: RoundConfig[] = [
       {
         letter: 'B',
         question: (studentName: string) =>
-          `For here or to go? Here is a possible answer: 'For here, please.' Now please tell me if it's for here or to go.`,
+          `For here or to go? Here is an answer you can use as a guide. Now why don't you try? 'For here, please.' if it's for here or to go.`,
         exampleAnswer: 'For here, please.',
         difficulty: 'easy',
         expectedTopics: ['preferences', 'location', 'polite responses'],
@@ -29,7 +29,7 @@ export const atTheCafeBeginnerRounds: RoundConfig[] = [
       {
         letter: 'C',
         question: (studentName: string) =>
-          `Do you need anything else? Here is a possible answer: 'No, thank you.' Now please tell me if you need anything else.`,
+          `Do you need anything else? Here is an answer you can use as a guide. Now why don't you try? 'No, thank you.' if you need anything else.`,
         exampleAnswer: 'No, thank you.',
         difficulty: 'easy',
         expectedTopics: ['politeness', 'declining', 'gratitude'],
@@ -44,7 +44,7 @@ export const atTheCafeBeginnerRounds: RoundConfig[] = [
       {
         letter: 'A',
         question: (studentName: string) =>
-          `Are you from here? Here is a possible answer: 'No, I'm not from here.' Now please tell me if you are from here.`,
+          `Are you from here? Here is an answer you can use as a guide. Now why don't you try? 'No, I'm not from here.' if you are from here.`,
         exampleAnswer: "No, I'm not from here.",
         difficulty: 'easy',
         expectedTopics: ['origin', 'location', 'personal information'],
@@ -52,7 +52,7 @@ export const atTheCafeBeginnerRounds: RoundConfig[] = [
       {
         letter: 'B',
         question: (studentName: string) =>
-          `Do you come here often? Here is a possible answer: 'Yes, I come sometimes.' Now please tell me if you come here often.`,
+          `Do you come here often? Here is an answer you can use as a guide. Now why don't you try? 'Yes, I come sometimes.' if you come here often.`,
         exampleAnswer: 'Yes, I come sometimes.',
         difficulty: 'easy',
         expectedTopics: ['frequency', 'habits', 'social interaction'],
@@ -60,7 +60,7 @@ export const atTheCafeBeginnerRounds: RoundConfig[] = [
       {
         letter: 'C',
         question: (studentName: string) =>
-          `Are you working or relaxing? Here is a possible answer: 'I'm relaxing.' Now please tell me if you are working or relaxing.`,
+          `Are you working or relaxing? Here is an answer you can use as a guide. Now why don't you try? 'I'm relaxing.' if you are working or relaxing.`,
         exampleAnswer: "I'm relaxing.",
         difficulty: 'easy',
         expectedTopics: ['activities', 'state', 'leisure'],
@@ -75,7 +75,7 @@ export const atTheCafeBeginnerRounds: RoundConfig[] = [
       {
         letter: 'A',
         question: (studentName: string) =>
-          `Sorry, the Wi-Fi is not working. Is that okay? Here is a possible answer: 'It's okay.' Now please tell me if that's okay.`,
+          `Sorry, the Wi-Fi is not working. Is that okay? Here is an answer you can use as a guide. Now why don't you try? 'It's okay.' if that's okay.`,
         exampleAnswer: "It's okay.",
         difficulty: 'easy',
         expectedTopics: ['understanding', 'acceptance', 'reassurance'],
@@ -83,7 +83,7 @@ export const atTheCafeBeginnerRounds: RoundConfig[] = [
       {
         letter: 'B',
         question: (studentName: string) =>
-          `We don't have oat milk. Would you like something else? Here is a possible answer: 'Regular milk is fine.' Now please tell me what you would like instead.`,
+          `We don't have oat milk. Would you like something else? Here is an answer you can use as a guide. Now why don't you try? 'Regular milk is fine.' what you would like instead.`,
         exampleAnswer: 'Regular milk is fine.',
         difficulty: 'easy',
         expectedTopics: ['alternatives', 'flexibility', 'preferences'],
@@ -91,7 +91,7 @@ export const atTheCafeBeginnerRounds: RoundConfig[] = [
       {
         letter: 'C',
         question: (studentName: string) =>
-          `It's crowded. Would you like another table? Here is a possible answer: 'Yes, thank you.' Now please tell me if you would like another table.`,
+          `It's crowded. Would you like another table? Here is an answer you can use as a guide. Now why don't you try? 'Yes, thank you.' if you would like another table.`,
         exampleAnswer: 'Yes, thank you.',
         difficulty: 'easy',
         expectedTopics: ['accepting offers', 'gratitude', 'preferences'],

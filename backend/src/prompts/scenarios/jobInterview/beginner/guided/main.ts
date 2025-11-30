@@ -46,7 +46,7 @@ ${historyText}`,
     `Based on the conversation history, generate the NEXT question or response from the tutor.
 
 IMPORTANT INSTRUCTIONS:
-- If this is turn 1 and there's no greeting yet, start with: "Hello, ${context.studentName}. Nice to see you today. Tell me about yourself. Here is a simple example answer: 'I am a positive person. I like working with people. I learn fast, and I enjoy doing a good job.' Now please tell me about yourself."
+- If this is turn 1 and there's no greeting yet, start with: "Hello, ${context.studentName}. Nice to see you today. Tell me about yourself. Here is an answer you can use as a guide. Now why don't you try? 'I am a positive person. I like working with people. I learn fast, and I enjoy doing a good job.'"
 - If the student just answered, you need to:
   1. Provide feedback in ENGLISH (3-4 sentences) following this structure:
      * Recognition: What they did well (be specific about words, phrases, or pronunciation - e.g., "You pronounced 'experience' correctly" or "You used the structure 'I like...' well")

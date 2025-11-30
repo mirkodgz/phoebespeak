@@ -13,7 +13,7 @@ export const atTheCafeIntermediateRounds: RoundConfig[] = [
       {
         letter: 'A',
         question: (studentName: string) =>
-          `What would you like? What can I get you? Here is a possible answer: 'I'd like a cappuccino, please. And could I have a croissant as well?' Now please tell me what you would like.`,
+          `What would you like? What can I get you? Here is an answer you can use as a guide. Now why don't you try? 'I'd like a cappuccino, please. And could I have a croissant as well?' what you would like.`,
         exampleAnswer: "I'd like a cappuccino, please. And could I have a croissant as well?",
         difficulty: 'medium',
         expectedTopics: ['ordering', 'requests', 'polite expressions'],
@@ -21,7 +21,7 @@ export const atTheCafeIntermediateRounds: RoundConfig[] = [
       {
         letter: 'B',
         question: (studentName: string) =>
-          `For here or to go? Here is a possible answer: 'For here, please. I want to sit for a bit and relax.' Now please tell me if it's for here or to go.`,
+          `For here or to go? Here is an answer you can use as a guide. Now why don't you try? 'For here, please. I want to sit for a bit and relax.' if it's for here or to go.`,
         exampleAnswer: 'For here, please. I want to sit for a bit and relax.',
         difficulty: 'medium',
         expectedTopics: ['preferences', 'location', 'polite responses'],
@@ -29,7 +29,7 @@ export const atTheCafeIntermediateRounds: RoundConfig[] = [
       {
         letter: 'C',
         question: (studentName: string) =>
-          `Do you need anything else? Here is a possible answer: 'No, thank you. That's all for now.' Now please tell me if you need anything else.`,
+          `Do you need anything else? Here is an answer you can use as a guide. Now why don't you try? 'No, thank you. That's all for now.' if you need anything else.`,
         exampleAnswer: "No, thank you. That's all for now.",
         difficulty: 'medium',
         expectedTopics: ['politeness', 'declining', 'gratitude'],
@@ -44,7 +44,7 @@ export const atTheCafeIntermediateRounds: RoundConfig[] = [
       {
         letter: 'A',
         question: (studentName: string) =>
-          `Are you from around here? Here is a possible answer: 'No, I'm not from here, but I moved nearby recently. I like this neighbourhood.' Now please tell me if you are from around here.`,
+          `Are you from around here? Here is an answer you can use as a guide. Now why don't you try? 'No, I'm not from here, but I moved nearby recently. I like this neighbourhood.' if you are from around here.`,
         exampleAnswer: "No, I'm not from here, but I moved nearby recently. I like this neighbourhood.",
         difficulty: 'medium',
         expectedTopics: ['origin', 'location', 'personal information'],
@@ -52,7 +52,7 @@ export const atTheCafeIntermediateRounds: RoundConfig[] = [
       {
         letter: 'B',
         question: (studentName: string) =>
-          `Do you come here often? Here is a possible answer: 'Yes, I come here a few times a week. The café is really nice and comfortable.' Now please tell me if you come here often.`,
+          `Do you come here often? Here is an answer you can use as a guide. Now why don't you try? 'Yes, I come here a few times a week. The café is really nice and comfortable.' if you come here often.`,
         exampleAnswer: 'Yes, I come here a few times a week. The café is really nice and comfortable.',
         difficulty: 'medium',
         expectedTopics: ['frequency', 'habits', 'social interaction'],
@@ -60,7 +60,7 @@ export const atTheCafeIntermediateRounds: RoundConfig[] = [
       {
         letter: 'C',
         question: (studentName: string) =>
-          `Are you working or just relaxing today? Here is a possible answer: 'I'm working a little, but I'm also taking a break.' Now please tell me if you are working or just relaxing today.`,
+          `Are you working or just relaxing today? Here is an answer you can use as a guide. Now why don't you try? 'I'm working a little, but I'm also taking a break.' if you are working or just relaxing today.`,
         exampleAnswer: "I'm working a little, but I'm also taking a break.",
         difficulty: 'medium',
         expectedTopics: ['activities', 'state', 'leisure'],
@@ -75,7 +75,7 @@ export const atTheCafeIntermediateRounds: RoundConfig[] = [
       {
         letter: 'A',
         question: (studentName: string) =>
-          `Sorry, the Wi-Fi isn't working right now. Is that okay? Here is a possible answer: 'That's okay. I can use my mobile data for now.' Now please tell me if that's okay.`,
+          `Sorry, the Wi-Fi isn't working right now. Is that okay? Here is an answer you can use as a guide. Now why don't you try? 'That's okay. I can use my mobile data for now.' if that's okay.`,
         exampleAnswer: "That's okay. I can use my mobile data for now.",
         difficulty: 'medium',
         expectedTopics: ['understanding', 'acceptance', 'reassurance'],
@@ -83,7 +83,7 @@ export const atTheCafeIntermediateRounds: RoundConfig[] = [
       {
         letter: 'B',
         question: (studentName: string) =>
-          `We're out of oat milk. Would you like something else? Here is a possible answer: 'No problem. Regular milk is fine.' Now please tell me what you would like instead.`,
+          `We're out of oat milk. Would you like something else? Here is an answer you can use as a guide. Now why don't you try? 'No problem. Regular milk is fine.' what you would like instead.`,
         exampleAnswer: 'No problem. Regular milk is fine.',
         difficulty: 'medium',
         expectedTopics: ['alternatives', 'flexibility', 'preferences'],
@@ -91,7 +91,7 @@ export const atTheCafeIntermediateRounds: RoundConfig[] = [
       {
         letter: 'C',
         question: (studentName: string) =>
-          `It's getting crowded. Would you like to move to another table? Here is a possible answer: 'Sure, that's okay. Thank you.' Now please tell me if you would like to move to another table.`,
+          `It's getting crowded. Would you like to move to another table? Here is an answer you can use as a guide. Now why don't you try? 'Sure, that's okay. Thank you.' if you would like to move to another table.`,
         exampleAnswer: "Sure, that's okay. Thank you.",
         difficulty: 'medium',
         expectedTopics: ['accepting offers', 'gratitude', 'preferences'],
